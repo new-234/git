@@ -10,9 +10,9 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::DR16 rc;  ///< DT7
-  rm::device::VT03 tc;  ///< 图传
-  Buzzer buzzer;  ///< 蜂鸣器
+  rm::device::DR16 rc;                                             ///< DT7
+  rm::device::VT03 tc;                                             ///< 图传
+  Buzzer buzzer;                                                   ///< 蜂鸣器
   rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
                                 rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
                                 rm::modules::buzzer_melody::TheLick>

@@ -76,7 +76,8 @@ void AppMain() {
 //   } else {
 //     globals->power_management_gimbal_last = globals->ref.data().robot_status.power_management_gimbal_output;
 //   }
-//   if (globals->ref.data().robot_status.power_management_shooter_output == 1 && globals->power_management_shooter_last == 0) {
+//   if (globals->ref.data().robot_status.power_management_shooter_output == 1 && globals->power_management_shooter_last
+//   == 0) {
 //     power_management_shooter_delay++;
 //     if (power_management_shooter_delay > T * 3) {
 //       globals->power_management_shooter_last = 1;
