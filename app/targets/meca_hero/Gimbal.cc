@@ -32,7 +32,7 @@ bool GimbalHero::Enable() {
   if (globals->state_machine.getMainState() == StateMachine::MainState::kOffline) {
     UnableUpdate();
     return false;
-  } else if (globals->state_machine.getMainState() == StateMachine::MainState::kWaiting) {
+  } else if (globals->state_machine.getMainState() == StateMachine::MainState::kEnableWaiting) {
     EnableUpdate();
     return false;
   }
@@ -47,7 +47,7 @@ bool GimbalHero::Enable() {
     case StateMachine::GimbalState::kNoForce:
       UnableUpdate();
       return false;
-    case StateMachine::GimbalState::kWaiting:
+    case StateMachine::GimbalState::kEnableWaiting:
       EnableUpdate();
       return false;
     case StateMachine::GimbalState::kNormal:

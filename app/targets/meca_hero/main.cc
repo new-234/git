@@ -58,3 +58,31 @@ void AppMain() {
   }
 }
 }
+
+// /**
+//  * @brief 裁判系统通断电检测
+//  * @param T 函数循环周期 /s
+//  * @note power_management_last 为0且当前裁判系统为1时进入*更改等待*，n倍周期后更改 power_management_last
+//  */
+// void PowerManagement(int T) {
+//   static int power_management_gimbal_delay = 0;
+//   static int power_management_shooter_delay = 0;
+//   if (globals->ref.data().robot_status.power_management_gimbal_output == 1 && power_management_gimbal_last == 0) {
+//     power_management_gimbal_delay++;
+//     if (power_management_gimbal_delay > T * 3) {
+//       globals->power_management_gimbal_last = 1;
+//       power_management_gimbal_delay = 0;
+//     }
+//   } else {
+//     globals->power_management_gimbal_last = globals->ref.data().robot_status.power_management_gimbal_output;
+//   }
+//   if (globals->ref.data().robot_status.power_management_shooter_output == 1 && globals->power_management_shooter_last == 0) {
+//     power_management_shooter_delay++;
+//     if (power_management_shooter_delay > T * 3) {
+//       globals->power_management_shooter_last = 1;
+//       power_management_shooter_delay = 0;
+//     }
+//   } else {
+//     globals->power_management_shooter_last = globals->ref.data().robot_status.power_management_shooter_output;
+//   }
+// }

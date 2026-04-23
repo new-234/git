@@ -1,6 +1,6 @@
 #include "State.hpp"
 #include "librm.hpp"
-#include "main.hpp"
+#include "globals.hpp"
 
 /**
  *@brief:DT7遥控器切换状态
@@ -18,10 +18,11 @@ void StateMachine::DT7Switch() {
     case rm::device::DR16::SwitchPosition::kMid:  /// 调试
       switch (current_main_state_) {
         case MainState::kOffline:
-          current_main_state_ = MainState::kWaiting;
+          current_main_state_ = MainState::kEnableWaiting;
           break;
-        case MainState::kWaiting:
-          if (Waiting(waiting_count_)) current_main_state_ = MainState::kTest;
+        case MainState::kEnableWaiting:
+          // if (!waiting_first_flag) waiting_first_flag = true;
+          if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kTest;
           break;
         case MainState::kTest:
           switch (rc_switch_position_l) {
@@ -49,13 +50,14 @@ void StateMachine::DT7Switch() {
     case rm::device::DR16::SwitchPosition::kUp:
       switch (current_main_state_) {
         case MainState::kOffline:  // 保险
-          current_main_state_ = MainState::kWaiting;
+          current_main_state_ = MainState::kEnableWaiting;
           break;
         case MainState::kTest:
-          current_main_state_ = MainState::kWaiting;
+          current_main_state_ = MainState::kEnableWaiting;
           break;
-        case MainState::kWaiting:
-          if (Waiting(waiting_count_)) current_main_state_ = MainState::kGame;
+        case MainState::kEnableWaiting:
+          // if (!waiting_first_flag) waiting_first_flag = true;
+          if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
           break;
         case MainState::kGame:
 
@@ -76,36 +78,55 @@ void StateMachine::DT7Switch() {
  * @note:
  **/
 void StateMachine::StateUpdate() {
-  //
-  rc_switch_position_l = globals->rc->switch_l();
-  tc_switch_position = globals->tc->data().switch_position;
-  rc_switch_position_r = globals->rc->switch_r();
-
-  // 子模式状态位
-  static bool snipe{false};  // 部署标志位
-  if (key_once_tc(VT03::KeyboardKey::kG)) snipe = !snipe;
-  bool overpower = globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kShift);  // 爬坡-自动触发
-  // 模块状态位
-  static bool follow{true};  // 随动标志位
-  if (key_once_tc(VT03::KeyboardKey::kC)) follow = !follow;
-
-  bool radar_aimbot = globals->tc->data().right_button;  // 部署模式下的雷达自瞄
-  bool aimbot = globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl) |
-                globals->tc->data().right_button;  // 常态模式下的装甲板自瞄
-  bool autofire =
-      globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl);  // 自瞄决定开火标志位
-
-  // 图传最高优先级，图传在C强制失能，S强制进入比赛并进入子模式
-  if (tc_switch_position == VT03::SwitchPosition::C) {
+  // 死亡判断
+  if (!globals->ref.data().robot_status.power_management_chassis_output &&
+      !globals->ref.data().robot_status.power_management_gimbal_output &&
+      !globals->ref.data().robot_status.power_management_shooter_output) {
+    gimbal_power_management_last_flag_ = false;
+    shooter_power_management_last_flag_ = false;
+    chassis_power_management_last_flag_ = false;
     current_main_state_ = MainState::kOffline;
     return;
-  } else if (tc_switch_position == VT03::SwitchPosition::S) {
+  }
+  /*--------------------------------------------------外部变量拷贝---------------------------------------------------*/
+  rc_switch_position_l = globals->rc.switch_l();
+  tc_switch_position = globals->tc.data().switch_position;
+  rc_switch_position_r = globals->rc.switch_r();
+  gimbal_power_management_last_flag_ = globals->ref.data().robot_status.power_management_gimbal_output;
+  shooter_power_management_last_flag_ = globals->ref.data().robot_status.power_management_shooter_output;
+  chassis_power_management_last_flag_ = globals->ref.data().robot_status.power_management_chassis_output;
+
+  /*--------------------------------------------------子模式状态位---------------------------------------------------*/
+  static bool snipe{false};  ///< 部署标志位
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kG)) snipe = !snipe;
+  bool overpower =
+      globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  // 爬坡-自动触发
+
+  /*---------------------------------------------------模块 状态位---------------------------------------------------*/
+  static bool follow{true};  ///< 随动标志位
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
+
+  bool radar_aimbot = globals->tc.data().right_button;  ///< 部署模式下的雷达自瞄
+  bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
+  bool fire = globals->tc.data().keyboard_key &
+              static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl);  // 允许自瞄开火标志位
+
+  /*---------------------------------------------------状态机逻辑----------------------------------------------------*/
+  // 图传最高优先级，图传在C强制失能，S强制进入比赛并进入子模式
+  if (tc_switch_position == rm::device::VT03::SwitchPosition::C) {
+    current_main_state_ = MainState::kOffline;
+    main_tick_.reset();
+    ammo_tick_.reset();
+    gimbal_tick_.reset();
+    return;
+  } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {
     switch (current_main_state_) {
       case MainState::kOffline:
-        current_main_state_ = MainState::kWaiting;
+        current_main_state_ = MainState::kEnableWaiting;
+        main_tick_.reset();
         break;
-      case MainState::kWaiting:
-        if (Waiting(waiting_count_)) current_main_state_ = MainState::kGame;
+      case MainState::kEnableWaiting:
+        if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
         break;
       case MainState::kGame:
         // 子状态
@@ -118,29 +139,40 @@ void StateMachine::StateUpdate() {
         }
         // 模块状态
         /// 底盘状态
-        if (follow) {
-          current_chassis_state_ = ChassisState::kFollow;
+        if (chassis_power_management_last_flag_) {
+          if (follow) {
+            current_chassis_state_ = ChassisState::kFollow;
+          } else {
+            current_chassis_state_ = ChassisState::kNormal;
+          }
         } else {
-          current_chassis_state_ = ChassisState::kNormal;
+          current_chassis_state_ = ChassisState::kNoForce;
         }
+
         /// 云台状态
-        if (radar_aimbot) {
-          last_gimbal_state_ = current_gimbal_state_;
-          current_gimbal_state_ = GimbalState::kRadarAimbot;
-        } else if (aimbot) {
-          last_gimbal_state_ = current_gimbal_state_;
-          current_gimbal_state_ = GimbalState::kAimbot;
-        } else if (ref_gimbal_output_) {
+        if (gimbal_power_management_last_flag_) {  // 裁判系统断电检测
+          if (radar_aimbot) {
+            last_gimbal_state_ = current_gimbal_state_;
+            current_gimbal_state_ = GimbalState::kRadarAimbot;
+          } else if (aimbot) {
+            last_gimbal_state_ = current_gimbal_state_;
+            current_gimbal_state_ = GimbalState::kAimbot;
+          } else {
+            current_gimbal_state_ = GimbalState::kNormal;
+          }
+        } else if (gimbal_power_management_last_flag_ == false &&
+                   globals->ref.data().robot_status.power_management_gimbal_output) {
+          current_gimbal_state_ = GimbalState::kEnableWaiting;
         } else {
-          current_gimbal_state_ = GimbalState::kNormal;
+          current_gimbal_state_ = GimbalState::kOffline;
         }
+
         break;
       default:
-        current_main_state_ = MainState::kGame;
+        // 默认进入使能
+        current_main_state_ = MainState::kEnableWaiting;
         break;
     }
-    current_main_state_ = MainState::kGame;
-
     return;
   }
 
