@@ -52,6 +52,13 @@ class StateMachine {
     kSnipe,
   };
 
+  enum class SubAmmoState {
+    kInit,
+    kCooling,
+    kReady,
+    kFire,
+  };
+
   void StateUpdate();
   void DT7Switch();
 
