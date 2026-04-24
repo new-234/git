@@ -69,6 +69,17 @@ class StateMachine {
     void set(int set) { count_ = set; }
   };
 
+  bool RefereePowerManagement(bool now, bool last, TickTimer tick) {
+    if (now && !last) {
+      if (!Waiting(waiting_count_ * 3, tick)) {
+        return false;
+      }
+    } else {
+      last = now;
+      return now;
+    }
+  }
+
   /**
    * @brief 非阻塞延时函数
    * @param waiting_count
