@@ -76,10 +76,18 @@ class StateMachine {
     void set(int set) { count_ = set; }
   };
 
-  bool RefereePowerManagement(bool now, bool last, TickTimer tick) {
+  /**
+   *
+   * @param now
+   * @param last
+   * @param tick
+   * @return bool
+   * @brief 当电管重新上电时，产生延迟，确保在等待使能状态足够久，确保模块成功使能
+   */
+  int RefereePowerManagement(int now, int last, TickTimer tick) {
     if (now && !last) {
-      if (!Waiting(waiting_count_ * 3, tick)) {
-        return false;
+      if (!Waiting(waiting_count_ * 3, tick)) {  // 延时3s
+        return 2;
       }
     } else {
       last = now;
@@ -117,7 +125,7 @@ class StateMachine {
    */
   void TestFollowSwitch(int dial) {
     if (abs(dial) > 400) {
-      if (Waiting(waiting_count_ / 2, waiting_first_flag_)) {
+      if (Waiting(waiting_count_ / 2, test_follow_switch_tick_)) {
         if (current_chassis_state_ != ChassisState::kFollow) {
           last_chassis_state_ = current_chassis_state_;
           current_chassis_state_ = ChassisState::kFollow;
@@ -145,6 +153,8 @@ class StateMachine {
   [[nodiscard]] GimbalState getlastGimbalState() const { return last_gimbal_state_; }
   [[nodiscard]] AmmoState getAmmoState() const { return current_ammo_state_; }
   [[nodiscard]] AmmoState getlastAmmoState() const { return last_ammo_state_; }
+  [[nodiscard]] SubAmmoState getSubAmmoState() const { return current_subammo_state_; }
+  [[nodiscard]] SubAmmoState getlastSubAmmoState() const { return last_subammo_state_; }
 
  private:
   MainState current_main_state_{MainState::kOffline};
@@ -156,14 +166,21 @@ class StateMachine {
 
   ChassisState current_chassis_state_{ChassisState::kOffline};
   ChassisState last_chassis_state_{ChassisState::kNormal};
+  TickTimer chassis_tick_;
 
-  AmmoState current_ammo_state_{AmmoState::kNormal};
-  AmmoState last_ammo_state_{AmmoState::kNormal};
+  AmmoState current_ammo_state_{AmmoState::kOffline};
+  AmmoState last_ammo_state_{AmmoState::kOffline};
   TickTimer ammo_tick_;
+
+  SubAmmoState current_subammo_state_{SubAmmoState::kInit};
+  SubAmmoState last_subammo_state_{SubAmmoState::kInit};
+  TickTimer subammo_tick_;
 
   GimbalState current_gimbal_state_{GimbalState::kOffline};
   GimbalState last_gimbal_state_{GimbalState::kNormal};
   TickTimer gimbal_tick_;
+
+  TickTimer test_follow_switch_tick_;
 
   rm::device::VT03::SwitchPosition tc_switch_position{rm::device::VT03::SwitchPosition::N};
   rm::device::DR16::SwitchPosition rc_switch_position_r{rm::device::DR16::SwitchPosition::kUnknown};
@@ -173,7 +190,7 @@ class StateMachine {
   int count_{0};
   bool waiting_first_flag_{true};
 
-  bool gimbal_power_management_last_flag_{false};
-  bool shooter_power_management_last_flag_{false};
-  bool chassis_power_management_last_flag_{false};
+  int gimbal_power_management_last_flag_{0};
+  int ammo_power_management_last_flag_{0};
+  int chassis_power_management_last_flag_{0};
 };

@@ -1,0 +1,23 @@
+#pragma once
+
+
+#include "librm.hpp"
+#include "usart.h"
+
+#pragma pack(1)
+struct Vofa_TxFrame {
+  float x[10];
+  uint8_t tail[4] = {0x00, 0x00, 0x80, 0x7F};
+};
+
+struct Vofa_RxFrame {
+  float P;
+  float I;
+  float D;
+  uint8_t tail = {0xFF};
+};
+#pragma pack()
+
+void VOFA_Prepare_Package(float x[], Vofa_TxFrame &tx_buffer, int len);
+void VOFA_Send_JustFloat_DMA(UART_HandleTypeDef *huart, Vofa_TxFrame &tx_buffer);
+void VOFASend();
