@@ -193,4 +193,6 @@ class StateMachine {
   int gimbal_power_management_last_flag_{0};
   int ammo_power_management_last_flag_{0};
   int chassis_power_management_last_flag_{0};
+
+  void AmmoSubState();
 };

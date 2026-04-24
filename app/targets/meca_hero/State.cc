@@ -3,6 +3,14 @@
 #include "globals.hpp"
 
 /**
+ * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
+ */
+void StateMachine::AmmoSubState() {
+
+}
+
+
+/**
  *@brief:DT7遥控器切换状态
  */
 void StateMachine::DT7Switch() {
@@ -120,9 +128,10 @@ void StateMachine::StateUpdate() {
   if (tc_switch_position == rm::device::VT03::SwitchPosition::C) {
     current_main_state_ = MainState::kOffline;
     main_tick_.reset();
-
     return;
+
   } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {
+    /*---------------------------------------------------主状态----------------------------------------------------*/
     switch (current_main_state_) {
       default:
         // 默认进入使能
@@ -143,7 +152,8 @@ void StateMachine::StateUpdate() {
         if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
         break;
       case MainState::kGame:
-        // 子状态
+
+        /*---------------------------------------------------子状态----------------------------------------------------*/
         if (snipe) {
           current_sub_state_ = SubState::kSnipe;
         } else if (overpower) {
@@ -151,21 +161,43 @@ void StateMachine::StateUpdate() {
         } else {
           current_sub_state_ = SubState::kNormal;
         }
-        // 模块状态
+
+        /*--------------------------------------------------模块状态---------------------------------------------------*/
         /// 底盘状态
-        if (chassis_power_management_last_flag_) {
-          if (follow) {
-            current_chassis_state_ = ChassisState::kFollow;
-          } else {
-            current_chassis_state_ = ChassisState::kNormal;
-          }
-        } else {
-          current_chassis_state_ = ChassisState::kNoForce;
+        switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_chassis_output,
+                                       chassis_power_management_last_flag_, chassis_tick_)) {  // 裁判系统断电检测
+          default:
+            current_gimbal_state_ = GimbalState::kOffline;
+            break;
+
+          case (0):
+            current_gimbal_state_ = GimbalState::kOffline;
+            break;
+
+          case (1):
+            if (follow) {
+              current_chassis_state_ = ChassisState::kFollow;
+            } else {
+              current_chassis_state_ = ChassisState::kNormal;
+            }
+            break;
+
+          case (2):
+            current_chassis_state_ = ChassisState::kOffline;
+            break;
         }
 
         /// 云台状态
         switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_gimbal_output,
                                        gimbal_power_management_last_flag_, gimbal_tick_)) {  // 裁判系统断电检测
+          default:
+            current_gimbal_state_ = GimbalState::kOffline;
+            break;
+
+          case (0):
+            current_gimbal_state_ = GimbalState::kOffline;
+            break;
+
           case (1):
             if (radar_aimbot) {
               last_gimbal_state_ = current_gimbal_state_;
@@ -178,14 +210,28 @@ void StateMachine::StateUpdate() {
           case (2):
             current_gimbal_state_ = GimbalState::kEnableWaiting;
             break;
-
-          case (0):
-            current_gimbal_state_ = GimbalState::kOffline;
-            break;
         }
 
         /// 发射状态
-        if (ammo_power_management_last_flag_) {
+        switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_shooter_output,
+                                       ammo_power_management_last_flag_, ammo_tick_)) {
+          default:
+            current_ammo_state_ = AmmoState::kOffline;
+            break;
+
+          case (0):
+            current_ammo_state_ = AmmoState::kOffline;
+            break;
+
+          case (1):
+            current_ammo_state_ = AmmoState::kNormal;
+            AmmoSubState();
+            break;
+
+          case (2):
+            current_ammo_state_ = AmmoState::kEnableWaiting;
+            break;
+
         }
 
         break;
