@@ -182,7 +182,6 @@ void StateMachine::StateUpdate() {
           case (0):
             current_gimbal_state_ = GimbalState::kOffline;
             break;
-
         }
 
         /// 发射状态

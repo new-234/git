@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "librm.hpp"
 #include "usart.h"
 
