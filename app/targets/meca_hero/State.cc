@@ -5,10 +5,7 @@
 /**
  * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
  */
-void StateMachine::AmmoSubState() {
-
-}
-
+void StateMachine::AmmoSubState() {}
 
 /**
  *@brief:DT7遥控器切换状态
@@ -231,7 +228,6 @@ void StateMachine::StateUpdate() {
           case (2):
             current_ammo_state_ = AmmoState::kEnableWaiting;
             break;
-
         }
 
         break;
