@@ -72,5 +72,4 @@ bool GimbalHero::EnableJudgement() {
 void GimbalHero::GimbalUpdate() {
   AhrsUpdate();
   if (!EnableJudgement()) return;
-
 }

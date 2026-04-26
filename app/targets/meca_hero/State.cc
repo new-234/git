@@ -27,10 +27,19 @@ void StateMachine::GameState() {
     chassis_power_management_last_flag_ = 0;
     current_main_state_ = MainState::kOffline;
     return;
-  } else if (!globals->ref_manager.all_device_ok() || !globals->tc_manager.all_device_ok()) {current_main_state_ = MainState::kOffline; return;}
-  else if (!globals->gimbal_manager.all_device_ok()) {current_gimbal_state_ = GimbalState::kOffline; return;}
-  else if (!globals->chassis_manager.all_device_ok()) {current_chassis_state_ = ChassisState::kOffline; return;}
-  else if (!globals->ammo_manager.all_device_ok()) {current_ammo_state_ = AmmoState::kOffline; return;}
+  } else if (!globals->ref_manager.all_device_ok() || !globals->tc_manager.all_device_ok()) {
+    current_main_state_ = MainState::kOffline;
+    return;
+  } else if (!globals->gimbal_manager.all_device_ok()) {
+    current_gimbal_state_ = GimbalState::kOffline;
+    return;
+  } else if (!globals->chassis_manager.all_device_ok()) {
+    current_chassis_state_ = ChassisState::kOffline;
+    return;
+  } else if (!globals->ammo_manager.all_device_ok()) {
+    current_ammo_state_ = AmmoState::kOffline;
+    return;
+  }
 
   /*---------------------------------------------------主状态----------------------------------------------------*/
   switch (current_main_state_) {
@@ -247,8 +256,8 @@ void StateMachine::StateUpdate() {
   /*--------------------------------------------------子模式状态位---------------------------------------------------*/
   // static bool snipe{false};  ///< 部署标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kG)) snipe = !snipe;
-  overpower = globals->tc.data().keyboard_key &
-              static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
+  overpower =
+      globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
 
   /*---------------------------------------------------模块 状态位---------------------------------------------------*/
   // static bool follow{true};  ///< 随动标志位

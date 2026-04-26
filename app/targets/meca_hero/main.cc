@@ -60,8 +60,8 @@ void AppMain() {
   // 全局变量初始化
   globals = new Globals;
 
-  globals_no_dtcm.Init(); ///< 硬件外设
-  globals->Init(); ///< 软件
+  globals_no_dtcm.Init();  ///< 硬件外设
+  globals->Init();         ///< 软件
   for (;;) {
   }
 }

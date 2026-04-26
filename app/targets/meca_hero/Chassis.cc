@@ -33,8 +33,6 @@ bool ChassisHero::EnableJudgement() {
   }
 }
 
-
 void ChassisHero::ChassisUpdate() {
   if (!EnableJudgement()) return;
-
 }

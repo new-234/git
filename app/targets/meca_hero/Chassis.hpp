@@ -3,11 +3,11 @@
 #include "globals.hpp"
 
 class ChassisHero {
-public:
-  ChassisHero()=default;
+ public:
+  ChassisHero() = default;
 
   void ChassisUpdate();
 
-private:
+ private:
   bool EnableJudgement();
 };
