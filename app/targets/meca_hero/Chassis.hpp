@@ -10,4 +10,6 @@ class ChassisHero {
 
  private:
   bool EnableJudgement();
+  void Unabling();
+  void Enabling();
 };
