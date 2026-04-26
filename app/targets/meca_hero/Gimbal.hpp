@@ -23,10 +23,13 @@ class GimbalHero {
     rm::f32 gyro_rectification_{};  // 陀螺仪Z轴修正值
     int pitch_ff_{};                // pitch轴PID前馈
   } hyperparameters_;
+  // 遥控值
+  float target_yaw;
+  float target_pitch;
 
-  bool Enable();  //
-  void UnableUpdate();
-  void EnableUpdate();
+  bool EnableJudgement();  //
+  void Unabling();
+  void Enabling();
   void AhrsUpdate();
   void AimbotControl();
 };

@@ -5,38 +5,11 @@
 #include "fdcan.h"
 #include "usart.h"
 #include "spi.h"
+#include "main.h"
 
 #include "common/bsp/buzzer.hpp"
 #include "common/bsp/ws2812.hpp"
 #include "State.hpp"
-
-struct Globals {
-  /*---------------------------------------------------全局对象---------------------------------------------------*/
-  /*---------------------------------------------------全局对象---------------------------------------------------*/
-  /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};  ///< 状态机
-  Buzzer buzzer;                     ///< 蜂鸣器
-  rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
-                                rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
-                                rm::modules::buzzer_melody::TheLick>
-      buzzer_controller;
-  WS2812Led led;                                                        ///< WS2812 LED灯
-  rm::modules::RgbLedController<rm::modules::led_pattern::Off,          //
-                                rm::modules::led_pattern::GreenBreath,  //
-                                rm::modules::led_pattern::RedFlash>
-      led_controller;  ///< LED控制器
-
-  /*---------------------------------------------------全局变量---------------------------------------------------*/
-  /*---------------------------------------------------全局变量---------------------------------------------------*/
-  /*---------------------------------------------------全局变量---------------------------------------------------*/
-  float vbus;  ///< XT30输入电压
-
-  void Init() {
-    buzzer.Init();
-    led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
-    buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
-  }
-};
 
 /**
  * STM32H7的DTCM区域只能被CPU访问，不能被DMA访问，所以需要开一块在DTCM之外的全局数据区域，专门放一些需要被DMA访问的对象
@@ -55,6 +28,12 @@ struct GlobalsNoDtcm {
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
   rm::hal::Serial<50> dbus{huart5, true, true}, usart1_ref{huart1, true, true},
       uart10_tc{huart10, true, true};  ///< 串口接口
+
+  rm::device::BMI088 imu{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};  ///< IMU
+  // 云台电机
+  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
+      can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+  rm::device::M3508 gimbal_motor_pitch{can2, 5, true};
 
   rm::device::DR16 rc{dbus};                                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
@@ -96,5 +75,49 @@ struct GlobalsNoDtcm {
   }
 };
 
-extern Globals *globals;
 extern __attribute__((section(".sram4"))) GlobalsNoDtcm globals_no_dtcm;
+
+struct Globals {
+  /*---------------------------------------------------全局对象---------------------------------------------------*/
+  /*---------------------------------------------------全局对象---------------------------------------------------*/
+  /*---------------------------------------------------全局对象---------------------------------------------------*/
+  StateMachine state_machine{2000};      ///< 状态机
+  rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
+  // 云台电机
+  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
+    globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 5, true};
+
+  Buzzer buzzer;  ///< 蜂鸣器
+  rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
+                                rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
+                                rm::modules::buzzer_melody::TheLick>
+      buzzer_controller;
+  WS2812Led led;                                                        ///< WS2812 LED灯
+  rm::modules::RgbLedController<rm::modules::led_pattern::Off,          //
+                                rm::modules::led_pattern::GreenBreath,  //
+                                rm::modules::led_pattern::RedFlash>
+      led_controller;  ///< LED控制器
+
+  /*---------------------------------------------------全局变量---------------------------------------------------*/
+  /*---------------------------------------------------全局变量---------------------------------------------------*/
+  /*---------------------------------------------------全局变量---------------------------------------------------*/
+  float vbus;  ///< XT30输入电压
+  float gyro_z;
+
+  void Init() {
+    buzzer.Init();
+    led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
+    buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
+  }
+};
+
+
+
+/*---------------------------------------------------监测值---------------------------------------------------*/
+inline float eulerangle_yaw{0};
+inline float eulerangle_pitch{0};
+inline float eulerangle_roll{0};
+
+extern Globals *globals;

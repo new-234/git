@@ -1,54 +1,60 @@
 #include "Gimbal.hpp"
-// #include "main.hpp"
+#include "globals.hpp"
 
-void GimbalHero::EnableUpdate() {
-  globals->gimbal_motor_yaw->SendInstruction(rm::device::DmMotorInstructions::kClearError);
-  globals->gimbal_motor_yaw->SendInstruction(rm::device::DmMotorInstructions::kEnable);
+void GimbalHero::Enabling() {
+  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
 }
 
-void GimbalHero::UnableUpdate() {
-  globals->gimbal_motor_yaw->SetMitCommand(0, 0, 0, 0, 0);
-  globals->gimbal_motor_pitch->SetCurrent(0);
-  globals->gimbal_motor_yaw->SendInstruction(rm::device::DmMotorInstructions::kDisable);
-  target_pos_yaw = -globals->ahrs.euler_angle().yaw;
-  target_pos_pitch = -globals->ahrs.euler_angle().pitch;
+void GimbalHero::Unabling() {
+  globals_no_dtcm.gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
+  globals_no_dtcm.gimbal_motor_pitch.SetCurrent(0);
+  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
+  target_yaw = globals->ahrs.euler_angle().yaw;
+  target_pitch = globals->ahrs.euler_angle().pitch;
 }
 
+/**
+ * @brief 姿态解算任务
+ */
 void GimbalHero::AhrsUpdate() {
-  globals->imu->Update();
+  globals_no_dtcm.imu.Update();
   globals->ahrs.Update(rm::modules::ImuData6Dof{
-      globals->imu->gyro_x(), globals->imu->gyro_y(),
-      gyro_z = globals->gyro_z_filter.apply(globals->imu->gyro_z()) + hyperparameters_.gyro_rectification_,
-      globals->imu->accel_x(), globals->imu->accel_y(), globals->imu->accel_z()});
-  eulerangle_yaw = -globals->ahrs.euler_angle().yaw;
-  eulerangle_pitch = -globals->ahrs.euler_angle().pitch;
-  eulerangle_roll = -globals->ahrs.euler_angle().roll;
+      globals_no_dtcm.imu.gyro_x(), globals_no_dtcm.imu.gyro_y(),
+      globals->gyro_z = globals->gyro_z_filter.apply(globals_no_dtcm.imu.gyro_z()) + hyperparameters_.gyro_rectification_,
+      globals_no_dtcm.imu.accel_x(), globals_no_dtcm.imu.accel_y(), globals_no_dtcm.imu.accel_z()});
+
+  // 监测
+  eulerangle_yaw = globals->ahrs.euler_angle().yaw;
+  eulerangle_pitch = globals->ahrs.euler_angle().pitch;
+  eulerangle_roll = globals->ahrs.euler_angle().roll;
 }
 
 void GimbalHero::AimbotControl() {}
 
-bool GimbalHero::Enable() {
+bool GimbalHero::EnableJudgement() {
   // 主状态检测
-  if (globals->state_machine.getMainState() == StateMachine::MainState::kOffline) {
-    UnableUpdate();
+  if (globals->state_machine.getMainState_() == StateMachine::MainState::kOffline) {
+    Unabling();
     return false;
-  } else if (globals->state_machine.getMainState() == StateMachine::MainState::kEnableWaiting) {
-    EnableUpdate();
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
+    Enabling();
     return false;
   }
   // Gimbal状态检测
-  switch (globals->state_machine.getGimbalState()) {
+  switch (globals->state_machine.getGimbalState_()) {
     default:
-      UnableUpdate();
+      Unabling();
       return false;
     case StateMachine::GimbalState::kOffline:
-      UnableUpdate();
+      Unabling();
       return false;
     case StateMachine::GimbalState::kNoForce:
-      UnableUpdate();
+      Unabling();
       return false;
     case StateMachine::GimbalState::kEnableWaiting:
-      EnableUpdate();
+      Unabling();
+      Enabling();
       return false;
     case StateMachine::GimbalState::kNormal:
       return true;
@@ -58,8 +64,11 @@ bool GimbalHero::Enable() {
       return true;
   }
 }
-// 主循环
+
+/**
+ * @brief 云台主循环
+ */
 void GimbalHero::GimbalUpdate() {
   AhrsUpdate();
-  if (!Enable()) return;
+  if (!EnableJudgement()) return;
 }

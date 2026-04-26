@@ -2,8 +2,9 @@
 #include "adc.h"
 #include "globals.hpp"
 
-Globals *globals{nullptr};
 __attribute__((section(".sram4"))) GlobalsNoDtcm globals_no_dtcm;
+Globals *globals{nullptr};
+
 volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/
