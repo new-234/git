@@ -15,7 +15,7 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};  ///< 状态机
-  Buzzer buzzer;               ///< 蜂鸣器
+  Buzzer buzzer;                     ///< 蜂鸣器
   rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
                                 rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
                                 rm::modules::buzzer_melody::TheLick>

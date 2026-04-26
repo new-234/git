@@ -50,7 +50,7 @@ void AppMain() {
   };
   mainloop.Start();
 
-// 全局变量初始化
+  // 全局变量初始化
   globals = new Globals;
 
   globals->Init();

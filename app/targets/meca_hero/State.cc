@@ -122,7 +122,7 @@ void StateMachine::GameState() {
 
         case (1):
           current_ammo_state_ = AmmoState::kNormal;
-        wait_ AmmoSubState();
+          wait_ AmmoSubState();
           break;
 
         case (2):
@@ -243,8 +243,8 @@ void StateMachine::StateUpdate() {
   /*--------------------------------------------------子模式状态位---------------------------------------------------*/
   // static bool snipe{false};  ///< 部署标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kG)) snipe = !snipe;
-  overpower =
-      globals_no_dtcm.tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
+  overpower = globals_no_dtcm.tc.data().keyboard_key &
+              static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
 
   /*---------------------------------------------------模块
    * 状态位---------------------------------------------------*/
