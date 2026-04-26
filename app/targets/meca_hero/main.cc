@@ -13,17 +13,22 @@ void SubLoop100hz() {
   globals->led.SetColor(r, g, b);
   globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
 }
+
 /*---------------------------------------------------500HZ---------------------------------------------------*/
 void SubLoop500hz() {
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
 }
+
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
 /**
  * @note %不同的数产生相位差，避免某一时刻任务量过大（任务片流转）
  */
 void MainLoop2khz() {
   static size_t loop_divisor = 0;
+
+  // 状态机更新
+  globals->state_machine.StateUpdate();
 
   if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();
@@ -45,7 +50,7 @@ void AppMain() {
   };
   mainloop.Start();
 
-  // 全局变量初始化
+// 全局变量初始化
   globals = new Globals;
 
   globals->Init();

@@ -8,13 +8,14 @@
 
 #include "common/bsp/buzzer.hpp"
 #include "common/bsp/ws2812.hpp"
+#include "State.hpp"
 
 struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-
-  Buzzer buzzer;  ///< 蜂鸣器
+  StateMachine state_machine{2000};  ///< 状态机
+  Buzzer buzzer;               ///< 蜂鸣器
   rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
                                 rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
                                 rm::modules::buzzer_melody::TheLick>
