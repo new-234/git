@@ -19,6 +19,9 @@ void SubLoop500hz() {
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
 }
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
+/**
+ * @note %不同的数产生相位差，避免某一时刻任务量过大（任务片流转）
+ */
 void MainLoop2khz() {
   static size_t loop_divisor = 0;
 
