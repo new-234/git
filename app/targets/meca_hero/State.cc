@@ -19,15 +19,19 @@ void StateMachine::AmmoSubState() {}
  */
 void StateMachine::GameState() {
   // 死亡判断
-  if (!globals_no_dtcm.ref.data().robot_status.power_management_chassis_output &&
-      !globals_no_dtcm.ref.data().robot_status.power_management_gimbal_output &&
-      !globals_no_dtcm.ref.data().robot_status.power_management_shooter_output) {
+  if (!globals->ref.data().robot_status.power_management_chassis_output &&
+      !globals->ref.data().robot_status.power_management_gimbal_output &&
+      !globals->ref.data().robot_status.power_management_shooter_output) {
     gimbal_power_management_last_flag_ = 0;
     ammo_power_management_last_flag_ = 0;
     chassis_power_management_last_flag_ = 0;
     current_main_state_ = MainState::kOffline;
     return;
-  }
+  } else if (!globals->ref_manager.all_device_ok() || !globals->tc_manager.all_device_ok()) {current_main_state_ = MainState::kOffline; return;}
+  else if (!globals->gimbal_manager.all_device_ok()) {current_gimbal_state_ = GimbalState::kOffline; return;}
+  else if (!globals->chassis_manager.all_device_ok()) {current_chassis_state_ = ChassisState::kOffline; return;}
+  else if (!globals->ammo_manager.all_device_ok()) {current_ammo_state_ = AmmoState::kOffline; return;}
+
   /*---------------------------------------------------主状态----------------------------------------------------*/
   switch (current_main_state_) {
     default:
@@ -61,7 +65,7 @@ void StateMachine::GameState() {
 
       /*--------------------------------------------------模块状态---------------------------------------------------*/
       /// 底盘状态
-      switch (RefereePowerManagement(globals_no_dtcm.ref.data().robot_status.power_management_chassis_output,
+      switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_chassis_output,
                                      chassis_power_management_last_flag_, chassis_tick_)) {  // 裁判系统断电检测
         default:
           current_gimbal_state_ = GimbalState::kOffline;
@@ -85,7 +89,7 @@ void StateMachine::GameState() {
       }
 
       /// 云台状态
-      switch (RefereePowerManagement(globals_no_dtcm.ref.data().robot_status.power_management_gimbal_output,
+      switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_gimbal_output,
                                      gimbal_power_management_last_flag_, gimbal_tick_)) {  // 裁判系统断电检测
         default:
           current_gimbal_state_ = GimbalState::kOffline;
@@ -110,7 +114,7 @@ void StateMachine::GameState() {
       }
 
       /// 发射状态
-      switch (RefereePowerManagement(globals_no_dtcm.ref.data().robot_status.power_management_shooter_output,
+      switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_shooter_output,
                                      ammo_power_management_last_flag_, ammo_tick_)) {
         default:
           current_ammo_state_ = AmmoState::kOffline;
@@ -167,17 +171,17 @@ void StateMachine::DT7Switch() {
           switch (rc_switch_position_l) {
             case rm::device::DR16::SwitchPosition::kDown:  /// 普通遥控
               current_sub_state_ = SubState::kNormal;
-              TestDialSwitch(globals_no_dtcm.rc.dial(), current_chassis_state_, last_chassis_state_,
+              TestDialSwitch(globals->rc.dial(), current_chassis_state_, last_chassis_state_,
                              ChassisState::kFollow);  /// 随动切换
               break;
 
             case rm::device::DR16::SwitchPosition::kMid:  /// 超功率+上坡（应该直接加pitch无力
-              TestDialSwitch(globals_no_dtcm.rc.dial(), current_sub_state_, last_sub_state_,
+              TestDialSwitch(globals->rc.dial(), current_sub_state_, last_sub_state_,
                              SubState::kOverPower);  /// 上坡切换
               break;
 
             case rm::device::DR16::SwitchPosition::kUp:
-              TestDialSwitch(globals_no_dtcm.rc.dial(), current_sub_state_, last_sub_state_,
+              TestDialSwitch(globals->rc.dial(), current_sub_state_, last_sub_state_,
                              SubState::kSnipe);  /// 上坡切换
               break;
 
@@ -233,26 +237,26 @@ void StateMachine::DT7Switch() {
  **/
 void StateMachine::StateUpdate() {
   /*--------------------------------------------------外部变量拷贝---------------------------------------------------*/
-  rc_switch_position_l = globals_no_dtcm.rc.switch_l();
-  tc_switch_position = globals_no_dtcm.tc.data().switch_position;
-  rc_switch_position_r = globals_no_dtcm.rc.switch_r();
-  gimbal_power_management_last_flag_ = globals_no_dtcm.ref.data().robot_status.power_management_gimbal_output;
-  ammo_power_management_last_flag_ = globals_no_dtcm.ref.data().robot_status.power_management_shooter_output;
-  chassis_power_management_last_flag_ = globals_no_dtcm.ref.data().robot_status.power_management_chassis_output;
+  rc_switch_position_l = globals->rc.switch_l();
+  tc_switch_position = globals->tc.data().switch_position;
+  rc_switch_position_r = globals->rc.switch_r();
+  gimbal_power_management_last_flag_ = globals->ref.data().robot_status.power_management_gimbal_output;
+  ammo_power_management_last_flag_ = globals->ref.data().robot_status.power_management_shooter_output;
+  chassis_power_management_last_flag_ = globals->ref.data().robot_status.power_management_chassis_output;
 
   /*--------------------------------------------------子模式状态位---------------------------------------------------*/
   // static bool snipe{false};  ///< 部署标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kG)) snipe = !snipe;
-  overpower = globals_no_dtcm.tc.data().keyboard_key &
+  overpower = globals->tc.data().keyboard_key &
               static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
 
   /*---------------------------------------------------模块 状态位---------------------------------------------------*/
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
-  radar_aimbot = globals_no_dtcm.tc.data().right_button;  ///< 部署模式下的雷达自瞄
+  radar_aimbot = globals->tc.data().right_button;  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
-  fire = globals_no_dtcm.tc.data().keyboard_key &
+  fire = globals->tc.data().keyboard_key &
          static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl);  ///< 允许自瞄开火标志位
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/

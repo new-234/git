@@ -2,14 +2,14 @@
 #include "globals.hpp"
 
 void GimbalHero::Enabling() {
-  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
-  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
+  globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
 }
 
 void GimbalHero::Unabling() {
-  globals_no_dtcm.gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
-  globals_no_dtcm.gimbal_motor_pitch.SetCurrent(0);
-  globals_no_dtcm.gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
+  globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
+  globals->gimbal_motor_pitch.SetCurrent(0);
+  globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
   target_yaw = globals->ahrs.euler_angle().yaw;
   target_pitch = globals->ahrs.euler_angle().pitch;
 }
@@ -71,4 +71,5 @@ bool GimbalHero::EnableJudgement() {
 void GimbalHero::GimbalUpdate() {
   AhrsUpdate();
   if (!EnableJudgement()) return;
+
 }

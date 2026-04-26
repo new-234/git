@@ -27,7 +27,7 @@ class GimbalHero {
   float target_yaw;
   float target_pitch;
 
-  bool EnableJudgement();  //
+  bool EnableJudgement();
   void Unabling();
   void Enabling();
   void AhrsUpdate();

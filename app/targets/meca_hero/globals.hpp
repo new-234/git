@@ -30,14 +30,7 @@ struct GlobalsNoDtcm {
       uart10_tc{huart10, true, true};  ///< 串口接口
 
   rm::device::BMI088 imu{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};  ///< IMU
-  // 云台电机
-  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
-      can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  rm::device::M3508 gimbal_motor_pitch{can2, 5, true};
 
-  rm::device::DR16 rc{dbus};                                       ///< DT7
-  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::VT03 tc;                                             ///< 图传
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -53,25 +46,6 @@ struct GlobalsNoDtcm {
     can1.Begin();
     can2.SetFilter(0, 0);
     can2.Begin();
-    rc.Begin();
-
-    // 裁判系统串口接收
-    const rm::hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
-      for (const auto byte : data) {
-        ref << byte;
-      }
-    };
-    usart1_ref.AttachRxCallback(ref_rx_callback);
-    usart1_ref.Start();
-
-    // 图传串口接收
-    rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
-      for (const auto byte : data) {
-        tc << byte;
-      }
-    };
-    uart10_tc.AttachRxCallback(tc_rx_callback);
-    uart10_tc.Start();
   }
 };
 
@@ -81,13 +55,19 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};      ///< 状态机
-  rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
-  rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
+  StateMachine state_machine{2000};  ///< 状态机
+
   // 云台电机
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
-    globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+      globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 5, true};
+
+  rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
+  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
+  rm::device::VT03 tc;                                             ///< 图传
+
+  rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
 
   Buzzer buzzer;  ///< 蜂鸣器
   rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
@@ -100,6 +80,11 @@ struct Globals {
                                 rm::modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器
 
+  rm::device::DeviceManager<2> gimbal_manager;
+  rm::device::DeviceManager<4> chassis_manager;
+  rm::device::DeviceManager<7> ammo_manager;
+  rm::device::DeviceManager<1> ref_manager;
+  rm::device::DeviceManager<1> tc_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -107,13 +92,36 @@ struct Globals {
   float gyro_z;
 
   void Init() {
+    rc.Begin();
+
+    // 裁判系统串口接收
+    const rm::hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
+      for (const auto byte : data) {
+        ref << byte;
+      }
+    };
+    globals_no_dtcm.usart1_ref.AttachRxCallback(ref_rx_callback);
+    globals_no_dtcm.usart1_ref.Start();
+
+    // 图传串口接收
+    rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
+      for (const auto byte : data) {
+        tc << byte;
+      }
+    };
+    globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
+    globals_no_dtcm.uart10_tc.Start();
+
+    // 设备管理器
+    gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
+    ref_manager << &ref;
+    tc_manager << &tc;
+
     buzzer.Init();
     led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
     buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
   }
 };
-
-
 
 /*---------------------------------------------------监测值---------------------------------------------------*/
 inline float eulerangle_yaw{0};

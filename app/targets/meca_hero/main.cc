@@ -17,6 +17,12 @@ void SubLoop100hz() {
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
 void SubLoop500hz() {
+  // 设备状态更新
+  globals->gimbal_manager.Update();
+  globals->chassis_manager.Update();
+  globals->ref_manager.Update();
+  globals->tc_manager.Update();
+  globals->ammo_manager.Update();
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
 }
@@ -54,8 +60,8 @@ void AppMain() {
   // 全局变量初始化
   globals = new Globals;
 
-  globals->Init();
-  globals_no_dtcm.Init();
+  globals_no_dtcm.Init(); ///< 硬件外设
+  globals->Init(); ///< 软件
   for (;;) {
   }
 }
