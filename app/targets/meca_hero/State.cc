@@ -246,8 +246,7 @@ void StateMachine::StateUpdate() {
   overpower =
       globals_no_dtcm.tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kShift);  ///< 爬坡-自动触发
 
-  /*---------------------------------------------------模块
-   * 状态位---------------------------------------------------*/
+  /*---------------------------------------------------模块 状态位---------------------------------------------------*/
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
