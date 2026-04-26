@@ -81,12 +81,12 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};      ///< 状态机
+  StateMachine state_machine{2000};       ///< 状态机
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
   rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
   // 云台电机
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
-    globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+      globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 5, true};
 
   Buzzer buzzer;  ///< 蜂鸣器
@@ -112,8 +112,6 @@ struct Globals {
     buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
   }
 };
-
-
 
 /*---------------------------------------------------监测值---------------------------------------------------*/
 inline float eulerangle_yaw{0};
