@@ -1,5 +1,5 @@
 #include "Gimbal.hpp"
-#include "main.hpp"
+// #include "main.hpp"
 
 void GimbalHero::EnableUpdate() {
   globals->gimbal_motor_yaw->SendInstruction(rm::device::DmMotorInstructions::kClearError);

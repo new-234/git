@@ -3,6 +3,7 @@
 // #include "main.hpp"
 #include "State.hpp"
 #include "librm.hpp"
+#include "globals.hpp"
 
 class GimbalHero {
  public:
