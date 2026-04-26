@@ -120,41 +120,18 @@ class StateMachine {
     }
   }
 
-  /**
-   * @brief Test模式下随动切换
-   */
-  void TestFollowSwitch(int dial) {
-    if (abs(dial) > 400) {
-      if (Waiting(waiting_count_ / 2, test_follow_switch_tick_)) {
-        if (current_chassis_state_ != ChassisState::kFollow) {
-          last_chassis_state_ = current_chassis_state_;
-          current_chassis_state_ = ChassisState::kFollow;
-        } else {
-          current_chassis_state_ = last_chassis_state_;
-          last_chassis_state_ = ChassisState::kFollow;
-        }
-      }
-    }
-  }
-
-  /**
-   * @brief 实现拨轮切换状态
-   * @return
-   */
-  void DialSwitch();
-
-  [[nodiscard]] MainState getMainState() const { return current_main_state_; }
-  [[nodiscard]] MainState getLastMainState() const { return last_main_state_; }
-  [[nodiscard]] SubState getSubState() const { return current_sub_state_; }
-  [[nodiscard]] SubState getLastSubState() const { return last_sub_state_; }
-  [[nodiscard]] ChassisState getChassisState() const { return current_chassis_state_; }
-  [[nodiscard]] ChassisState getLastChassisState() const { return last_chassis_state_; }
-  [[nodiscard]] GimbalState getGimbalState() const { return current_gimbal_state_; }
-  [[nodiscard]] GimbalState getlastGimbalState() const { return last_gimbal_state_; }
-  [[nodiscard]] AmmoState getAmmoState() const { return current_ammo_state_; }
-  [[nodiscard]] AmmoState getlastAmmoState() const { return last_ammo_state_; }
-  [[nodiscard]] SubAmmoState getSubAmmoState() const { return current_subammo_state_; }
-  [[nodiscard]] SubAmmoState getlastSubAmmoState() const { return last_subammo_state_; }
+  [[nodiscard]] MainState getMainState_() const { return current_main_state_; }
+  [[nodiscard]] MainState getLastMainState_() const { return last_main_state_; }
+  [[nodiscard]] SubState getSubState_() const { return current_sub_state_; }
+  [[nodiscard]] SubState getLastSubState_() const { return last_sub_state_; }
+  [[nodiscard]] ChassisState getChassisState_() const { return current_chassis_state_; }
+  [[nodiscard]] ChassisState getLastChassisState_() const { return last_chassis_state_; }
+  [[nodiscard]] GimbalState getGimbalState_() const { return current_gimbal_state_; }
+  [[nodiscard]] GimbalState getlastGimbalState_() const { return last_gimbal_state_; }
+  [[nodiscard]] AmmoState getAmmoState_() const { return current_ammo_state_; }
+  [[nodiscard]] AmmoState getlastAmmoState_() const { return last_ammo_state_; }
+  [[nodiscard]] SubAmmoState getSubAmmoState_() const { return current_subammo_state_; }
+  [[nodiscard]] SubAmmoState getlastSubAmmoState_() const { return last_subammo_state_; }
 
  private:
   MainState current_main_state_{MainState::kOffline};
