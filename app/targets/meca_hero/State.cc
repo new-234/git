@@ -169,17 +169,17 @@ void StateMachine::DT7Switch() {
             case rm::device::DR16::SwitchPosition::kDown:  /// 普通遥控
               current_sub_state_ = SubState::kNormal;
               TestDialSwitch(globals->rc.dial(), current_chassis_state_, last_chassis_state_,
-                               ChassisState::kFollow);  /// 随动切换
+                             ChassisState::kFollow);  /// 随动切换
               break;
 
             case rm::device::DR16::SwitchPosition::kMid:  /// 超功率+上坡（应该直接加pitch无力
               TestDialSwitch(globals->rc.dial(), current_sub_state_, last_sub_state_,
-                               SubState::kOverPower);  /// 上坡切换
+                             SubState::kOverPower);  /// 上坡切换
               break;
 
             case rm::device::DR16::SwitchPosition::kUp:
               TestDialSwitch(globals->rc.dial(), current_sub_state_, last_sub_state_,
-                               SubState::kSnipe);  /// 上坡切换
+                             SubState::kSnipe);  /// 上坡切换
               break;
 
             default:
@@ -219,7 +219,7 @@ void StateMachine::DT7Switch() {
           break;
 
         case MainState::kGame:
-          GameState(); /// 比赛模式
+          GameState();  /// 比赛模式
           break;
         default:
           current_main_state_ = MainState::kOffline;
