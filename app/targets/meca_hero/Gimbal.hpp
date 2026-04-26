@@ -1,6 +1,5 @@
 #pragma once
 
-// #include "main.hpp"
 #include "State.hpp"
 #include "librm.hpp"
 #include "globals.hpp"
@@ -21,7 +20,7 @@ class GimbalHero {
  private:
   // 调参变量
   struct {
-    f32 gyro_rectification_{};  // 陀螺仪Z轴修正值
+    rm::f32 gyro_rectification_{};  // 陀螺仪Z轴修正值
     int pitch_ff_{};            // pitch轴PID前馈
   } hyperparameters_;
 
