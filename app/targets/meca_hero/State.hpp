@@ -133,7 +133,7 @@ class StateMachine {
    * @param now
    * @param last
    * @param tick
-   * @return bool
+   * @return int 0:失能 1:使能 2:使能中
    * @brief 当电管重新上电时，产生延迟，确保在等待使能状态足够久，确保模块成功使能
    */
   int RefereePowerManagement(const int &now, int &last, TickTimer &tick) {
