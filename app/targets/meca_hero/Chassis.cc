@@ -1,5 +1,23 @@
 #include "Chassis.hpp"
 
+void ChassisHero::Unabrling(){
+  globals->chassis_motor_fr.Setcurrent(0);
+  globals->chassis_motor_fl.Setcurrent(0);
+  globals->chassis_motor_ll.Setcurrent(0);
+  globals->chassis_motor_lr.Setcurrent(0);
+}
+
+void ChassisHero::Enabling(){
+  globals->chassis_motor_fr.Setcurrent(0);
+  globals->chassis_motor_fl.Setcurrent(0);
+  globals->chassis_motor_ll.Setcurrent(0);
+  globals->chassis_motor_lr.Setcurrent(0);
+}
+
+void ChassisHero::ChassisControl(){
+  
+}
+
 bool ChassisHero::EnableJudgement() {
   // 主状态检测
   if (globals->state_machine.getMainState_() == StateMachine::MainState::kOffline) {
@@ -26,13 +44,13 @@ bool ChassisHero::EnableJudgement() {
       return false;
     case StateMachine::ChassisState::kNormal:
       return true;
-    case StateMachine::ChassisState::kAimbot:
+    case StateMachine::ChassisState::kFollow:
       return true;
-    case StateMachine::ChassisState::kRadarAimbot:
-      return true;
+  
   }
 }
 
 void ChassisHero::ChassisUpdate() {
   if (!EnableJudgement()) return;
+  ChassisControl();
 }

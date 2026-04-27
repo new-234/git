@@ -12,4 +12,5 @@ class ChassisHero {
   bool EnableJudgement();
   void Unabling();
   void Enabling();
+  void ChassisControl();
 };

@@ -57,10 +57,16 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};  ///< 状态机
 
+  // 底盘电机
+  rm::device::M3508 chassis_motor_fr{globals_no_dtcm.can2, 1, flase};
+  rm::device::M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, flase};
+  rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, flase};
+  rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, flase};
+
   // 云台电机
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
       globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 5, true};
+  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can1, 5, true};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
