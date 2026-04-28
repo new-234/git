@@ -29,7 +29,7 @@ struct GlobalsNoDtcm {
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
   rm::hal::Serial<50> dbus{huart5, true, true}, usart1_ref{huart1, true, true},
       uart10_tc{huart10, true, true};  ///< 串口接口
-  CMS cms{can2}; ///< 超电
+  CMS cms{can2};                       ///< 超电
 
   rm::device::BMI088 imu{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};  ///< IMU
 
@@ -90,12 +90,12 @@ struct Globals {
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{
       globals_no_dtcm.can2, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // 摩擦轮电机
-    rm::device::M3508 shooter_motor_1{globals_no_dtcm.can1, 1, false};
-    rm::device::M3508 shooter_motor_2{globals_no_dtcm.can1, 2, false};
-    rm::device::M3508 shooter_motor_3{globals_no_dtcm.can1, 3, false};
-    rm::device::M3508 shooter_motor_4{globals_no_dtcm.can1, 4, false};
-    rm::device::M3508 shooter_motor_5{globals_no_dtcm.can1, 5, false};
-    rm::device::M3508 shooter_motor_6{globals_no_dtcm.can1, 6, false};
+  rm::device::M3508 shooter_motor_1{globals_no_dtcm.can1, 1, false};
+  rm::device::M3508 shooter_motor_2{globals_no_dtcm.can1, 2, false};
+  rm::device::M3508 shooter_motor_3{globals_no_dtcm.can1, 3, false};
+  rm::device::M3508 shooter_motor_4{globals_no_dtcm.can1, 4, false};
+  rm::device::M3508 shooter_motor_5{globals_no_dtcm.can1, 5, false};
+  rm::device::M3508 shooter_motor_6{globals_no_dtcm.can1, 6, false};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统

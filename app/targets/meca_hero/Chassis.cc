@@ -44,23 +44,26 @@ void ChassisHero::IfOverPower() {
     overpower_count = 400;
   }
 
-  globals->power_model.DistributePower<4>(globals->motor_states, globals->initial_currents, power_limit, globals->output_currents);
+  globals->power_model.DistributePower<4>(globals->motor_states, globals->initial_currents, power_limit,
+                                          globals->output_currents);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     if (globals->ref.data().power_heat_data.buffer_energy <= 15) {
       for (int i = 0; i < 4; i++)
-        globals->chassis_motor[i].SetCurrent(
-            static_cast<int16_t>(globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / (60 * 2)));
+        globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(
+            globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / (60 * 2)));
     } else {
-      for (int i = 0; i < 4; i++) globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
+      for (int i = 0; i < 4; i++)
+        globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     }
   } else {
     if (globals_no_dtcm.cms.cms_v >= 25.0) {
-      for (int i = 0; i < 4; i++) globals->chassis_motor[i]->SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
+      for (int i = 0; i < 4; i++)
+        globals->chassis_motor[i]->SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     } else {
       for (int i = 0; i < 4; i++)
-        globals->chassis_motor[i].SetCurrent(
-            static_cast<int16_t>(globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / 60));
+        globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(
+            globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / 60));
     }
   }
 }
