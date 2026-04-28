@@ -27,7 +27,7 @@ void StateMachine::GameState() {
     chassis_power_management_last_flag_ = 0;
     current_main_state_ = MainState::kOffline;
     return;
-  } else if (!globals->ref_manager.all_device_ok() || !globals->tc_manager.all_device_ok()) {
+  } else if (/*!globals->ref_manager.all_device_ok() ||*/ !globals->tc_manager.all_device_ok()) {
     current_main_state_ = MainState::kOffline;
     return;
   } else if (!globals->gimbal_manager.all_device_ok()) {
@@ -151,6 +151,7 @@ void StateMachine::GameState() {
  *@brief:DT7遥控器切换状态
  */
 void StateMachine::DT7Switch() {
+  // 右拨杆
   switch (StateMachine::rc_switch_position_r) {
     case rm::device::DR16::SwitchPosition::kUnknown:  /// 保险
       current_main_state_ = MainState::kOffline;

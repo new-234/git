@@ -138,7 +138,7 @@ class StateMachine {
    */
   int RefereePowerManagement(const int &now, int &last, TickTimer &tick) {
     if (now && !last) {
-      if (!Waiting(waiting_count_ * 3, tick)) {  // 延时3s
+      if (!Waiting(waiting_count_ * 2, tick)) {  // 延时3s
         return 2;                                // 测试用
       }
     } else {
