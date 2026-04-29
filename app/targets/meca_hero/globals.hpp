@@ -29,7 +29,7 @@ struct GlobalsNoDtcm {
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
   rm::hal::Serial<50> dbus{huart5, true, true}, usart1_ref{huart1, true, true},
       uart10_tc{huart10, true, true};  ///< 串口接口
-  CMS cms{can2};                       ///< 超电
+  CMS cms{can1};                       ///< 超电
 
   rm::device::BMI088 imu{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};  ///< IMU
 
