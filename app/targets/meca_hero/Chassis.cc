@@ -59,7 +59,7 @@ void ChassisHero::IfOverPower() {
   } else {
     if (globals_no_dtcm.cms.cms_v >= 25.0) {
       for (int i = 0; i < 4; i++)
-        globals->chassis_motor[i]->SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
+        globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     } else {
       for (int i = 0; i < 4; i++)
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(

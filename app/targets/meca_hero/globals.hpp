@@ -12,6 +12,9 @@
 #include "State.hpp"
 #include "CMS.H"
 
+class ChassisHero;
+class GimbalHero;
+
 /**
  * STM32H7的DTCM区域只能被CPU访问，不能被DMA访问，所以需要开一块在DTCM之外的全局数据区域，专门放一些需要被DMA访问的对象
  * 注意linker script里要相应的开一块放在RAM_D1里的区域sram4：
@@ -64,10 +67,11 @@ struct Globals {
   // rm::device::M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, false};
   // rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
   // rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
-  rm::device::M3508 chassis_motor[4] = {{globals_no_dtcm.can2, 1, false},
-                                        {globals_no_dtcm.can2, 2, false},
-                                        {globals_no_dtcm.can2, 3, false},
-                                        {globals_no_dtcm.can2, 4, false}};
+  ChassisHero *chassis_hero;
+  rm::device::M3508 chassis_motor[4] = {{globals_no_dtcm.can1, 1, false},
+                                        {globals_no_dtcm.can1, 2, false},
+                                        {globals_no_dtcm.can1, 3, false},
+                                        {globals_no_dtcm.can1, 4, false}};
   rm::modules::PID velocity_pids[4] = {
       {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
   std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
@@ -81,21 +85,22 @@ struct Globals {
   rm::modules::PID pid_chassis_follow_vel{23, 0, 0.21, 16000, 0};
 
   // 云台电机
+  GimbalHero *gimbal_hero;
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
-      globals_no_dtcm.can2, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can1, 5, true};
+      globals_no_dtcm.can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 7, true};
 
   // 发射机构
   // 拨盘电机
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{
-      globals_no_dtcm.can2, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
+      globals_no_dtcm.can1, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // 摩擦轮电机
-  rm::device::M3508 shooter_motor_1{globals_no_dtcm.can1, 1, false};
-  rm::device::M3508 shooter_motor_2{globals_no_dtcm.can1, 2, false};
-  rm::device::M3508 shooter_motor_3{globals_no_dtcm.can1, 3, false};
-  rm::device::M3508 shooter_motor_4{globals_no_dtcm.can1, 4, false};
-  rm::device::M3508 shooter_motor_5{globals_no_dtcm.can1, 5, false};
-  rm::device::M3508 shooter_motor_6{globals_no_dtcm.can1, 6, false};
+  rm::device::M3508 shooter_motor_1{globals_no_dtcm.can2, 1, false};
+  rm::device::M3508 shooter_motor_2{globals_no_dtcm.can2, 2, false};
+  rm::device::M3508 shooter_motor_3{globals_no_dtcm.can2, 3, false};
+  rm::device::M3508 shooter_motor_4{globals_no_dtcm.can2, 4, false};
+  rm::device::M3508 shooter_motor_5{globals_no_dtcm.can2, 5, false};
+  rm::device::M3508 shooter_motor_6{globals_no_dtcm.can2, 6, false};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统

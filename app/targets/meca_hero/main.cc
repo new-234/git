@@ -1,3 +1,5 @@
+#include "Chassis.hpp"
+#include "Gimbal.hpp"
 #include "common/bsp/timer_task.hpp"
 #include "adc.h"
 #include "globals.hpp"
@@ -25,7 +27,11 @@ void SubLoop500hz() {
   globals->ammo_manager.Update();
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
+  globals->chassis_hero->ChassisUpdate();
 }
+
+/*---------------------------------------------------1000HZ---------------------------------------------------*/
+void SubLoop1000hz() { globals->gimbal_hero->GimbalUpdate(); }
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
 /**
@@ -37,11 +43,14 @@ void MainLoop2khz() {
   // 状态机更新
   globals->state_machine.StateUpdate();
 
-  if (loop_divisor % 20 == 0) {  // 100hz
+  if (loop_divisor % 20 == 0) { // 100hz
     SubLoop100hz();
   }
   if (loop_divisor % 4 == 1) {  // 500hz
     SubLoop500hz();
+  }
+  if (loop_divisor % 2 == 0) {  // 1000hz
+    SubLoop1000hz();
   }
 
   loop_divisor = (loop_divisor + 1) % 2000;
