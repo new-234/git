@@ -160,6 +160,8 @@ struct Globals {
     ref_manager << &ref;
     tc_manager << &tc;
     rc_manager << &rc;
+    chassis_manager << &chassis_motor[0] << &chassis_motor[1] << &chassis_motor[2] << &chassis_motor[3] << &chassis_motor[4];
+    ammo_manager << &shooter_motor_1 << &shooter_motor_2 << &shooter_motor_3 << &shooter_motor_4 << &shooter_motor_5 << &shooter_motor_6;
 
     buzzer.Init();
     led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
