@@ -89,7 +89,7 @@ void StateMachine::GameState() {
   }
   if (/*!globals->ref_manager.all_device_ok() ||*/ !globals->tc_manager.all_device_ok()) {
     // current_main_state_ = MainState::kOffline;
-    return;
+    // return;
   }
   if (!globals->gimbal_manager.all_device_ok()) {
     // current_gimbal_state_ = GimbalState::kOffline;
@@ -148,7 +148,7 @@ void StateMachine::GameState() {
           break;
 
         case (1):
-          if (follow) {
+          if (follow_out) {
             current_chassis_state_ = ChassisState::kFollow;
           } else {
             current_chassis_state_ = ChassisState::kNormal;
@@ -341,7 +341,7 @@ void StateMachine::StateUpdate() {
 
   /*---------------------------------------------------模块 状态位---------------------------------------------------*/
   // static bool follow{true};  ///< 随动标志位
-  if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow_out = !follow_out;
 
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
