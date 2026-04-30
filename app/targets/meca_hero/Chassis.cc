@@ -70,7 +70,9 @@ void ChassisHero::Remote() {
       Vw = 0;
     }
   } else {
-    Vw = globals->rc.left_x() * 7000 / 660;
+    if (globals->state_machine.getChassisState_() != StateMachine::ChassisState::kFollow) {
+      Vw = globals->rc.left_x() * 7000 / 660;
+    }
     Vy = globals->rc.left_y() * 8500 / 660;
   }
 

@@ -79,8 +79,8 @@ struct Globals {
   // 输出电流
   float output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{600, 0, 0, 1500, 0};
-  modules::PID pid_chassis_follow_vel{23, 0, 0.21, 16000, 0};
+  modules::PID pid_chassis_follow_pos{600, 0, 5, 1500, 0};
+  modules::PID pid_chassis_follow_vel{23, 0, 0.1, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------
    */
@@ -91,8 +91,8 @@ struct Globals {
   // PID
   modules::PID pid_yaw_position{30, 0, 0, 15, 0};
   modules::PID pid_yaw_velocity{10, 0, 0.01, 9, 0};
-  modules::PID pid_pitch_position{60, 0.5, 10, 1, 0.1};
-  modules::PID pid_pitch_velocity{0, 0, 0, 16000, 500};
+  modules::PID pid_pitch_position{60, 0.0, 0, 1, 0.1};
+  modules::PID pid_pitch_velocity{5000, 20, 40, 16000, 4000};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
@@ -103,7 +103,7 @@ struct Globals {
                                                    {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // PID
   modules::PID pid_magz_position{42, 0.001, 0.56, 24, 0};
-  modules::PID pid_magz_velocity{0.505, 0, 0.00002, 7, 0};
+  modules::PID pid_magz_velocity{0.35, 0, 0.001, 7, 0};
 
   // 摩擦轮电机
   M3508 shooter_motor_1{can2, 1, false};
@@ -214,10 +214,15 @@ inline float pitch_pos_pid_out{0};
 inline float pitch_vel_pid_out{0};
 inline float target_pitch{0};
 
+// 随动
+inline float follow_out{0};
+
 // 摩擦轮电机
 inline float limit{0};
 inline float V1{0};
 inline float V2{0};
+
+inline i16 dial{0};
 
 // 状态机
 inline StateMachine::MainState main_state;

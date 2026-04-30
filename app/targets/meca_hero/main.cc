@@ -83,6 +83,10 @@ void MainLoop2khz() {
   V2 = globals->ammo_hero->V_shooter_2;
   limit = globals->ammo_hero->limit;
 
+  dial = globals->rc.dial();
+
+  follow_out = globals->pid_chassis_follow_vel.out();
+
   if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();
   }

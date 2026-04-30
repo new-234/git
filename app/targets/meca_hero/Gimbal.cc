@@ -11,7 +11,7 @@ void GimbalHero::Unabling() {
   globals->gimbal_motor_pitch.SetCurrent(0);
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
   target_yaw = -globals->ahrs.euler_angle().yaw;
-  target_pitch = globals->ahrs.euler_angle().pitch;
+  target_pitch = -globals->ahrs.euler_angle().pitch;
 }
 
 /**
@@ -109,13 +109,13 @@ void GimbalHero::GimbalControl() {
 
 bool GimbalHero::EnableJudgement() {
   // 监测
-  yaw_pos = globals->ahrs.euler_angle().yaw;
+  yaw_pos = -globals->ahrs.euler_angle().yaw;
   yaw_vel = -globals_no_dtcm.imu->gyro_z() - hyperparameters_.gyro_rectification_;
   yaw_pos_pid_out = globals->pid_yaw_position.out();
   yaw_vel_pid_out = globals->pid_yaw_velocity.out();
   ::target_yaw = target_yaw;
 
-  pitch_pos = globals->ahrs.euler_angle().pitch;
+  pitch_pos = -globals->ahrs.euler_angle().pitch;
   pitch_vel = globals_no_dtcm.imu->gyro_x();
   pitch_pos_pid_out = globals->pid_pitch_position.out();
   pitch_vel_pid_out = globals->pid_pitch_velocity.out();
