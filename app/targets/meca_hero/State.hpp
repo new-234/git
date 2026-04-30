@@ -121,8 +121,6 @@ class StateMachine {
   rm::f32 next_angle{0}; ///< 初始位
 
  private:
-
-
   MainState current_main_state_{MainState::kOffline};
   MainState last_main_state_{MainState::kOffline};
   TickTimer main_tick_;
@@ -183,8 +181,6 @@ class StateMachine {
       return now;
     }
   }
-
-
 
   /**
    * @brief Test模式下的拨轮状态切换
