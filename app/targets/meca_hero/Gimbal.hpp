@@ -21,7 +21,7 @@ class GimbalHero {
   // 调参变量
   struct {
     rm::f32 gyro_rectification_{0.0};  // 陀螺仪Z轴修正值
-    int pitch_ff_{0};                // pitch轴PID前馈
+    int pitch_ff_{0};                  // pitch轴PID前馈
   } hyperparameters_;
   // 遥控值
   float target_yaw;
