@@ -119,8 +119,6 @@ class StateMachine {
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
  private:
-
-
   MainState current_main_state_{MainState::kOffline};
   MainState last_main_state_{MainState::kOffline};
   TickTimer main_tick_;
@@ -177,8 +175,6 @@ class StateMachine {
       return now;
     }
   }
-
-
 
   /**
    * @brief Test模式下的拨轮状态切换
