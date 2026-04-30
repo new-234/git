@@ -21,7 +21,7 @@ void GimbalHero::AhrsUpdate() {
   globals_no_dtcm.imu->Update();
   // 右手坐标系（前 x，左 y，上 z）
   globals->ahrs.Update(rm::modules::ImuData6Dof{
-      -globals_no_dtcm.imu->gyro_y(),globals_no_dtcm.imu->gyro_x(),
+      -globals_no_dtcm.imu->gyro_y(), globals_no_dtcm.imu->gyro_x(),
       globals->gyro_z =
           globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
       -globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_z()});
