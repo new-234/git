@@ -48,7 +48,8 @@ void SubLoop500hz() {
 void SubLoop1000hz() {
   // 状态机更新
   globals->state_machine.StateUpdate();
-  globals->gimbal_hero->GimbalUpdate(); }
+  globals->gimbal_hero->GimbalUpdate();
+}
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
 /**
@@ -56,7 +57,6 @@ void SubLoop1000hz() {
  */
 void MainLoop2khz() {
   static size_t loop_divisor = 0;
-
 
   // 状态机监测
   main_state = globals->state_machine.getMainState_();

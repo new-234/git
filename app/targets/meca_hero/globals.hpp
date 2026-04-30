@@ -156,7 +156,6 @@ struct Globals {
     can2.SetFilter(0, 0);
     can2.Begin();
 
-
     // 裁判系统串口接收
     const hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
@@ -172,7 +171,6 @@ struct Globals {
       }
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
-
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
