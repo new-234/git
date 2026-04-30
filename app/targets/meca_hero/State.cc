@@ -33,8 +33,8 @@ void StateMachine::GameState() {
     return;
   }
   if (!globals->gimbal_manager.all_device_ok()) {
-    current_gimbal_state_ = GimbalState::kOffline;
-    return;
+    // current_gimbal_state_ = GimbalState::kOffline;
+    // return;
   }
   // if (!globals->chassis_manager.all_device_ok()) {
   //   current_chassis_state_ = ChassisState::kOffline;
@@ -284,10 +284,10 @@ void StateMachine::StateUpdate() {
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
-  radar_aimbot = globals->tc.data().right_button;  ///< 部署模式下的雷达自瞄
+  radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
   fire = globals->tc.data().keyboard_key &
-         static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl);  ///< 允许自瞄开火标志位
+         static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl)||globals->rc.key(DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/
   // 图传最高优先级，图传在C强制失能，S强制进入比赛并进入子模式

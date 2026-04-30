@@ -171,6 +171,12 @@ struct Globals {
 inline float eulerangle_yaw{0};
 inline float eulerangle_pitch{0};
 inline float eulerangle_roll{0};
+inline float gyro_x{0};
+inline float gyro_y{0};
+inline float gyro_z{0};
+inline float accel_x{0};
+inline float accel_y{0};
+inline float accel_z{0};
 inline StateMachine::MainState main_state;
 inline StateMachine::SubState sub_state;
 inline StateMachine::ChassisState chassis_state;

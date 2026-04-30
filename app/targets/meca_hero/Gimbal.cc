@@ -19,16 +19,23 @@ void GimbalHero::Unabling() {
  */
 void GimbalHero::AhrsUpdate() {
   globals_no_dtcm.imu->Update();
+  // 右手坐标系（前 x，左 y，上 z）
   globals->ahrs.Update(rm::modules::ImuData6Dof{
-      globals_no_dtcm.imu->gyro_x(), globals_no_dtcm.imu->gyro_y(),
+      -globals_no_dtcm.imu->gyro_y(),globals_no_dtcm.imu->gyro_x(),
       globals->gyro_z =
           globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
-      globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_z()});
+      -globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_z()});
 
   // 监测
   eulerangle_yaw = globals->ahrs.euler_angle().yaw;
   eulerangle_pitch = globals->ahrs.euler_angle().pitch;
   eulerangle_roll = globals->ahrs.euler_angle().roll;
+  gyro_x = globals_no_dtcm.imu->gyro_x();
+  gyro_y = globals_no_dtcm.imu->gyro_y();
+  gyro_z = globals_no_dtcm.imu->gyro_z();
+  accel_x = globals_no_dtcm.imu->accel_x();
+  accel_y = globals_no_dtcm.imu->accel_y();
+  accel_z = globals_no_dtcm.imu->accel_z();
 }
 
 void GimbalHero::AimbotControl() {}

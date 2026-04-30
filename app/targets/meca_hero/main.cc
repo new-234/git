@@ -11,6 +11,8 @@ volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
+
+
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
   globals->led.SetColor(r, g, b);
@@ -27,6 +29,7 @@ void SubLoop500hz() {
   globals->rc_manager.Update();
   globals->ammo_manager.Update();
 
+
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
 
@@ -40,6 +43,7 @@ void SubLoop500hz() {
 
 /*---------------------------------------------------1000HZ---------------------------------------------------*/
 void SubLoop1000hz() {
+
   globals->gimbal_hero->GimbalUpdate();
 }
 
