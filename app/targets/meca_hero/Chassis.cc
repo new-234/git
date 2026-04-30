@@ -105,8 +105,8 @@ void ChassisHero::IfOverPower() {
 void ChassisHero::MotorState() {
   // 构建电机状态
   for (int i = 0; i < 4; i++) {
-    globals->velocity_pids[i].Update(V_wheel[i], globals->chassis_motor[i].rpm());
-    globals->initial_currents[i] = globals->velocity_pids[i].out();
+    globals->velocity_pid[i].Update(V_wheel[i], globals->chassis_motor[i].rpm());
+    globals->initial_currents[i] = globals->velocity_pid[i].out();
 
     (globals->motor_states)[i].speed_rpm = globals->chassis_motor[i].rpm();
     (globals->motor_states)[i].give_current = globals->initial_currents[i];
