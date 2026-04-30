@@ -24,14 +24,24 @@ void SubLoop500hz() {
   globals->chassis_manager.Update();
   globals->ref_manager.Update();
   globals->tc_manager.Update();
+  globals->rc_manager.Update();
   globals->ammo_manager.Update();
+
+  // 底盘更新
+  globals->chassis_hero->ChassisUpdate();
+
+  // 发送Dji电机控制帧
+  rm::device::DjiMotorBase::SendCommand();
+
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
   globals->chassis_hero->ChassisUpdate();
 }
 
 /*---------------------------------------------------1000HZ---------------------------------------------------*/
-void SubLoop1000hz() { globals->gimbal_hero->GimbalUpdate(); }
+void SubLoop1000hz() {
+  globals->gimbal_hero->GimbalUpdate();
+}
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
 /**
@@ -42,8 +52,6 @@ void MainLoop2khz() {
 
   // 状态机更新
   globals->state_machine.StateUpdate();
-  globals->chassis_hero->ChassisUpdate();
-  globals->gimbal_hero->GimbalUpdate();
   // 状态机监测
   main_state = globals->state_machine.getMainState_();
   sub_state = globals->state_machine.getSubState_();

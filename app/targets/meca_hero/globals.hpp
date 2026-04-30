@@ -63,10 +63,13 @@ struct Globals {
   // rm::device::M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, false};
   // rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
   // rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
+
   ChassisHero *chassis_hero{nullptr};
   rm::device::M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
+
   rm::modules::PID velocity_pids[4] = {
       {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
+
   std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
   rm::modules::MotorPowerModel power_model{rm::modules::MotorPowerModel::kM3508};
   // 初始电流
@@ -118,6 +121,7 @@ struct Globals {
   rm::device::DeviceManager<7> ammo_manager;
   rm::device::DeviceManager<1> ref_manager;
   rm::device::DeviceManager<1> tc_manager;
+  rm::device::DeviceManager<1> rc_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -155,6 +159,7 @@ struct Globals {
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
     ref_manager << &ref;
     tc_manager << &tc;
+    rc_manager << &rc;
 
     buzzer.Init();
     led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
