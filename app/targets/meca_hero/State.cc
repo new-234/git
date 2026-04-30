@@ -27,19 +27,23 @@ void StateMachine::GameState() {
     chassis_power_management_last_flag_ = 0;
     current_main_state_ = MainState::kOffline;
     return;
-  } else if (/*!globals->ref_manager.all_device_ok() ||*/ !globals->tc_manager.all_device_ok()) {
-    current_main_state_ = MainState::kOffline;
-    return;
-  } else if (!globals->gimbal_manager.all_device_ok()) {
-    current_gimbal_state_ = GimbalState::kOffline;
-    return;
-  } else if (!globals->chassis_manager.all_device_ok()) {
-    current_chassis_state_ = ChassisState::kOffline;
-    return;
-  } else if (!globals->ammo_manager.all_device_ok()) {
-    current_ammo_state_ = AmmoState::kOffline;
+  }
+  if (/*!globals->ref_manager.all_device_ok() ||*/ !globals->tc_manager.all_device_ok()) {
+    // current_main_state_ = MainState::kOffline;
     return;
   }
+  if (!globals->gimbal_manager.all_device_ok()) {
+    current_gimbal_state_ = GimbalState::kOffline;
+    return;
+  }
+  // if (!globals->chassis_manager.all_device_ok()) {
+  //   current_chassis_state_ = ChassisState::kOffline;
+  //   return;
+  // }
+  // if (!globals->ammo_manager.all_device_ok()) {
+  //   current_ammo_state_ = AmmoState::kOffline;
+  //   return;
+  // }
 
   /*---------------------------------------------------主状态----------------------------------------------------*/
   switch (current_main_state_) {
@@ -135,7 +139,7 @@ void StateMachine::GameState() {
 
         case (1):
           current_ammo_state_ = AmmoState::kNormal;
-          wait_ AmmoSubState();
+          // wait_ AmmoSubState();
           break;
 
         case (2):
@@ -174,13 +178,22 @@ void StateMachine::DT7Switch() {
 
         case MainState::kEnableWaiting:
           // if (!waiting_first_flag) waiting_first_flag = true;
-          if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kTest;
+          if (Waiting(waiting_count_ / 10, main_tick_)) {
+            current_main_state_ = MainState::kTest;
+            current_sub_state_ = SubState::kNormal;
+            current_chassis_state_ = ChassisState::kNormal;
+            current_gimbal_state_ = GimbalState::kNormal;
+            current_ammo_state_ = AmmoState::kNormal;
+          }
           break;
 
         case MainState::kTest:
           switch (rc_switch_position_l) {
             case rm::device::DR16::SwitchPosition::kDown:  /// 普通遥控
               current_sub_state_ = SubState::kNormal;
+              // current_chassis_state_ = ChassisState::kNormal;
+              current_gimbal_state_ = GimbalState::kNormal;
+              current_ammo_state_ = AmmoState::kNormal;
               TestDialSwitch(globals->rc.dial(), current_chassis_state_, last_chassis_state_,
                              ChassisState::kFollow);  /// 随动切换
               break;
@@ -228,10 +241,17 @@ void StateMachine::DT7Switch() {
 
         case MainState::kEnableWaiting:
           // if (!waiting_first_flag) waiting_first_flag = true;
-          if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
+          if (Waiting(waiting_count_ / 10, main_tick_)) {
+            current_main_state_ = MainState::kGame;
+            current_sub_state_ = SubState::kNormal;
+            current_chassis_state_ = ChassisState::kNormal;
+            current_gimbal_state_ = GimbalState::kNormal;
+            current_ammo_state_ = AmmoState::kNormal;
+          }
           break;
 
         case MainState::kGame:
+          current_main_state_ = MainState::kGame;
           GameState();  /// 比赛模式
           break;
         default:
@@ -277,6 +297,7 @@ void StateMachine::StateUpdate() {
     return;
 
   } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {  // Game
+    current_main_state_ = MainState::kGame;
     GameState();
     return;
   }

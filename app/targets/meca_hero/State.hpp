@@ -67,12 +67,16 @@ class StateMachine {
   [[nodiscard]] SubState getLastSubState_() const { return last_sub_state_; }
   [[nodiscard]] ChassisState getChassisState_() const { return current_chassis_state_; }
   [[nodiscard]] ChassisState getLastChassisState_() const { return last_chassis_state_; }
+  void setChassisState(ChassisState state) { current_chassis_state_ = state; }
   [[nodiscard]] GimbalState getGimbalState_() const { return current_gimbal_state_; }
   [[nodiscard]] GimbalState getlastGimbalState_() const { return last_gimbal_state_; }
+  void setGimbalState(GimbalState state) { current_gimbal_state_ = state; }
   [[nodiscard]] AmmoState getAmmoState_() const { return current_ammo_state_; }
   [[nodiscard]] AmmoState getlastAmmoState_() const { return last_ammo_state_; }
+  void setAmmoState(AmmoState state) { current_ammo_state_ = state; }
   [[nodiscard]] SubAmmoState getSubAmmoState_() const { return current_subammo_state_; }
   [[nodiscard]] SubAmmoState getlastSubAmmoState_() const { return last_subammo_state_; }
+  void setSubAmmoState(SubAmmoState state) { current_subammo_state_ = state; }
 
  private:
   /**
