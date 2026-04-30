@@ -1,19 +1,24 @@
 #pragma once
 
-#include "librm.hpp"
+#include "State.hpp"
 #include "globals.hpp"
 
-class AmmoShooter {
-public:
-  AmmoShooter() = default;
+class AmmoHero {
+ public:
+  AmmoHero() = default;
 
   void AmmoUpdate();
-  void AmmoSubState();
 
-private:
-  f32 now_angle{0};
-  f32 next_angle{0}; ///< 初始位
-  int waiting_count_{100}; ///< 打弹间隔
+ private:
+  rm::i16 limit{-3000};
+  int16_t shooter_m{0};
+  rm::i16 V_shooter_1 = -4605;
+  rm::i16 V_shooter_2 = -3770;  // 12m/s
 
-  StateMachine::TickTimer ammo_sub_tick_;
+  bool EnableJudgement();
+  void Unabling();
+  void Enabling();
+  void AmmoControl();
+  void ShooterControl();
+  void MagzineControl();
 };

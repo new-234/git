@@ -1,65 +1,147 @@
 #include "AmmoShooter.hpp"
 
-/**
- * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
- */
-void AmmoShooter::AmmoSubState() {
-  switch (globals->state_machine.getlastAmmoSubState_()) {
+void AmmoHero::Unabling() {
+  globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
+  globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kDisable);
+  if (globals->shooter_motor_6.rpm() < limit) {
+    globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
+    globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
+    globals->pid_shooter_3.Update(limit, globals->shooter_motor_3.rpm());
+    globals->pid_shooter_4.Update(limit, globals->shooter_motor_4.rpm());
+    globals->pid_shooter_5.Update(limit, globals->shooter_motor_5.rpm());
+    globals->pid_shooter_6.Update(limit, globals->shooter_motor_6.rpm());
+    globals->shooter_motor_1.SetCurrent(globals->pid_shooter_1.out());
+    globals->shooter_motor_2.SetCurrent(globals->pid_shooter_2.out());
+    globals->shooter_motor_3.SetCurrent(globals->pid_shooter_3.out());
+    globals->shooter_motor_4.SetCurrent(globals->pid_shooter_4.out());
+    globals->shooter_motor_5.SetCurrent(globals->pid_shooter_5.out());
+    globals->shooter_motor_6.SetCurrent(globals->pid_shooter_6.out());
+  } else {
+    globals->shooter_motor_1.SetCurrent(0);
+    globals->shooter_motor_2.SetCurrent(0);
+    globals->shooter_motor_3.SetCurrent(0);
+    globals->shooter_motor_4.SetCurrent(0);
+    globals->shooter_motor_5.SetCurrent(0);
+    globals->shooter_motor_6.SetCurrent(0);
+  }
+}
+
+void AmmoHero::Enabling() {
+  globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kEnable);
+}
+
+bool AmmoHero::EnableJudgement() {
+  // 主状态检测
+  if (globals->state_machine.getMainState_() == StateMachine::MainState::kOffline) {
+    Unabling();
+    return false;
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
+    Enabling();
+    return false;
+  }
+  // Ammo状态检测
+  switch (globals->state_machine.getAmmoState_()) {
     default:
-      globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kInit);
-      break;
+      Unabling();
+      return false;
+    case StateMachine::AmmoState::kOffline:
+      Unabling();
+      return false;
+    case StateMachine::AmmoState::kNoForce:
+      Unabling();
+      return false;
+    case StateMachine::AmmoState::kEnableWaiting:
+      Unabling();
+      Enabling();
+      return false;
+    case StateMachine::AmmoState::kNormal:
+      return true;
+    case StateMachine::AmmoState::kSnipe:
+      return true;
+  }
+}
 
-    case StateMachine::AmmoSubState::kInit:
-      now_angle = globals->magazine_motor.pos();
-      // 检测当前角度，防止大幅转动
-      while (next_angle < globals->magazine_motor.pos()) {
-        next_angle += 1.0472 /*（π/3）*/;
-      }
-      while (next_angle > globals->magazine_motor.pos()) {
-        next_angle -= 1.0472 /*（π/3）*/;
-      }
-      if (next_angle < -3.141593) {
-        next_angle += 2 * 3.141593;
-      }
-      globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kReady);
-      break;
-      // 使能
-      // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kClearError);
-      // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kEnable);
-
-    case StateMachine::AmmoSubState::kReady:
-      if ((globals->rc.dial() >= 500 || globals->rc.dial() < -500 || globals->rc.mouse_button_left() ||
-               globals->tc.data().mouse_button_left /*|| globals->custom_client->mouse_left()*/ /*||
-               (globals->aimbot_can_communicator->aimbot_state() == 0x03 &&
-                 globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/) &&
-              (globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-               globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100) &&
-              (globals->shooter_motor_1.rpm() < -3000 && globals->shooter_motor_4.rpm() < -3000)) {
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kFire);
-      }
-      break;
-
-    case StateMachine::AmmoSubState::kFire:
-      // 堵转检测
-      if (globals->state_machine.Waiting(waiting_count_, ammo_sub_tick_)) {
-        if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
-          now_angle = globals->magazine_motor.pos() + 3.141593 / 18;
-        } else {
-          next_angle -= 3.141593 / 3;
-          if (next_angle < -3.141593) {
-            next_angle += 2 * 3.141593;
-          }
-        }
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kCooling);
+void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
+  if (key_once_tc(device::VT03::KeyboardKey::kE)) {
+    shooter_m -= 10;
+  }
+  if (key_once_tc(device::VT03::KeyboardKey::kQ)) {
+    shooter_m += 10;
+  }
+  // 目标速度PID
+  switch (globals->state_machine.getAmmoState_()) {
+    default:
+      Unabling();
+    case StateMachine::AmmoState::kNormal:
+      if (globals->shooter_motor_6.rpm() > limit) {
+        globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_3.Update(limit, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_4.Update(limit, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_5.Update(limit, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_6.Update(limit, globals->shooter_motor_6.rpm());
+      } else {
+        globals->pid_shooter_1.Update(V_shooter_1 + 1.5 * shooter_m, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_2.Update(V_shooter_1 + 1.5 * shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_3.Update(V_shooter_1 + 1.5 * shooter_m, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_5.Update(V_shooter_2 + shooter_m, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       }
       break;
-
-    case StateMachine::AmmoSubState::kCooling:
-      if ((globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-           globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 120) ||
-          globals->tc.data().mouse_button_middle) { // 鼠标中键强制打弹
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kReady);
+    case StateMachine::AmmoState::kSnipe:
+      if (globals->shooter_motor_6.rpm() > limit) {
+        globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_3.Update(limit, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_4.Update(limit, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_5.Update(limit, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_6.Update(limit, globals->shooter_motor_6.rpm());
+      } else {
+        // 1:6675 2:5150
+        globals->pid_shooter_1.Update(V_shooter_1 + 1.5 * shooter_m - 1380 * 1.5, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_2.Update(V_shooter_1 + 1.5 * shooter_m - 1380 * 1.5, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_3.Update(V_shooter_1 + 1.5 * shooter_m - 1380 * 1.5, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m - 1380, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_5.Update(V_shooter_2 + shooter_m - 1380, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m - 1380, globals->shooter_motor_6.rpm());
       }
+      break;
   }
 
-  void AmmoShooter::AmmoUpdate() {}
+  // 给shooter电机发送指令
+  globals->shooter_motor_1.SetCurrent(static_cast<int16_t>(globals->pid_shooter_1.out()));
+  globals->shooter_motor_2.SetCurrent(static_cast<int16_t>(globals->pid_shooter_2.out()));
+  globals->shooter_motor_3.SetCurrent(static_cast<int16_t>(globals->pid_shooter_3.out()));
+  globals->shooter_motor_4.SetCurrent(static_cast<int16_t>(globals->pid_shooter_4.out()));
+  globals->shooter_motor_5.SetCurrent(static_cast<int16_t>(globals->pid_shooter_5.out()));
+  globals->shooter_motor_6.SetCurrent(static_cast<int16_t>(globals->pid_shooter_6.out()));
+}
+
+void AmmoHero::MagzineControl() {
+  switch (globals->state_machine.getAmmoSubState_()) {
+    default:
+      globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
+      break;
+    case StateMachine::AmmoSubState::kInit:
+      globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
+      break;
+    case StateMachine::AmmoSubState::kReady:
+      // 拨盘电机串级PID（开循环）
+      globals->pid_magz_position.SetCircular(true).SetCircularCycle(3.141593 * 2);
+      globals->pid_magz_position.Update(globals->state_machine.now_angle, globals->magazine_motor.pos(), 0.002);
+      globals->pid_magz_velocity.Update(globals->pid_magz_position.out(), globals->magazine_motor.vel(), 0.002);
+      globals->magazine_motor.SetMitCommand(0, 0, globals->pid_magz_velocity.out(), 0, 0);
+  }
+}
+
+void AmmoHero::AmmoControl() {
+  ShooterControl();
+  MagzineControl();
+}
+
+void AmmoHero::AmmoUpdate() {
+  if (!EnableJudgement()) return;
+  AmmoControl();
+}

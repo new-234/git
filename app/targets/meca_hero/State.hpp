@@ -1,7 +1,6 @@
 #pragma once
 
 #include "librm.hpp"
-#include "AmmoShooter.hpp"
 
 /**
  * @brife 状态机类
@@ -118,6 +117,9 @@ class StateMachine {
   [[nodiscard]] AmmoSubState getlastAmmoSubState_() const { return last_ammo_sub_state_; }
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
+  rm::f32 now_angle{0};
+  rm::f32 next_angle{0}; ///< 初始位
+
  private:
 
 
@@ -153,12 +155,16 @@ class StateMachine {
   int waiting_count_{0};  // 应为 1s 的主循环执行次数
   int count_{0};
 
+
+
   int gimbal_power_management_last_flag_{0};
   int ammo_power_management_last_flag_{0};
   int chassis_power_management_last_flag_{0};
 
   void DT7Switch();
   void GameState();
+  void AmmoSubState();
+
   /**
    *
    * @param now
