@@ -30,10 +30,10 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
 
-  rm::hal::Serial<127> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
+  hal::Serial<127> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
       uart10_tc{huart10, true, true};  ///< 串口接口
 
-  rm::device::BMI088 *imu{nullptr};  ///< IMU
+  BMI088 *imu{nullptr};  ///< IMU
 
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -54,74 +54,95 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};           ///< 状态机
-  rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
-  CMS cms{can1};                              ///< 超电
+  StateMachine state_machine{2000};       ///< 状态机
+  hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
+  CMS cms{can1};                          ///< 超电
 
-  // 底盘电机
-  // rm::device::M3508 chassis_motor_fr{globals_no_dtcm.can2, 1, false};
-  // rm::device::M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, false};
-  // rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
-  // rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
+  /* ------------------------------------------------底盘电机---------------------------------------------------------
+   */
+  // M3508 chassis_motor_fr{globals_no_dtcm.can2, 1, false};
+  // M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, false};
+  // M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
+  // M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
 
   ChassisHero *chassis_hero{nullptr};
-  rm::device::M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
+  M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
 
-  rm::modules::PID velocity_pids[4] = {
+  modules::PID velocity_pid[4] = {
       {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
 
-  std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
-  rm::modules::MotorPowerModel power_model{rm::modules::MotorPowerModel::kM3508};
+  std::array<modules::MotorPowerModel::MotorState, 4> motor_states;
+  modules::MotorPowerModel power_model{modules::MotorPowerModel::kM3508};
   // 初始电流
   float initial_currents[4];
   // 输出电流
   float output_currents[4];
   // 底盘随动
-  rm::modules::PID pid_chassis_follow_pos{600, 0, 0, 1500, 0};
-  rm::modules::PID pid_chassis_follow_vel{23, 0, 0.21, 16000, 0};
+  modules::PID pid_chassis_follow_pos{600, 0, 0, 1500, 0};
+  modules::PID pid_chassis_follow_vel{23, 0, 0.21, 16000, 0};
 
-  // 云台电机
+  /* ------------------------------------------------云台电机---------------------------------------------------------
+   */
   GimbalHero *gimbal_hero{nullptr};
-  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
+  DmMotor<DmMotorControlMode::kMit> gimbal_motor_yaw{
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
+  M3508 gimbal_motor_pitch{can2, 7, true};
+  // PID
+  modules::PID pid_yaw_position{30, 0, 0, 15, 0};
+  modules::PID pid_yaw_velocity{10, 0, 0.01, 9, 0};
+  modules::PID pid_pitch_position{60, 0.5, 10, 1, 0.1};
+  modules::PID pid_pitch_velocity{0, 0, 0, 16000, 500};
+  // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
+  // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
-  // 发射机构
+  /* ------------------------------------------------发射机构---------------------------------------------------------
+   */
   // 拨盘电机
-  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{
-      can1, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
+  DmMotor<DmMotorControlMode::kMit> magazine_motor{can1,
+                                                   {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
+  // PID
+  modules::PID pid_magz_position{42, 0.001, 0.56, 24, 0};
+  modules::PID pid_magz_velocity{0.505, 0, 0.00002, 7, 0};
+
   // 摩擦轮电机
-  rm::device::M3508 shooter_motor_1{can2, 1, false};
-  rm::device::M3508 shooter_motor_2{can2, 2, false};
-  rm::device::M3508 shooter_motor_3{can2, 3, false};
-  rm::device::M3508 shooter_motor_4{can2, 4, false};
-  rm::device::M3508 shooter_motor_5{can2, 5, false};
-  rm::device::M3508 shooter_motor_6{can2, 6, false};
+  M3508 shooter_motor_1{can2, 1, false};
+  M3508 shooter_motor_2{can2, 2, false};
+  M3508 shooter_motor_3{can2, 3, false};
+  M3508 shooter_motor_4{can2, 4, false};
+  M3508 shooter_motor_5{can2, 5, false};
+  M3508 shooter_motor_6{can2, 6, false};
+  // PID
+  modules::PID pid_shooter_1{30, 0.000001, 0, 10000, 1600};  // 20
+  modules::PID pid_shooter_2{30, 0.000001, 0, 10000, 1600};  // 20
+  modules::PID pid_shooter_3{30, 0.000001, 0, 10000, 1600};
+  modules::PID pid_shooter_4{30, 0.000001, 0, 10000, 1600};
+  modules::PID pid_shooter_5{30, 0.000001, 0, 10000, 1600};
+  modules::PID pid_shooter_6{30, 0.000001, 0, 10000, 1600};
 
-  rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
-  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::VT03 tc;                                             ///< 图传
+  DR16 rc{globals_no_dtcm.dbus};           ///< DT7
+  Referee<RefereeRevision::kNewV120> ref;  ///< 裁判系统
+  VT03 tc;                                 ///< 图传
 
-  rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
-  rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
+  modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  modules::LowPassFilterConstDt<float> gyro_z_filter;
 
   Buzzer buzzer;  ///< 蜂鸣器
-  rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
-                                rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
-                                rm::modules::buzzer_melody::TheLick>
+  modules::BuzzerController<modules::buzzer_melody::Silent, modules::buzzer_melody::Beeps<1>,
+                            modules::buzzer_melody::Beeps<2>, modules::buzzer_melody::Startup,
+                            modules::buzzer_melody::TheLick>
       buzzer_controller;
-  WS2812Led led;                                                        ///< WS2812 LED灯
-  rm::modules::RgbLedController<rm::modules::led_pattern::Off,          //
-                                rm::modules::led_pattern::GreenBreath,  //
-                                rm::modules::led_pattern::RedFlash>
+  WS2812Led led;                                                ///< WS2812 LED灯
+  modules::RgbLedController<modules::led_pattern::Off,          //
+                            modules::led_pattern::GreenBreath,  //
+                            modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器
 
-  rm::device::DeviceManager<2> gimbal_manager;
-  rm::device::DeviceManager<4> chassis_manager;
-  rm::device::DeviceManager<7> ammo_manager;
-  rm::device::DeviceManager<1> ref_manager;
-  rm::device::DeviceManager<1> tc_manager;
-  rm::device::DeviceManager<1> rc_manager;
+  DeviceManager<2> gimbal_manager;
+  DeviceManager<4> chassis_manager;
+  DeviceManager<7> ammo_manager;
+  DeviceManager<1> ref_manager;
+  DeviceManager<1> tc_manager;
+  DeviceManager<1> rc_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -135,43 +156,41 @@ struct Globals {
     can2.SetFilter(0, 0);
     can2.Begin();
 
-    rc.Begin();
 
     // 裁判系统串口接收
-    const rm::hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
+    const hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
         ref << byte;
       }
     };
     globals_no_dtcm.usart1_ref.AttachRxCallback(ref_rx_callback);
-    globals_no_dtcm.usart1_ref.Start();
 
     // 图传串口接收
-    rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
+    hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
         tc << byte;
       }
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
-    globals_no_dtcm.uart10_tc.Start();
+
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
     ref_manager << &ref;
     tc_manager << &tc;
     rc_manager << &rc;
-    chassis_manager << &chassis_motor[0] << &chassis_motor[1] << &chassis_motor[2] << &chassis_motor[3]
-                    << &chassis_motor[4];
+    chassis_manager << &chassis_motor[0] << &chassis_motor[1] << &chassis_motor[2] << &chassis_motor[3];
     ammo_manager << &shooter_motor_1 << &shooter_motor_2 << &shooter_motor_3 << &shooter_motor_4 << &shooter_motor_5
                  << &shooter_motor_6;
 
     buzzer.Init();
-    led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
-    buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
+    led_controller.SetPattern<modules::led_pattern::GreenBreath>();
+    buzzer_controller.Play<modules::buzzer_melody::Startup>();
   }
 };
 
 /*---------------------------------------------------监测值---------------------------------------------------*/
+// 陀螺仪
 inline float eulerangle_yaw{0};
 inline float eulerangle_pitch{0};
 inline float eulerangle_roll{0};
@@ -181,6 +200,21 @@ inline float gyro_z{0};
 inline float accel_x{0};
 inline float accel_y{0};
 inline float accel_z{0};
+
+// yaw轴电机
+inline float yaw_pos{0};
+inline float yaw_vel{0};
+inline float yaw_pos_pid_out{0};
+inline float yaw_vel_pid_out{0};
+inline float target_yaw{0};
+
+// pitch轴电机
+inline float pitch_pos{0};
+inline float pitch_vel{0};
+inline float pitch_pos_pid_out{0};
+inline float pitch_vel_pid_out{0};
+inline float target_pitch{0};
+
 inline StateMachine::MainState main_state;
 inline StateMachine::SubState sub_state;
 inline StateMachine::ChassisState chassis_state;

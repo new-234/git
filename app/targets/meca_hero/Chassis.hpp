@@ -22,5 +22,5 @@ class ChassisHero {
   void IfFollow();
   void Remote();
   void IfOverPower();
-  void MotorState();
+  void MotorUpdate();
 };

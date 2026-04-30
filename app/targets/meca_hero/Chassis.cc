@@ -102,7 +102,7 @@ void ChassisHero::IfOverPower() {
 /**
  * @brief 电机状态构建，决定电机电流值
  */
-void ChassisHero::MotorState() {
+void ChassisHero::MotorUpdate() {
   // 构建电机状态
   for (int i = 0; i < 4; i++) {
     globals->velocity_pid[i].Update(V_wheel[i], globals->chassis_motor[i].rpm());
@@ -146,7 +146,7 @@ void ChassisHero::ChassisControl() {
   IfFollow();
   Remote();
   IfOverPower();
-  MotorState();
+  MotorUpdate();
 }
 
 bool ChassisHero::EnableJudgement() {

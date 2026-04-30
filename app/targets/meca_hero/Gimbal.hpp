@@ -31,5 +31,8 @@ class GimbalHero {
   void Unabling();
   void Enabling();
   void AhrsUpdate();
+  void GimbalControl();
   void AimbotControl();
+  void RemoterControl();
+  void MotorUpdate();
 };

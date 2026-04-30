@@ -9,6 +9,12 @@ Globals *globals{nullptr};
 
 volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
+void Init() {
+  globals->rc.Begin();
+  globals_no_dtcm.usart1_ref.Start();
+  globals_no_dtcm.uart10_tc.Start();
+}
+
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
   // 更新LED和蜂鸣器
@@ -39,7 +45,10 @@ void SubLoop500hz() {
 }
 
 /*---------------------------------------------------1000HZ---------------------------------------------------*/
-void SubLoop1000hz() { globals->gimbal_hero->GimbalUpdate(); }
+void SubLoop1000hz() {
+  // 状态机更新
+  globals->state_machine.StateUpdate();
+  globals->gimbal_hero->GimbalUpdate(); }
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
 /**
@@ -48,8 +57,7 @@ void SubLoop1000hz() { globals->gimbal_hero->GimbalUpdate(); }
 void MainLoop2khz() {
   static size_t loop_divisor = 0;
 
-  // 状态机更新
-  globals->state_machine.StateUpdate();
+
   // 状态机监测
   main_state = globals->state_machine.getMainState_();
   sub_state = globals->state_machine.getSubState_();
@@ -81,9 +89,9 @@ void AppMain() {
 
   // 全局变量初始化
   globals = new Globals;
-
   globals->Init();         ///< 软件
   globals_no_dtcm.Init();  ///< 硬件外设
+  Init();
 
   globals->gyro_z_filter.set_cutoff_frequency(1000.0f, 50.0f);
   mainloop.Start();
