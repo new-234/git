@@ -1,6 +1,7 @@
 #pragma once
 
 #include "librm.hpp"
+#include "AmmoShooter.hpp"
 
 /**
  * @brife 状态机类
@@ -52,7 +53,7 @@ class StateMachine {
     kSnipe,
   };
 
-  enum class SubAmmoState {
+  enum class AmmoSubState {
     kInit,
     kCooling,
     kReady,
@@ -61,24 +62,6 @@ class StateMachine {
 
   void StateUpdate();
 
-  [[nodiscard]] MainState getMainState_() const { return current_main_state_; }
-  [[nodiscard]] MainState getLastMainState_() const { return last_main_state_; }
-  [[nodiscard]] SubState getSubState_() const { return current_sub_state_; }
-  [[nodiscard]] SubState getLastSubState_() const { return last_sub_state_; }
-  [[nodiscard]] ChassisState getChassisState_() const { return current_chassis_state_; }
-  [[nodiscard]] ChassisState getLastChassisState_() const { return last_chassis_state_; }
-  void setChassisState(ChassisState state) { current_chassis_state_ = state; }
-  [[nodiscard]] GimbalState getGimbalState_() const { return current_gimbal_state_; }
-  [[nodiscard]] GimbalState getlastGimbalState_() const { return last_gimbal_state_; }
-  void setGimbalState(GimbalState state) { current_gimbal_state_ = state; }
-  [[nodiscard]] AmmoState getAmmoState_() const { return current_ammo_state_; }
-  [[nodiscard]] AmmoState getlastAmmoState_() const { return last_ammo_state_; }
-  void setAmmoState(AmmoState state) { current_ammo_state_ = state; }
-  [[nodiscard]] SubAmmoState getSubAmmoState_() const { return current_subammo_state_; }
-  [[nodiscard]] SubAmmoState getlastSubAmmoState_() const { return last_subammo_state_; }
-  void setSubAmmoState(SubAmmoState state) { current_subammo_state_ = state; }
-
- private:
   /**
    * @brief 计时器，为每个需要独立使用的Waiting注册一个实例
    */
@@ -92,64 +75,6 @@ class StateMachine {
     void reset() { first_flag_ = true; }
     void set(int set) { count_ = set; }
   };
-
-  MainState current_main_state_{MainState::kOffline};
-  MainState last_main_state_{MainState::kOffline};
-  TickTimer main_tick_;
-
-  SubState current_sub_state_{SubState::kNormal};
-  SubState last_sub_state_{SubState::kNormal};
-
-  ChassisState current_chassis_state_{ChassisState::kOffline};
-  ChassisState last_chassis_state_{ChassisState::kNormal};
-  TickTimer chassis_tick_;
-
-  AmmoState current_ammo_state_{AmmoState::kOffline};
-  AmmoState last_ammo_state_{AmmoState::kOffline};
-  TickTimer ammo_tick_;
-
-  SubAmmoState current_subammo_state_{SubAmmoState::kInit};
-  SubAmmoState last_subammo_state_{SubAmmoState::kInit};
-  TickTimer subammo_tick_;
-
-  GimbalState current_gimbal_state_{GimbalState::kOffline};
-  GimbalState last_gimbal_state_{GimbalState::kNormal};
-  TickTimer gimbal_tick_;
-
-  TickTimer test_switch_tick_;
-
-  rm::device::VT03::SwitchPosition tc_switch_position{rm::device::VT03::SwitchPosition::N};
-  rm::device::DR16::SwitchPosition rc_switch_position_r{rm::device::DR16::SwitchPosition::kUnknown};
-  rm::device::DR16::SwitchPosition rc_switch_position_l{rm::device::DR16::SwitchPosition::kUnknown};
-
-  int waiting_count_{0};  // 应为 1s 的主循环执行次数
-  int count_{0};
-
-  int gimbal_power_management_last_flag_{0};
-  int ammo_power_management_last_flag_{0};
-  int chassis_power_management_last_flag_{0};
-
-  void AmmoSubState();
-  void DT7Switch();
-  void GameState();
-  /**
-   *
-   * @param now
-   * @param last
-   * @param tick
-   * @return int 0:失能 1:使能 2:使能中
-   * @brief 当电管重新上电时，产生延迟，确保在等待使能状态足够久，确保模块成功使能
-   */
-  int RefereePowerManagement(const int &now, int &last, TickTimer &tick) {
-    if (now && !last) {
-      if (!Waiting(waiting_count_ * 2, tick)) {  // 延时3s
-        return 2;                                // 测试用
-      }
-    } else {
-      last = now;
-      return now;
-    }
-  }
 
   /**
    * @brief 非阻塞延时函数
@@ -175,6 +100,85 @@ class StateMachine {
       return true;
     }
   }
+
+  [[nodiscard]] MainState getMainState_() const { return current_main_state_; }
+  [[nodiscard]] MainState getLastMainState_() const { return last_main_state_; }
+  [[nodiscard]] SubState getSubState_() const { return current_sub_state_; }
+  [[nodiscard]] SubState getLastSubState_() const { return last_sub_state_; }
+  [[nodiscard]] ChassisState getChassisState_() const { return current_chassis_state_; }
+  [[nodiscard]] ChassisState getLastChassisState_() const { return last_chassis_state_; }
+  void setChassisState(ChassisState state) { current_chassis_state_ = state; }
+  [[nodiscard]] GimbalState getGimbalState_() const { return current_gimbal_state_; }
+  [[nodiscard]] GimbalState getlastGimbalState_() const { return last_gimbal_state_; }
+  void setGimbalState(GimbalState state) { current_gimbal_state_ = state; }
+  [[nodiscard]] AmmoState getAmmoState_() const { return current_ammo_state_; }
+  [[nodiscard]] AmmoState getlastAmmoState_() const { return last_ammo_state_; }
+  void setAmmoState(AmmoState state) { current_ammo_state_ = state; }
+  [[nodiscard]] AmmoSubState getAmmoSubState_() const { return current_ammo_sub_state_; }
+  [[nodiscard]] AmmoSubState getlastAmmoSubState_() const { return last_ammo_sub_state_; }
+  void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
+
+ private:
+
+
+  MainState current_main_state_{MainState::kOffline};
+  MainState last_main_state_{MainState::kOffline};
+  TickTimer main_tick_;
+
+  SubState current_sub_state_{SubState::kNormal};
+  SubState last_sub_state_{SubState::kNormal};
+
+  ChassisState current_chassis_state_{ChassisState::kOffline};
+  ChassisState last_chassis_state_{ChassisState::kNormal};
+  TickTimer chassis_tick_;
+
+  AmmoState current_ammo_state_{AmmoState::kOffline};
+  AmmoState last_ammo_state_{AmmoState::kOffline};
+  TickTimer ammo_tick_;
+
+  AmmoSubState current_ammo_sub_state_{AmmoSubState::kInit};
+  AmmoSubState last_ammo_sub_state_{AmmoSubState::kInit};
+  TickTimer ammo_sub_tick_;
+
+  GimbalState current_gimbal_state_{GimbalState::kOffline};
+  GimbalState last_gimbal_state_{GimbalState::kNormal};
+  TickTimer gimbal_tick_;
+
+  TickTimer test_switch_tick_;
+
+  rm::device::VT03::SwitchPosition tc_switch_position{rm::device::VT03::SwitchPosition::N};
+  rm::device::DR16::SwitchPosition rc_switch_position_r{rm::device::DR16::SwitchPosition::kUnknown};
+  rm::device::DR16::SwitchPosition rc_switch_position_l{rm::device::DR16::SwitchPosition::kUnknown};
+
+  int waiting_count_{0};  // 应为 1s 的主循环执行次数
+  int count_{0};
+
+  int gimbal_power_management_last_flag_{0};
+  int ammo_power_management_last_flag_{0};
+  int chassis_power_management_last_flag_{0};
+
+  void DT7Switch();
+  void GameState();
+  /**
+   *
+   * @param now
+   * @param last
+   * @param tick
+   * @return int 0:失能 1:使能 2:使能中
+   * @brief 当电管重新上电时，产生延迟，确保在等待使能状态足够久，确保模块成功使能
+   */
+  int RefereePowerManagement(const int &now, int &last, TickTimer &tick) {
+    if (now && !last) {
+      if (!Waiting(waiting_count_ * 2, tick)) {  // 延时3s
+        return 2;                                // 测试用
+      }
+    } else {
+      last = now;
+      return now;
+    }
+  }
+
+
 
   /**
    * @brief Test模式下的拨轮状态切换

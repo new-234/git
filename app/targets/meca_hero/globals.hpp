@@ -95,8 +95,8 @@ struct Globals {
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
-  /* ------------------------------------------------发射机构---------------------------------------------------------
-   */
+  /* ------------------------------------------------发射机构---------------------------------------------------------*/
+  AmmoShooter *ammo_shooter{nullptr};
   // 拨盘电机
   DmMotor<DmMotorControlMode::kMit> magazine_motor{can1,
                                                    {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};

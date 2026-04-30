@@ -10,11 +10,6 @@ bool radar_aimbot{false};  ///< 部署模式下的雷达自瞄
 bool fire = {false};       ///< 允许自瞄开火标志位
 
 /**
- * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
- */
-void StateMachine::AmmoSubState() {}
-
-/**
  * @brief 比赛模式状态更新
  */
 void StateMachine::GameState() {
@@ -139,7 +134,7 @@ void StateMachine::GameState() {
 
         case (1):
           current_ammo_state_ = AmmoState::kNormal;
-          // wait_ AmmoSubState();
+          globals->ammo_shooter->AmmoSubState();
           break;
 
         case (2):
