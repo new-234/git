@@ -291,15 +291,17 @@ void StateMachine::StateUpdate() {
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/
   // 图传最高优先级，图传在C强制失能，S强制进入比赛并进入子模式
-  if (tc_switch_position == rm::device::VT03::SwitchPosition::C) {  // Offline
-    current_main_state_ = MainState::kOffline;
-    main_tick_.reset();
-    return;
+  if (globals->tc_manager.all_device_ok()) {
+    if (tc_switch_position == rm::device::VT03::SwitchPosition::C) {  // Offline
+      current_main_state_ = MainState::kOffline;
+      main_tick_.reset();
+      return;
 
-  } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {  // Game
-    current_main_state_ = MainState::kGame;
-    GameState();
-    return;
+    } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {  // Game
+      current_main_state_ = MainState::kGame;
+      GameState();
+      return;
+    }
   }
 
   DT7Switch();

@@ -22,7 +22,7 @@ void GimbalHero::AhrsUpdate() {
   globals->ahrs.Update(rm::modules::ImuData6Dof{
       globals_no_dtcm.imu->gyro_x(), globals_no_dtcm.imu->gyro_y(),
       globals->gyro_z =
-          globals->gyro_z_filter.apply(globals_no_dtcm.imu->yro_z()) + hyperparameters_.gyro_rectification_,
+          globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
       globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_z()});
 
   // 监测
