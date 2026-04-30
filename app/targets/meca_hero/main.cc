@@ -14,7 +14,7 @@ void SubLoop100hz() {
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
   globals->led.SetColor(r, g, b);
-  globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
+  // globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
@@ -42,8 +42,16 @@ void MainLoop2khz() {
 
   // 状态机更新
   globals->state_machine.StateUpdate();
+  globals->chassis_hero->ChassisUpdate();
+  globals->gimbal_hero->GimbalUpdate();
+  // 状态机监测
+  main_state = globals->state_machine.getMainState_();
+  sub_state = globals->state_machine.getSubState_();
+  chassis_state = globals->state_machine.getChassisState_();
+  gimbal_state = globals->state_machine.getGimbalState_();
+  ammo_state = globals->state_machine.getAmmoState_();
 
-  if (loop_divisor % 20 == 0) { // 100hz
+  if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();
   }
   if (loop_divisor % 4 == 1) {  // 500hz
@@ -64,13 +72,15 @@ void AppMain() {
       &htim13,                                       //
       etl::delegate<void()>::create<MainLoop2khz>()  //
   };
-  mainloop.Start();
 
   // 全局变量初始化
   globals = new Globals;
 
-  globals_no_dtcm.Init();  ///< 硬件外设
   globals->Init();         ///< 软件
+  globals_no_dtcm.Init();  ///< 硬件外设
+
+  globals->gyro_z_filter.set_cutoff_frequency(1000.0f, 50.0f);
+  mainloop.Start();
   for (;;) {
   }
 }

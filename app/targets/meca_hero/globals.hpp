@@ -29,12 +29,12 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
-  rm::hal::Serial<50> dbus{huart5, true, true}, usart1_ref{huart1, true, true},
-      uart10_tc{huart10, true, true};  ///< 串口接口
-  CMS cms{can1};                       ///< 超电
 
-  rm::device::BMI088 imu{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};  ///< IMU
+  rm::hal::Serial<127> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
+      uart10_tc{huart10, true, true};  ///< 串口接口
+
+
+  rm::device::BMI088 *imu{nullptr};  ///< IMU
 
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -42,15 +42,12 @@ struct GlobalsNoDtcm {
   uint16_t adc_val;  ///< 输入电压ADC采样值
 
   void Init() {
+    imu = new BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
     // 初始化输入电压测量
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&adc_val), 1);
 
-    // CAN初始化
-    can1.SetFilter(0, 0);
-    can1.Begin();
-    can2.SetFilter(0, 0);
-    can2.Begin();
+
   }
 };
 
@@ -61,17 +58,19 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};  ///< 状态机
+  rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
+  CMS cms{can1};                       ///< 超电
 
   // 底盘电机
   // rm::device::M3508 chassis_motor_fr{globals_no_dtcm.can2, 1, false};
   // rm::device::M3508 chassis_motor_fl{globals_no_dtcm.can2, 2, false};
   // rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
   // rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
-  ChassisHero *chassis_hero;
-  rm::device::M3508 chassis_motor[4] = {{globals_no_dtcm.can1, 1, false},
-                                        {globals_no_dtcm.can1, 2, false},
-                                        {globals_no_dtcm.can1, 3, false},
-                                        {globals_no_dtcm.can1, 4, false}};
+  ChassisHero *chassis_hero{nullptr};
+  rm::device::M3508 chassis_motor[4] = {{can1, 1, false},
+                                        {can1, 2, false},
+                                        {can1, 3, false},
+                                        {can1, 4, false}};
   rm::modules::PID velocity_pids[4] = {
       {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
   std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
@@ -85,22 +84,22 @@ struct Globals {
   rm::modules::PID pid_chassis_follow_vel{23, 0, 0.21, 16000, 0};
 
   // 云台电机
-  GimbalHero *gimbal_hero;
+  GimbalHero *gimbal_hero{nullptr};
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
-      globals_no_dtcm.can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  rm::device::M3508 gimbal_motor_pitch{globals_no_dtcm.can2, 7, true};
+      can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
+  rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
 
   // 发射机构
   // 拨盘电机
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{
-      globals_no_dtcm.can1, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
+      can1, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // 摩擦轮电机
-  rm::device::M3508 shooter_motor_1{globals_no_dtcm.can2, 1, false};
-  rm::device::M3508 shooter_motor_2{globals_no_dtcm.can2, 2, false};
-  rm::device::M3508 shooter_motor_3{globals_no_dtcm.can2, 3, false};
-  rm::device::M3508 shooter_motor_4{globals_no_dtcm.can2, 4, false};
-  rm::device::M3508 shooter_motor_5{globals_no_dtcm.can2, 5, false};
-  rm::device::M3508 shooter_motor_6{globals_no_dtcm.can2, 6, false};
+  rm::device::M3508 shooter_motor_1{can2, 1, false};
+  rm::device::M3508 shooter_motor_2{can2, 2, false};
+  rm::device::M3508 shooter_motor_3{can2, 3, false};
+  rm::device::M3508 shooter_motor_4{can2, 4, false};
+  rm::device::M3508 shooter_motor_5{can2, 5, false};
+  rm::device::M3508 shooter_motor_6{can2, 6, false};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
@@ -132,6 +131,13 @@ struct Globals {
   float gyro_z;
 
   void Init() {
+
+    // CAN初始化
+    can1.SetFilter(0, 0);
+    can1.Begin();
+    can2.SetFilter(0, 0);
+    can2.Begin();
+
     rc.Begin();
 
     // 裁判系统串口接收
@@ -167,5 +173,28 @@ struct Globals {
 inline float eulerangle_yaw{0};
 inline float eulerangle_pitch{0};
 inline float eulerangle_roll{0};
+inline StateMachine::MainState main_state;
+inline StateMachine::SubState sub_state;
+inline StateMachine::ChassisState chassis_state;
+inline StateMachine::GimbalState gimbal_state;
+inline StateMachine::AmmoState ammo_state;
+
+
 
 extern Globals *globals;
+
+
+inline bool key_once_tc(VT03::KeyboardKey key) {
+  static int16_t key_once_flag{0};
+  if (globals->tc.data().keyboard_key & static_cast<int16_t>(key)) {
+    if (!(key_once_flag & static_cast<int16_t>(key))) {
+      // 第一次按下
+      key_once_flag |= static_cast<int16_t>(key);  // 标记已处理
+      return true;
+    }
+    return false;  // 已经处理过，不再响应
+  } else {
+    key_once_flag &= ~static_cast<int16_t>(key);  // 按键松开，清除标记
+    return false;
+  }
+}
