@@ -33,7 +33,6 @@ struct GlobalsNoDtcm {
   rm::hal::Serial<127> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
       uart10_tc{huart10, true, true};  ///< 串口接口
 
-
   rm::device::BMI088 *imu{nullptr};  ///< IMU
 
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -46,8 +45,6 @@ struct GlobalsNoDtcm {
     // 初始化输入电压测量
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&adc_val), 1);
-
-
   }
 };
 
@@ -57,9 +54,9 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};  ///< 状态机
+  StateMachine state_machine{2000};           ///< 状态机
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
-  CMS cms{can1};                       ///< 超电
+  CMS cms{can1};                              ///< 超电
 
   // 底盘电机
   // rm::device::M3508 chassis_motor_fr{globals_no_dtcm.can2, 1, false};
@@ -67,10 +64,7 @@ struct Globals {
   // rm::device::M3508 chassis_motor_ll{globals_no_dtcm.can2, 3, false};
   // rm::device::M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
   ChassisHero *chassis_hero{nullptr};
-  rm::device::M3508 chassis_motor[4] = {{can1, 1, false},
-                                        {can1, 2, false},
-                                        {can1, 3, false},
-                                        {can1, 4, false}};
+  rm::device::M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
   rm::modules::PID velocity_pids[4] = {
       {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
   std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
@@ -131,7 +125,6 @@ struct Globals {
   float gyro_z;
 
   void Init() {
-
     // CAN初始化
     can1.SetFilter(0, 0);
     can1.Begin();
@@ -179,10 +172,7 @@ inline StateMachine::ChassisState chassis_state;
 inline StateMachine::GimbalState gimbal_state;
 inline StateMachine::AmmoState ammo_state;
 
-
-
 extern Globals *globals;
-
 
 inline bool key_once_tc(VT03::KeyboardKey key) {
   static int16_t key_once_flag{0};

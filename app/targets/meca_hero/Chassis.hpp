@@ -2,7 +2,7 @@
 
 #include "globals.hpp"
 
-class ChassisHero{
+class ChassisHero {
  public:
   ChassisHero() = default;
 
