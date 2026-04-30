@@ -214,11 +214,22 @@ inline float pitch_pos_pid_out{0};
 inline float pitch_vel_pid_out{0};
 inline float target_pitch{0};
 
+// 摩擦轮电机
+inline float limit{0};
+inline float V1{0};
+inline float V2{0};
+
+// 状态机
 inline StateMachine::MainState main_state;
 inline StateMachine::SubState sub_state;
 inline StateMachine::ChassisState chassis_state;
 inline StateMachine::GimbalState gimbal_state;
 inline StateMachine::AmmoState ammo_state;
+inline StateMachine::AmmoSubState ammo_sub_state;
+
+inline int chassispower{0};
+inline int gimbalpower{0};
+inline int ammopower{0};
 
 extern Globals *globals;
 

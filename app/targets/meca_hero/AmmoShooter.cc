@@ -39,11 +39,14 @@ bool AmmoHero::EnableJudgement() {
   } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
     Enabling();
     return false;
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest) {
+    Unabling();
+    return false;
   }
   // Ammo状态检测
   switch (globals->state_machine.getAmmoState_()) {
     default:
-      Unabling();
+      // Unabling();
       return false;
     case StateMachine::AmmoState::kOffline:
       Unabling();
@@ -128,11 +131,14 @@ void AmmoHero::MagzineControl() {
       globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
       break;
     case StateMachine::AmmoSubState::kReady:
+    case StateMachine::AmmoSubState::kFire:
+    case StateMachine::AmmoSubState::kCooling:
       // 拨盘电机串级PID（开循环）
       globals->pid_magz_position.SetCircular(true).SetCircularCycle(3.141593 * 2);
       globals->pid_magz_position.Update(globals->state_machine.now_angle, globals->magazine_motor.pos(), 0.002);
       globals->pid_magz_velocity.Update(globals->pid_magz_position.out(), globals->magazine_motor.vel(), 0.002);
       globals->magazine_motor.SetMitCommand(0, 0, globals->pid_magz_velocity.out(), 0, 0);
+      break;
   }
 }
 

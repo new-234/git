@@ -1,3 +1,4 @@
+#include "AmmoShooter.hpp"
 #include "Chassis.hpp"
 #include "Gimbal.hpp"
 #include "common/bsp/timer_task.hpp"
@@ -13,6 +14,9 @@ void Init() {
   globals->rc.Begin();
   globals_no_dtcm.usart1_ref.Start();
   globals_no_dtcm.uart10_tc.Start();
+  globals->chassis_hero = new ChassisHero();
+  globals->gimbal_hero = new GimbalHero();
+  globals->ammo_hero = new AmmoHero();
 }
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/
@@ -35,6 +39,9 @@ void SubLoop500hz() {
 
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
+
+  // 发射机构更新
+  globals->ammo_hero->AmmoUpdate();
 
   // 发送Dji电机控制帧
   rm::device::DjiMotorBase::SendCommand();
@@ -64,6 +71,17 @@ void MainLoop2khz() {
   chassis_state = globals->state_machine.getChassisState_();
   gimbal_state = globals->state_machine.getGimbalState_();
   ammo_state = globals->state_machine.getAmmoState_();
+  ammo_sub_state = globals->state_machine.getAmmoSubState_();
+
+  // 裁判电源监测
+  chassispower = globals->ref.data().robot_status.power_management_chassis_output;
+  gimbalpower = globals->ref.data().robot_status.power_management_gimbal_output;
+  ammopower = globals->ref.data().robot_status.power_management_shooter_output;
+
+  // 摩擦轮目标速度监测
+  V1 = globals->ammo_hero->V_shooter_1;
+  V2 = globals->ammo_hero->V_shooter_2;
+  limit = globals->ammo_hero->limit;
 
   if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();

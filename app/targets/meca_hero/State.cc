@@ -12,10 +12,10 @@ bool fire = {false};       ///< 允许自瞄开火标志位
 /**
  * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
  */
-void StateMachine::AmmoSubState() {
-  switch (globals->state_machine.getlastAmmoSubState_()) {
+void StateMachine::AmmoSubStateUpdate() {
+  switch (current_ammo_sub_state_) {
     default:
-      globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kInit);
+      current_ammo_sub_state_ = StateMachine::AmmoSubState::kInit;
       break;
 
     case StateMachine::AmmoSubState::kInit:
@@ -30,7 +30,7 @@ void StateMachine::AmmoSubState() {
       if (next_angle < -3.141593) {
         next_angle += 2 * 3.141593;
       }
-      globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kReady);
+      current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
       break;
       // 使能
       // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kClearError);
@@ -40,12 +40,12 @@ void StateMachine::AmmoSubState() {
       if ((globals->rc.dial() >= 500 || globals->rc.dial() < -500 || globals->rc.mouse_button_left() ||
                globals->tc.data().mouse_button_left /*|| globals->custom_client->mouse_left()*/ /*||
                (globals->aimbot_can_communicator->aimbot_state() == 0x03 &&
-                 globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/) &&
+                 globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/)/* &&
               (globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-               globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100) &&
+               globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100)*/ &&
               (globals->shooter_motor_1.rpm() < -3000 && globals->shooter_motor_4.rpm() < -3000)) {
         now_angle = next_angle;
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kFire);
+        current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
       }
       break;
 
@@ -60,7 +60,7 @@ void StateMachine::AmmoSubState() {
             next_angle += 2 * 3.141593;
           }
         }
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kCooling);
+        current_ammo_sub_state_ = StateMachine::AmmoSubState::kCooling;
       }
       break;
 
@@ -68,7 +68,7 @@ void StateMachine::AmmoSubState() {
       if ((globals->ref.data().robot_status.shooter_barrel_heat_limit >=
            globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 120) ||
           globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
-        globals->state_machine.setAmmoSubState(StateMachine::AmmoSubState::kReady);
+        current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
       }
   }
 }
@@ -198,7 +198,7 @@ void StateMachine::GameState() {
 
         case (1):
           current_ammo_state_ = AmmoState::kNormal;
-          globals->state_machine.AmmoSubState();
+          globals->state_machine.AmmoSubStateUpdate();
           break;
 
         case (2):

@@ -118,7 +118,7 @@ class StateMachine {
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
   rm::f32 now_angle{0};
-  rm::f32 next_angle{0}; ///< 初始位
+  rm::f32 next_angle{0};  ///< 初始位
 
  private:
   MainState current_main_state_{MainState::kOffline};
@@ -153,16 +153,14 @@ class StateMachine {
   int waiting_count_{0};  // 应为 1s 的主循环执行次数
   int count_{0};
 
-
-
   int gimbal_power_management_last_flag_{0};
   int ammo_power_management_last_flag_{0};
   int chassis_power_management_last_flag_{0};
 
   void DT7Switch();
   void GameState();
-  void AmmoSubState();
-
+public:
+  void AmmoSubStateUpdate();
   /**
    *
    * @param now
