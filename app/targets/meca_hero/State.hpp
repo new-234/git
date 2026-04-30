@@ -159,7 +159,8 @@ class StateMachine {
 
   void DT7Switch();
   void GameState();
-public:
+
+ public:
   void AmmoSubStateUpdate();
   /**
    *
