@@ -175,6 +175,8 @@ class StateMachine {
       if (!Waiting(waiting_count_ * 2, tick)) {  // 延时3s
         return 2;                                // 测试用
       }
+      last = now;
+      return now;
     } else {
       last = now;
       return now;
