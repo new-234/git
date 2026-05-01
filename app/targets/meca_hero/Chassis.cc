@@ -121,7 +121,7 @@ void ChassisHero::MotorUpdate() {
 
   // 直接的输出电流限制
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
-    if (globals->ref.data().power_heat_data.buffer_energy <= 15) {
+    if (globals->ref.data().power_heat_data.buffer_energy <= 15 || !globals->cms_manager.all_device_ok()) {
       for (int i = 0; i < 4; i++)
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(
             globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / (60 * 2)));
@@ -130,7 +130,7 @@ void ChassisHero::MotorUpdate() {
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     }
   } else {
-    if (globals->cms.cms_v >= 25.0) {
+    if (globals->cms.cms_v >= 25.0 && !globals->cms_manager.all_device_ok()) {
       for (int i = 0; i < 4; i++)
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     } else {
