@@ -115,13 +115,13 @@ void StateMachine::GameState() {
       chassis_tick_.reset();
       break;
 
-    // case MainState::kOffline:
-    //   current_main_state_ = MainState::kEnableWaiting;
-    //   main_tick_.reset();
-    //   ammo_tick_.reset();
-    //   gimbal_tick_.reset();
-    //   chassis_tick_.reset();
-    //   break;
+      // case MainState::kOffline:
+      //   current_main_state_ = MainState::kEnableWaiting;
+      //   main_tick_.reset();
+      //   ammo_tick_.reset();
+      //   gimbal_tick_.reset();
+      //   chassis_tick_.reset();
+      //   break;
 
     case MainState::kEnableWaiting:
       if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
