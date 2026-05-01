@@ -52,15 +52,15 @@ void ChassisHero::Remote() {
     }
     if ((globals->rc.key(rm::device::DR16::Key::kD) && globals->rc_manager.all_device_ok())||
         (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD) &&
-         globals->tc_manager.all_device_ok()) /*||
+         globals->tc_manager.all_device_ok()&& globals->state_machine.getChassisState_() != StateMachine::ChassisState::kFollow) /*||
         globals->custom_client->key(rm::device::DR16::Key::kD)*/) {
       Vw += 30;
       if (Vw >= 8400) {
         Vw = 7000;
       }
-    } else if ((globals->rc.key(rm::device::DR16::Key::kA) && globals->rc_manager.all_device_ok())||
+    } else if (((globals->rc.key(rm::device::DR16::Key::kA) && globals->rc_manager.all_device_ok())||
                               (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA) &&
-                               globals->tc_manager.all_device_ok()) /*||
+                               globals->tc_manager.all_device_ok()))&& globals->state_machine.getChassisState_() != StateMachine::ChassisState::kFollow /*||
                               globals->custom_client->key(rm::device::DR16::Key::kA)*/) {
       Vw -= 30;
       if (Vw <= -8400) {
