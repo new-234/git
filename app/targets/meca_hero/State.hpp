@@ -192,7 +192,7 @@ class StateMachine {
   template <typename T>
   void TestDialSwitch(const int &dial, T &current, T &last, T target) {
     if (abs(dial) > 400) {
-      if (Waiting(waiting_count_ / 2, test_switch_tick_)) {
+      if (Waiting(waiting_count_ / 5, test_switch_tick_)) {
         if (current != target) {
           last = current;
           current = target;
