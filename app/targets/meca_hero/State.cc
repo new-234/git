@@ -332,9 +332,9 @@ void StateMachine::StateUpdate() {
   rc_switch_position_l = globals->rc.switch_l();
   tc_switch_position = globals->tc.data().switch_position;
   rc_switch_position_r = globals->rc.switch_r();
-  gimbal_power_management_last_flag_ = globals->ref.data().robot_status.power_management_gimbal_output;
-  ammo_power_management_last_flag_ = globals->ref.data().robot_status.power_management_shooter_output;
-  chassis_power_management_last_flag_ = globals->ref.data().robot_status.power_management_chassis_output;
+  // gimbal_power_management_last_flag_ = globals->ref.data().robot_status.power_management_gimbal_output;
+  // ammo_power_management_last_flag_ = globals->ref.data().robot_status.power_management_shooter_output;
+  // chassis_power_management_last_flag_ = globals->ref.data().robot_status.power_management_chassis_output;
 
   /*--------------------------------------------------子模式状态位---------------------------------------------------*/
   // static bool snipe{false};  ///< 部署标志位
@@ -360,7 +360,7 @@ void StateMachine::StateUpdate() {
       return;
 
     } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {  // Game
-      current_main_state_ = MainState::kEnableWaiting;
+      // current_main_state_ = MainState::kEnableWaiting;
       GameState();
       return;
     }

@@ -4,6 +4,7 @@
 void GimbalHero::Enabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
+  globals->gimbal_motor_pitch.SetCurrent(0);
 }
 
 void GimbalHero::Unabling() {
@@ -68,8 +69,8 @@ void GimbalHero::RemoterControl() {
   }
 
   // pitch限位
-  if (target_pitch < -0.02) {
-    target_pitch = -0.02;
+  if (target_pitch < 0.05) {
+    target_pitch = 0.05;
   } else if (target_pitch > 0.8) {
     target_pitch = 0.8;
   }
@@ -141,7 +142,7 @@ bool GimbalHero::EnableJudgement() {
       Unabling();
       return false;
     case StateMachine::GimbalState::kEnableWaiting:
-      Unabling();
+      // Unabling();
       Enabling();
       return false;
     case StateMachine::GimbalState::kNormal:

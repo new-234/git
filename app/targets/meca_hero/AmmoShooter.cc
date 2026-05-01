@@ -39,7 +39,8 @@ bool AmmoHero::EnableJudgement() {
   } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
     Enabling();
     return false;
-  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest) {
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest &&
+             globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe) {
     Unabling();
     return false;
   }
@@ -73,10 +74,10 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
     shooter_m += 10;
   }
   // 目标速度PID
-  switch (globals->state_machine.getAmmoState_()) {
+  switch (globals->state_machine.getSubState_()) {
     default:
       Unabling();
-    case StateMachine::AmmoState::kNormal:
+    case StateMachine::SubState::kNormal:
       if (globals->shooter_motor_6.rpm() > limit) {
         globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
         globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
@@ -93,7 +94,8 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_6.Update(V_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       }
       break;
-    case StateMachine::AmmoState::kSnipe:
+
+    case StateMachine::SubState::kSnipe:
       if (globals->shooter_motor_6.rpm() > limit) {
         globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
         globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
