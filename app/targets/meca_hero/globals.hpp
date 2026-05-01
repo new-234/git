@@ -80,7 +80,7 @@ struct Globals {
   float output_currents[4];
   // 底盘随动
   modules::PID pid_chassis_follow_pos{600, 0, 5, 1500, 0};
-  modules::PID pid_chassis_follow_vel{23, 0, 0.1, 16000, 0};
+  modules::PID pid_chassis_follow_vel{23, 0, 1, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------
    */

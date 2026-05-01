@@ -39,8 +39,7 @@ bool AmmoHero::EnableJudgement() {
   } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
     Enabling();
     return false;
-  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest &&
-             globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe) {
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest) {
     Unabling();
     return false;
   }
