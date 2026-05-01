@@ -357,7 +357,7 @@ void StateMachine::StateUpdate() {
       return;
 
     } else if (tc_switch_position == rm::device::VT03::SwitchPosition::S) {  // Game
-      current_main_state_ = MainState::kGame;
+      current_main_state_ = MainState::kEnableWaiting;
       GameState();
       return;
     }
