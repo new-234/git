@@ -114,16 +114,19 @@ void StateMachine::GameState() {
       gimbal_tick_.reset();
       chassis_tick_.reset();
       break;
-    case MainState::kOffline:
-      current_main_state_ = MainState::kEnableWaiting;
-      main_tick_.reset();
-      ammo_tick_.reset();
-      gimbal_tick_.reset();
-      chassis_tick_.reset();
-      break;
+
+    // case MainState::kOffline:
+    //   current_main_state_ = MainState::kEnableWaiting;
+    //   main_tick_.reset();
+    //   ammo_tick_.reset();
+    //   gimbal_tick_.reset();
+    //   chassis_tick_.reset();
+    //   break;
+
     case MainState::kEnableWaiting:
       if (Waiting(waiting_count_ / 10, main_tick_)) current_main_state_ = MainState::kGame;
       break;
+
     case MainState::kGame:
 
       /*---------------------------------------------------子状态----------------------------------------------------*/
@@ -140,15 +143,15 @@ void StateMachine::GameState() {
       switch (RefereePowerManagement(globals->ref.data().robot_status.power_management_chassis_output,
                                      chassis_power_management_last_flag_, chassis_tick_)) {  // 裁判系统断电检测
         default:
-          current_gimbal_state_ = GimbalState::kOffline;
+          current_chassis_state_ = ChassisState::kOffline;
           break;
 
         case (0):
-          current_gimbal_state_ = GimbalState::kOffline;
+          current_chassis_state_ = ChassisState::kOffline;
           break;
 
         case (1):
-          if (follow_out) {
+          if (follow) {
             current_chassis_state_ = ChassisState::kFollow;
           } else {
             current_chassis_state_ = ChassisState::kNormal;
@@ -341,7 +344,7 @@ void StateMachine::StateUpdate() {
 
   /*---------------------------------------------------模块 状态位---------------------------------------------------*/
   // static bool follow{true};  ///< 随动标志位
-  if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow_out = !follow_out;
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄

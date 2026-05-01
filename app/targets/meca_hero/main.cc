@@ -48,13 +48,14 @@ void SubLoop500hz() {
 
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
-  globals->chassis_hero->ChassisUpdate();
 }
 
 /*---------------------------------------------------1000HZ---------------------------------------------------*/
 void SubLoop1000hz() {
   // 状态机更新
   globals->state_machine.StateUpdate();
+
+  // 云台状态更新
   globals->gimbal_hero->GimbalUpdate();
 }
 
