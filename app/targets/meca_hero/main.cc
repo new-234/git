@@ -93,13 +93,18 @@ void SubLoop100hz() {
   globals->cap_tx_data.enable_dcdc = 0x01;
   globals->cap_tx_data.system_restart = 0x00;
 
-
   globals->cms.Update(globals->cap_tx_data);
 
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
   globals->led.SetColor(r, g, b);
   // globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
+}
+
+/*---------------------------------------------------250HZ---------------------------------------------------*/
+void SubLoop250hz() {
+  // 底盘更新
+  globals->chassis_hero->ChassisUpdate();
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
@@ -112,9 +117,6 @@ void SubLoop500hz() {
   globals->rc_manager.Update();
   globals->ammo_manager.Update();
   globals->cms_manager.Update();
-
-  // 底盘更新
-  globals->chassis_hero->ChassisUpdate();
 
   // 发射机构更新
   globals->ammo_hero->AmmoUpdate();
@@ -146,6 +148,9 @@ void MainLoop2khz() {
 
   if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();
+  }
+  if (loop_divisor % 8 == 1) {
+    SubLoop250hz();
   }
   if (loop_divisor % 4 == 1) {  // 500hz
     SubLoop500hz();
