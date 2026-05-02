@@ -254,6 +254,10 @@ inline int chassis_power_state{0};
 inline int gimbal_power_state{0};
 inline int ammo_power_state{0};
 
+// 超电
+inline float cap_energy{0};
+inline float cap_power{0};
+
 extern Globals *globals;
 
 inline bool key_once_tc(VT03::KeyboardKey key) {

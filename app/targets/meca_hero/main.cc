@@ -92,7 +92,7 @@ void SubLoop100hz() {
   globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
   static int j = 0;
 
-  if (j < 1) {
+  if (j < 5) {
     globals->cms.Update(globals->cap_tx_data);
     j++;
   } else {

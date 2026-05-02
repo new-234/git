@@ -43,7 +43,7 @@ void StateMachine::AmmoSubStateUpdate() {
                  globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/)/* &&
               (globals->ref.data().robot_status.shooter_barrel_heat_limit >=
                globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100)*/ &&
-              (globals->shooter_motor_1.rpm() < -3000 && globals->shooter_motor_4.rpm() < -3000)) {
+              (globals->shooter_motor_1.rpm() < -3500 && globals->shooter_motor_4.rpm() < -3500)) {
         now_angle = next_angle;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
       }

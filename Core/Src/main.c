@@ -106,7 +106,6 @@ int main(void)
   MX_SPI2_Init();
   MX_FDCAN1_Init();
   MX_FDCAN2_Init();
-  MX_FDCAN3_Init();
   MX_TIM12_Init();
   MX_SPI6_Init();
   MX_UART5_Init();
@@ -118,6 +117,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
+  MX_FDCAN3_Init();
   /* USER CODE BEGIN 2 */
   AppMain();
   /* USER CODE END 2 */
