@@ -19,7 +19,6 @@ class AmmoHero {
   // rm::i16 V_shooter_2 = -0;
 
  private:
-
   bool EnableJudgement();
   void Unabling();
   void Enabling();
