@@ -93,7 +93,6 @@ void SubLoop100hz() {
   globals->cap_tx_data.enable_dcdc = 0x01;
   globals->cap_tx_data.system_restart = 0x00;
 
-
   globals->cms.Update(globals->cap_tx_data);
 
   // 更新LED和蜂鸣器
