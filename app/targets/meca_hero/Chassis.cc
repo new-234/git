@@ -220,7 +220,7 @@ void ChassisHero::MotorUpdate() {
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     }
   } else {
-    if (globals->cms.cms_v >= 25.0 && !globals->cms_manager.all_device_ok()) {
+    if (globals->cms.rx_data_.cap_energy >= 250 && !globals->cms_manager.all_device_ok()) {
       for (int i = 0; i < 4; i++)
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(globals->output_currents[i]));
     } else {
