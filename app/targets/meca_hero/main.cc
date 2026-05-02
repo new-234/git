@@ -105,7 +105,7 @@ void MainLoop2khz() {
   limit = globals->ammo_hero->limit;
 
   // 底盘输出监测
-  for (int i=0;i<4;i++) {
+  for (int i = 0; i < 4; i++) {
     chassis_out[i] = globals->output_currents[i];
   }
 
