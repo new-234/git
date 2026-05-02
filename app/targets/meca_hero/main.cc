@@ -95,14 +95,19 @@ void MainLoop2khz() {
   ammo_sub_state = globals->state_machine.getAmmoSubState_();
 
   // 裁判电源监测
-  chassispower = globals->ref.data().robot_status.power_management_chassis_output;
-  gimbalpower = globals->ref.data().robot_status.power_management_gimbal_output;
-  ammopower = globals->ref.data().robot_status.power_management_shooter_output;
+  chassis_power_state = globals->ref.data().robot_status.power_management_chassis_output;
+  gimbal_power_state = globals->ref.data().robot_status.power_management_gimbal_output;
+  ammo_power_state = globals->ref.data().robot_status.power_management_shooter_output;
 
   // 摩擦轮目标速度监测
   V1 = globals->ammo_hero->V_shooter_1;
   V2 = globals->ammo_hero->V_shooter_2;
   limit = globals->ammo_hero->limit;
+
+  // 底盘输出监测
+  for (int i=0;i<4;i++) {
+    chassis_out[i] = globals->output_currents[i];
+  }
 
   dial = globals->rc.dial();
 

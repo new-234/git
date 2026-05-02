@@ -75,12 +75,12 @@ struct Globals {
   std::array<modules::MotorPowerModel::MotorState, 4> motor_states;
   modules::MotorPowerModel power_model{modules::MotorPowerModel::kM3508};
   // 初始电流
-  float initial_currents[4];
+  rm::f32 initial_currents[4];
   // 输出电流
-  float output_currents[4];
+  rm::f32 output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{600, 0, 5, 1500, 0};
-  modules::PID pid_chassis_follow_vel{23, 0, 1, 16000, 0};
+  modules::PID pid_chassis_follow_pos{500, 0, 5, 1500, 0};
+  modules::PID pid_chassis_follow_vel{23, 0, 0.4, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------
    */
@@ -219,6 +219,9 @@ inline float target_pitch{0};
 // 随动
 inline float follow_out{0};
 
+// 底盘电机
+inline float chassis_out[4]{0};
+
 // 摩擦轮电机
 inline float limit{0};
 inline float V1{0};
@@ -234,9 +237,10 @@ inline StateMachine::GimbalState gimbal_state;
 inline StateMachine::AmmoState ammo_state;
 inline StateMachine::AmmoSubState ammo_sub_state;
 
-inline int chassispower{0};
-inline int gimbalpower{0};
-inline int ammopower{0};
+// 电管输出状态
+inline int chassis_power_state{0};
+inline int gimbal_power_state{0};
+inline int ammo_power_state{0};
 
 extern Globals *globals;
 
