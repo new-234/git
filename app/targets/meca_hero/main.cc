@@ -11,6 +11,26 @@ Globals *globals{nullptr};
 volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
 void Init() {
+  const auto prepare_uart_rx_to_idle_dma = [](UART_HandleTypeDef &huart, const IRQn_Type uart_irqn,
+                                            const IRQn_Type dma_rx_irqn) {
+    // Clear stale UART/DMA state before librm starts ReceiveToIdle mode.
+    (void)HAL_UART_AbortReceive(&huart);
+    (void)HAL_UART_Abort(&huart);
+    __HAL_UART_CLEAR_FLAG(&huart, UART_CLEAR_PEF);
+    __HAL_UART_CLEAR_FLAG(&huart, UART_CLEAR_FEF);
+    __HAL_UART_CLEAR_FLAG(&huart, UART_CLEAR_NEF);
+    __HAL_UART_CLEAR_FLAG(&huart, UART_CLEAR_OREF);
+    __HAL_UART_SEND_REQ(&huart, UART_RXDATA_FLUSH_REQUEST);
+    huart.ErrorCode = HAL_UART_ERROR_NONE;
+    huart.RxState = HAL_UART_STATE_READY;
+    huart.gState = HAL_UART_STATE_READY;
+    HAL_NVIC_ClearPendingIRQ(uart_irqn);
+    HAL_NVIC_ClearPendingIRQ(dma_rx_irqn);
+  };
+
+  prepare_uart_rx_to_idle_dma(huart5, UART5_IRQn, DMA1_Stream0_IRQn);
+  prepare_uart_rx_to_idle_dma(huart10, USART10_IRQn, DMA1_Stream5_IRQn);
+
   globals->rc.Begin();
   globals_no_dtcm.usart1_ref.Start();
   globals_no_dtcm.uart10_tc.Start();
