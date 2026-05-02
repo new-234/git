@@ -90,14 +90,11 @@ void SubLoop100hz() {
   // 超电更新
   globals->cap_tx_data.feedback_referee_energy_buffer = globals->ref.data().power_heat_data.buffer_energy;
   globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
-  static int j = 0;
+  globals->cap_tx_data.enable_dcdc = 0x01;
+  globals->cap_tx_data.system_restart = 0x00;
 
-  if (j < 5) {
-    globals->cms.Update(globals->cap_tx_data);
-    j++;
-  } else {
-    j = 0;
-  }
+
+  globals->cms.Update(globals->cap_tx_data);
 
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
@@ -126,7 +123,7 @@ void SubLoop500hz() {
   DjiMotorBase::SendCommand();
 
   // VOFA
-  VOFASend();
+  // VOFASend();
 
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
