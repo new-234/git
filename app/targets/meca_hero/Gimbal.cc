@@ -29,10 +29,14 @@ void GimbalHero::AhrsUpdate() {
           globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
       -globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_z()});
 
+  monitor_.euler_yaw_ = -globals->ahrs.euler_angle().yaw;
+  monitor_.euler_pitch_ = -globals->ahrs.euler_angle().pitch;
+  monitor_.euler_roll_ = -globals->ahrs.euler_angle().roll;
+
   // 监测
-  eulerangle_yaw = globals->ahrs.euler_angle().yaw;
-  eulerangle_pitch = globals->ahrs.euler_angle().pitch;
-  eulerangle_roll = globals->ahrs.euler_angle().roll;
+  eulerangle_yaw = monitor_.euler_yaw_;
+  eulerangle_pitch = monitor_.euler_pitch_;
+  eulerangle_roll = monitor_.euler_roll_;
   gyro_x = globals_no_dtcm.imu->gyro_x();
   gyro_y = globals_no_dtcm.imu->gyro_y();
   gyro_z = globals_no_dtcm.imu->gyro_z();
@@ -69,8 +73,8 @@ void GimbalHero::RemoterControl() {
   }
 
   // pitch限位
-  if (target_pitch < 0.05) {
-    target_pitch = 0.05;
+  if (target_pitch < -0.02) {
+    target_pitch = -0.02;
   } else if (target_pitch > 0.8) {
     target_pitch = 0.8;
   }

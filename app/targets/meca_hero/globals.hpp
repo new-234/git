@@ -11,6 +11,7 @@
 #include "common/bsp/ws2812.hpp"
 #include "State.hpp"
 #include "CMS.H"
+#include "VOFA.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -226,6 +227,13 @@ inline float chassis_out_3{0};
 inline float chassis_out_4{0};
 
 // 摩擦轮电机
+inline float shooter_1{0};
+inline float shooter_2{0};
+inline float shooter_3{0};
+inline float shooter_4{0};
+inline float shooter_5{0};
+inline float shooter_6{0};
+
 inline float limit{0};
 inline float V1{0};
 inline float V2{0};

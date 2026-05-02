@@ -11,11 +11,14 @@ class AmmoHero {
 
   rm::i16 limit{-3000};
   int16_t shooter_m{0};
+
+  // 12m/s
   rm::i16 V_shooter_1 = -4605;
   rm::i16 V_shooter_2 = -3770;
+  // rm::i16 V_shooter_1 = -0;
+  // rm::i16 V_shooter_2 = -0;
 
  private:
-  // 12m/s
 
   bool EnableJudgement();
   void Unabling();

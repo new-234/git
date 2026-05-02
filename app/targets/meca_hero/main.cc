@@ -31,12 +31,18 @@ void Monitor() {
   V1 = globals->ammo_hero->V_shooter_1;
   V2 = globals->ammo_hero->V_shooter_2;
   limit = globals->ammo_hero->limit;
+  shooter_1 = globals->shooter_motor_1.rpm();
+  shooter_2 = globals->shooter_motor_2.rpm();
+  shooter_3 = globals->shooter_motor_3.rpm();
+  shooter_4 = globals->shooter_motor_4.rpm();
+  shooter_5 = globals->shooter_motor_5.rpm();
+  shooter_6 = globals->shooter_motor_6.rpm();
 
   // 底盘输出监测
-  chassis_out_1 = globals->output_currents[0];
-  chassis_out_2 = globals->output_currents[1];
-  chassis_out_3 = globals->output_currents[2];
-  chassis_out_4 = globals->output_currents[3];
+  chassis_out_1 = globals->chassis_motor[0].rpm();
+  chassis_out_2 = globals->chassis_motor[1].rpm();
+  chassis_out_3 = globals->chassis_motor[2].rpm();
+  chassis_out_4 = globals->chassis_motor[3].rpm();
 
   dial = globals->rc.dial();
 
@@ -102,6 +108,9 @@ void SubLoop500hz() {
 
   // 发送Dji电机控制帧
   DjiMotorBase::SendCommand();
+
+  // VOFA
+  VOFASend();
 
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
