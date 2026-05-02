@@ -110,7 +110,6 @@ void MainLoop2khz() {
   chassis_out_3 = globals->output_currents[2];
   chassis_out_4 = globals->output_currents[3];
 
-
   dial = globals->rc.dial();
 
   follow_out = globals->pid_chassis_follow_vel.out();
