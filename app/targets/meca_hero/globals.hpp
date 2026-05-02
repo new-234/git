@@ -220,7 +220,10 @@ inline float target_pitch{0};
 inline float follow_out{0};
 
 // 底盘电机
-inline float chassis_out[4]{0};
+inline float chassis_out_1{0};
+inline float chassis_out_2{0};
+inline float chassis_out_3{0};
+inline float chassis_out_4{0};
 
 // 摩擦轮电机
 inline float limit{0};

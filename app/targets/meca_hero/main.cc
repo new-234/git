@@ -12,7 +12,7 @@ volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
 void Init() {
   const auto prepare_uart_rx_to_idle_dma = [](UART_HandleTypeDef &huart, const IRQn_Type uart_irqn,
-                                            const IRQn_Type dma_rx_irqn) {
+                                              const IRQn_Type dma_rx_irqn) {
     // Clear stale UART/DMA state before librm starts ReceiveToIdle mode.
     (void)HAL_UART_AbortReceive(&huart);
     (void)HAL_UART_Abort(&huart);
@@ -105,9 +105,11 @@ void MainLoop2khz() {
   limit = globals->ammo_hero->limit;
 
   // 底盘输出监测
-  for (int i=0;i<4;i++) {
-    chassis_out[i] = globals->output_currents[i];
-  }
+  chassis_out_1 = globals->output_currents[0];
+  chassis_out_2 = globals->output_currents[1];
+  chassis_out_3 = globals->output_currents[2];
+  chassis_out_4 = globals->output_currents[3];
+
 
   dial = globals->rc.dial();
 
