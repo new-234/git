@@ -47,6 +47,10 @@ void Monitor() {
   dial = globals->rc.dial();
 
   follow_out = globals->pid_chassis_follow_vel.out();
+
+  // 超电
+  cap_energy = globals->cms.rx_data_.cap_energy;
+  cap_power = globals->cms.rx_data_.chassis_power;
 }
 
 void Init() {
@@ -83,6 +87,18 @@ void Init() {
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
+  // 超电更新
+  globals->cap_tx_data.feedback_referee_energy_buffer = globals->ref.data().power_heat_data.buffer_energy;
+  globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
+  static int j = 0;
+
+  if (j < 1) {
+    globals->cms.Update(globals->cap_tx_data);
+    j++;
+  } else {
+    j = 0;
+  }
+
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
   globals->led.SetColor(r, g, b);
