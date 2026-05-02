@@ -12,7 +12,7 @@ volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
 void Init() {
   const auto prepare_uart_rx_to_idle_dma = [](UART_HandleTypeDef &huart, const IRQn_Type uart_irqn,
-                                            const IRQn_Type dma_rx_irqn) {
+                                              const IRQn_Type dma_rx_irqn) {
     // Clear stale UART/DMA state before librm starts ReceiveToIdle mode.
     (void)HAL_UART_AbortReceive(&huart);
     (void)HAL_UART_Abort(&huart);
