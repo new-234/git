@@ -24,8 +24,8 @@ void ChassisHero::IfFollow() {
                                              0.002);  // 逆时针旋转为增大
       globals->pid_chassis_follow_vel.Update(globals->pid_chassis_follow_pos.out(), globals->gimbal_motor_yaw.vel(),
                                              0.002);
-      Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out()) /**
-           (1 + globals->ahrs.euler_angle().pitch / 0.6644 * 0.7)*/
+      Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out())/* *
+           (1 + globals->ahrs.euler_angle().pitch / 0.8 * 0.5)*/
           ;  ///< 理应pitch越大，输出越小，注意pitch的正负号
       break;
   }

@@ -81,8 +81,8 @@ struct Globals {
   // 输出电流
   rm::f32 output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{500, 0, 5, 1500, 0};
-  modules::PID pid_chassis_follow_vel{23, 0, 0.4, 16000, 0};
+  modules::PID pid_chassis_follow_pos{300, 0, 3, 1500, 0};
+  modules::PID pid_chassis_follow_vel{36, 0, 0.2, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------
    */
