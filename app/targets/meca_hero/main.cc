@@ -49,7 +49,7 @@ void Monitor() {
   follow_out = globals->pid_chassis_follow_vel.out();
 
   // 超电
-  cap_energy = globals->cms.rx_data_.cap_energy;
+  cap_energy = static_cast<f32>(globals->cms.rx_data_.cap_energy);
   cap_power = globals->cms.rx_data_.chassis_power;
 }
 

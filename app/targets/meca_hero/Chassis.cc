@@ -178,10 +178,10 @@ void ChassisHero::IfOverPower() {
   // 超功率判断
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     // 超功率
-    power_limit = 180;
+    power_limit = 100;
     if (abs(globals->ahrs.euler_angle().pitch) >= 0.6 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
-      power_limit = 360;
+      power_limit = 200;
       overpower_count--;
     }
   } else {
@@ -212,7 +212,7 @@ void ChassisHero::MotorUpdate() {
 
   // 直接的输出电流限制
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
-    if (globals->ref.data().power_heat_data.buffer_energy <= 15 || !globals->cms_manager.all_device_ok()) {
+    if (globals->ref.data().power_heat_data.buffer_energy <= 15 /*|| !globals->cms_manager.all_device_ok()*/) {
       for (int i = 0; i < 4; i++)
         globals->chassis_motor[i].SetCurrent(static_cast<int16_t>(
             globals->output_currents[i] * (globals->ref.data().power_heat_data.buffer_energy) / (60 * 2)));
