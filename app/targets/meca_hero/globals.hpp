@@ -138,7 +138,7 @@ struct Globals {
       buzzer_controller;
   WS2812Led led;                                                ///< WS2812 LED灯
   modules::RgbLedController<modules::led_pattern::Off,          //
-                            modules::led_pattern::GreenBreath,  //
+                            modules::led_pattern::RgbFlow,  //
                             modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器
 
@@ -189,7 +189,7 @@ struct Globals {
     cms_manager << &cms;
 
     buzzer.Init();
-    led_controller.SetPattern<modules::led_pattern::GreenBreath>();
+    led_controller.SetPattern<modules::led_pattern::RgbFlow>();
     buzzer_controller.Play<modules::buzzer_melody::Startup>();
   }
 };

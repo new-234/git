@@ -98,7 +98,7 @@ void SubLoop100hz() {
   // 更新LED和蜂鸣器
   const auto &[r, g, b] = globals->led_controller.Update();
   globals->led.SetColor(r, g, b);
-  // globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
+  globals->buzzer.SetFrequency(globals->buzzer_controller.Update().frequency);
 }
 
 /*---------------------------------------------------250HZ---------------------------------------------------*/
@@ -165,6 +165,7 @@ void MainLoop2khz() {
 extern "C" {
 
 void AppMain() {
+  HAL_Delay(1000);
   // 创建主循环定时任务，定频2khz
   TimerTask mainloop{
       &htim13,                                       //
