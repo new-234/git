@@ -45,31 +45,52 @@ void GimbalHero::AhrsUpdate() {
   accel_z = globals_no_dtcm.imu->accel_z();
 }
 
-void GimbalHero::AimbotControl() {}
+void GimbalHero::AimbotControl() {
+  static int count{0};
+  if (count < 1000 * 2) {
+    count++;
+  } else {
+    target_yaw = -globals->ahrs.euler_angle().yaw - globals->radar_can_communicator.yaw_mard();
+    // target_pitch = -globals->ahrs.euler_angle().pitch - globals->radar_can_communicator.pitch_mard();
+    count = 0;
+  }
+}
 
 void GimbalHero::RemoterControl() {
-  // tc->rc->cc
-  if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
-    target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005 +
-                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
-    // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-    //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-    target_pitch += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
-                    static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
-  } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
-    target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005 +
-                  static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;  // ≈0.003/per
-    // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-    //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-    target_pitch +=
-        static_cast<float>(globals->rc.right_y()) * 0.0000005 + static_cast<float>(globals->rc.mouse_y() / 32768.0 * 3);
-  } else {
-    target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005;
-    // +static_cast<float>(globals->custom_client->mouse_x()) * 0.000015;  // ≈0.003/per
-    // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-    //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-    target_pitch += static_cast<float>(globals->rc.right_y()) * 0.0000005;
-    // +static_cast<float>(globals->custom_client->mouse_y()) * 0.000015;  // 0.00033/per
+  switch (globals->state_machine.getGimbalState_()) {
+    default:
+      Unabling();
+      break;
+    case StateMachine::GimbalState::kRadarAimbot:
+      AimbotControl();
+      break;
+
+    case StateMachine::GimbalState::kNormal:
+      // tc->rc->cc
+      if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
+        target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005 +
+                      static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
+        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
+        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
+        target_pitch += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
+                        static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
+      } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
+        target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005 +
+                      static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;  // ≈0.003/per
+        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
+        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
+        target_pitch += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
+                        static_cast<float>(globals->rc.mouse_y() / 32768.0 * 3);
+      } else {
+        target_yaw += static_cast<float>(globals->rc.right_x()) * 0.000005;
+        // +static_cast<float>(globals->custom_client->mouse_x()) * 0.000015;  // ≈0.003/per
+        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
+        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
+        target_pitch += static_cast<float>(globals->rc.right_y()) * 0.0000005;
+        // +static_cast<float>(globals->custom_client->mouse_y()) * 0.000015;  // 0.00033/per
+      }
+      break;
+
   }
 
   // pitch限位
@@ -107,7 +128,6 @@ void GimbalHero::MotorUpdate() {
 }
 
 void GimbalHero::GimbalControl() {
-  // AimbotControl();
   RemoterControl();
   MotorUpdate();
 }

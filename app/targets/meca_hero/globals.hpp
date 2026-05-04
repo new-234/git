@@ -12,6 +12,7 @@
 #include "State.hpp"
 #include "CMS.H"
 #include "VOFA.hpp"
+#include "common/radar_comm_can.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -57,9 +58,10 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};       ///< 状态机
-  hal::Can can1{hfdcan1}, can2{hfdcan2};  ///< CAN 总线接口
+  hal::Can can1{hfdcan1}, can2{hfdcan2},can3{hfdcan3};  ///< CAN 总线接口
   GkSupercap cms{can1};                   ///< 超电
   GkSupercap::TxData cap_tx_data;
+  RadarCanCommunicator radar_can_communicator{can3}; ///< 雷达自瞄
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
    */
