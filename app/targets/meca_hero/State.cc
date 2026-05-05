@@ -221,10 +221,12 @@ void StateMachine::DT7Switch() {
   switch (StateMachine::rc_switch_position_r) {
     case rm::device::DR16::SwitchPosition::kUnknown:  /// 保险
       current_main_state_ = MainState::kOffline;
+      current_ammo_state_ = AmmoState::kOffline;
       break;
 
     case rm::device::DR16::SwitchPosition::kDown:  /// 失能
       current_main_state_ = MainState::kOffline;
+      current_ammo_state_ = AmmoState::kOffline;
       break;
 
     case rm::device::DR16::SwitchPosition::kMid:  /// 调试
@@ -245,7 +247,7 @@ void StateMachine::DT7Switch() {
             current_sub_state_ = SubState::kNormal;
             current_chassis_state_ = ChassisState::kNormal;
             current_gimbal_state_ = GimbalState::kNormal;
-            current_ammo_state_ = AmmoState::kNormal;
+            // current_ammo_state_ = AmmoState::kNormal;
           }
           break;
 
@@ -265,13 +267,26 @@ void StateMachine::DT7Switch() {
                              SubState::kOverPower);  /// 上坡切换
               break;
 
-            case rm::device::DR16::SwitchPosition::kUp:
-              TestDialSwitch(globals->rc.dial(), current_sub_state_, last_sub_state_,
-                             SubState::kSnipe);  /// 上坡切换
+            case rm::device::DR16::SwitchPosition::kUp: {
+              current_sub_state_ = SubState::kSnipe;
+              switch (current_ammo_state_) {
+                default:
+                  globals->state_machine.current_ammo_state_ = AmmoState::kEnableWaiting;
+                  break;
+                case AmmoState::kEnableWaiting:
+                  if (Waiting(waiting_count_ / 10, ammo_tick_)) current_ammo_state_ = AmmoState::kNormal;
+                  break;
+                case AmmoState::kNormal:
+                  globals->state_machine.AmmoSubStateUpdate();
+                  break;
+              }
+
               break;
+            }
 
             default:
               current_sub_state_ = SubState::kNormal;
+              break;
           };
           break;
 

@@ -168,10 +168,10 @@ void ChassisHero::Remote() {
   // }
 
   // 解算每个轮子的速度
-  V_wheel[0] = -Vy /*+ 1.5 * Vx */ + 1.2 * Vw;
-  V_wheel[1] = Vy /*+ 1.5 * Vx*/ + 1.2 * Vw;
-  V_wheel[2] = Vy /*- 1.5 * Vx */ + 1 * Vw;
-  V_wheel[3] = -Vy /*- 1.5 * Vx*/ + 1 * Vw;
+  V_wheel[0] = -Vy /*+ 1.5 * Vx */ + 1.0 * Vw;
+  V_wheel[1] = Vy /*+ 1.5 * Vx*/ + 1.0 * Vw;
+  V_wheel[2] = Vy /*- 1.5 * Vx */ + 0.5 * Vw;
+  V_wheel[3] = -Vy /*- 1.5 * Vx*/ + 0.5 * Vw;
 }
 
 void ChassisHero::IfOverPower() {

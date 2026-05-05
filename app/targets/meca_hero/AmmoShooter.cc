@@ -39,14 +39,15 @@ bool AmmoHero::EnableJudgement() {
   } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting) {
     Enabling();
     return false;
-  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest) {
+  } else if (globals->state_machine.getMainState_() == StateMachine::MainState::kTest &&
+             globals->state_machine.getSubState_() != StateMachine::SubState::kSnipe) {
     Unabling();
     return false;
   }
   // Ammo状态检测
   switch (globals->state_machine.getAmmoState_()) {
     default:
-      // Unabling();
+      Unabling();
       return false;
     case StateMachine::AmmoState::kOffline:
       Unabling();
