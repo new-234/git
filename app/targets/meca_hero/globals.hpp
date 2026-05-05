@@ -57,11 +57,11 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};       ///< 状态机
-  hal::Can can1{hfdcan1}, can2{hfdcan2},can3{hfdcan3};  ///< CAN 总线接口
-  GkSupercap cms{can3};                   ///< 超电
+  StateMachine state_machine{2000};                      ///< 状态机
+  hal::Can can1{hfdcan1}, can2{hfdcan2}, can3{hfdcan3};  ///< CAN 总线接口
+  GkSupercap cms{can3};                                  ///< 超电
   GkSupercap::TxData cap_tx_data;
-  RadarCanCommunicator radar_can_communicator{can3}; ///< 雷达自瞄
+  RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
    */
@@ -135,8 +135,8 @@ struct Globals {
                             modules::buzzer_melody::Beeps<2>, modules::buzzer_melody::Startup,
                             modules::buzzer_melody::TheLick>
       buzzer_controller;
-  WS2812Led led;                                                ///< WS2812 LED灯
-  modules::RgbLedController<modules::led_pattern::Off,          //
+  WS2812Led led;                                            ///< WS2812 LED灯
+  modules::RgbLedController<modules::led_pattern::Off,      //
                             modules::led_pattern::RgbFlow,  //
                             modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器

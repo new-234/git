@@ -94,10 +94,10 @@ void SubLoop100hz() {
   globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
   globals->cap_tx_data.enable_dcdc = 0x01;
   globals->cap_tx_data.system_restart = 0;
-  globals->cap_tx_data.resv0 =0;
-  globals->cap_tx_data.resv1[0] =0;
-  globals->cap_tx_data.resv1[1] =0;
-  globals->cap_tx_data.resv1[2] =0;
+  globals->cap_tx_data.resv0 = 0;
+  globals->cap_tx_data.resv1[0] = 0;
+  globals->cap_tx_data.resv1[1] = 0;
+  globals->cap_tx_data.resv1[2] = 0;
 
   globals->cms.Update(globals->cap_tx_data);
 
