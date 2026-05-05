@@ -4,5 +4,8 @@
 
 :)
 
-## 2026-5-2 对各条CAN线使用的内存进行移位（Message Ram Offset），否则各CAN线有干扰 操作人：王麒钧
+## 2026-5-2 对各条CAN线使用的内存进行移位（Message Ram Offset）。
+FDCAN2（Message Ram Offset）：853
+FDCAN3（Message Ram Offset）：1706
+操作人：王麒钧
 

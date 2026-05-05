@@ -13,6 +13,8 @@
 #include "CMS.H"
 #include "VOFA.hpp"
 #include "common/radar_comm_can.hpp"
+#include "UI.hpp"
+#include "queue.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -33,7 +35,7 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
 
-  hal::Serial<127> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
+  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
       uart10_tc{huart10, true, true};  ///< 串口接口
 
   BMI088 *imu{nullptr};  ///< IMU
@@ -74,7 +76,7 @@ struct Globals {
   M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
 
   modules::PID velocity_pid[4] = {
-      {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}, {10, 0.5, 0, 16384, 5000}};
+      {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}};
 
   std::array<modules::MotorPowerModel::MotorState, 4> motor_states;
   modules::MotorPowerModel power_model{modules::MotorPowerModel::kM3508};
@@ -92,8 +94,8 @@ struct Globals {
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   M3508 gimbal_motor_pitch{can2, 7, true};
   // PID
-  modules::PID pid_yaw_position{30, 0, 0, 15, 0};
-  modules::PID pid_yaw_velocity{10, 0, 0.01, 9, 0};
+  modules::PID pid_yaw_position{20, 0, 0.0, 15, 0};
+  modules::PID pid_yaw_velocity{4, 0, 0.0001, 9, 0};
   modules::PID pid_pitch_position{60, 0.0, 0, 1, 0.1};
   modules::PID pid_pitch_velocity{5000, 20, 40, 16000, 4000};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
@@ -153,6 +155,7 @@ struct Globals {
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   float vbus;  ///< XT30输入电压
   float gyro_z;
+  bool ui_send_choice{false};
 
   void Init() {
     // CAN初始化
