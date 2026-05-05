@@ -231,7 +231,6 @@ void AppMain() {
 }
 }
 
-
 // void UiRefresh() {
 //   // 接收机器人ID
 //   robot_id = globals->ref.data().robot_status.robot_id;
