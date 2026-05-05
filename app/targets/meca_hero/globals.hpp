@@ -59,7 +59,7 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};       ///< 状态机
   hal::Can can1{hfdcan1}, can2{hfdcan2},can3{hfdcan3};  ///< CAN 总线接口
-  GkSupercap cms{can1};                   ///< 超电
+  GkSupercap cms{can3};                   ///< 超电
   GkSupercap::TxData cap_tx_data;
   RadarCanCommunicator radar_can_communicator{can3}; ///< 雷达自瞄
 
@@ -86,8 +86,7 @@ struct Globals {
   modules::PID pid_chassis_follow_pos{300, 0, 3, 1500, 0};
   modules::PID pid_chassis_follow_vel{36, 0, 0.2, 16000, 0};
 
-  /* ------------------------------------------------云台电机---------------------------------------------------------
-   */
+  /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
   DmMotor<DmMotorControlMode::kMit> gimbal_motor_yaw{
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
@@ -161,6 +160,8 @@ struct Globals {
     can1.Begin();
     can2.SetFilter(0, 0);
     can2.Begin();
+    can3.SetFilter(0, 0);
+    can3.Begin();
 
     // 裁判系统串口接收
     const hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
@@ -259,6 +260,8 @@ inline int ammo_power_state{0};
 // 超电
 inline float cap_energy{0};
 inline float cap_power{0};
+inline u8 cap_error{0};
+inline bool cap_online{false};
 
 extern Globals *globals;
 

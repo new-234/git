@@ -51,6 +51,8 @@ void Monitor() {
   // 超电
   cap_energy = static_cast<f32>(globals->cms.rx_data_.cap_energy);
   cap_power = globals->cms.rx_data_.chassis_power;
+  cap_error = globals->cms.rx_data_.error_code;
+  cap_online = globals->cms_manager.all_device_ok();
 }
 
 void Init() {
@@ -91,7 +93,11 @@ void SubLoop100hz() {
   globals->cap_tx_data.feedback_referee_energy_buffer = globals->ref.data().power_heat_data.buffer_energy;
   globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
   globals->cap_tx_data.enable_dcdc = 0x01;
-  globals->cap_tx_data.system_restart = 0x00;
+  globals->cap_tx_data.system_restart = 0;
+  globals->cap_tx_data.resv0 =0;
+  globals->cap_tx_data.resv1[0] =0;
+  globals->cap_tx_data.resv1[1] =0;
+  globals->cap_tx_data.resv1[2] =0;
 
   globals->cms.Update(globals->cap_tx_data);
 

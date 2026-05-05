@@ -22,7 +22,7 @@ void GimbalHero::AhrsUpdate() {
   globals_no_dtcm.imu->Update();
   // 右手坐标系（前 x，左 y，上 z）
   hyperparameters_.gyro_rectification_ =
-      0.00040 - globals->ahrs.euler_angle().pitch / 0.6644 * 0.0042;  //  这个放在姿态结算后面会有问题，待查
+      -0.0033 - (globals->ahrs.euler_angle().pitch + 0.8) / 0.8 * -0.0035;  //  这个放在姿态结算后面会有问题，待查
   globals->ahrs.Update(rm::modules::ImuData6Dof{
       -globals_no_dtcm.imu->gyro_y(), globals_no_dtcm.imu->gyro_x(),
       globals->gyro_z =
@@ -90,7 +90,6 @@ void GimbalHero::RemoterControl() {
         // +static_cast<float>(globals->custom_client->mouse_y()) * 0.000015;  // 0.00033/per
       }
       break;
-
   }
 
   // pitch限位
