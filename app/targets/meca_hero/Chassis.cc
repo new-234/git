@@ -185,7 +185,7 @@ void ChassisHero::IfOverPower() {
       overpower_count--;
       OverOverPower = true;
     }
-OverOverPower = false;
+    OverOverPower = false;
   } else {
     power_limit = globals->ref.data().robot_status.chassis_power_limit == 0
                       ? 50
