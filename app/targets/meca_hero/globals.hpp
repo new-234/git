@@ -75,8 +75,10 @@ struct Globals {
   ChassisHero *chassis_hero{nullptr};
   M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
 
-  modules::PID velocity_pid[4] = {
-      {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}, {10, 0.5, 0.0, 16384, 5000}};
+  modules::PID velocity_pid[4] = {{10, 0.5, 0.0, 16384, 5000},
+                                  {10, 0.5, 0.0, 16384, 5000},
+                                  {10, 0.5, 0.0, 16384, 5000},
+                                  {10, 0.5, 0.0, 16384, 5000}};
 
   std::array<modules::MotorPowerModel::MotorState, 4> motor_states;
   modules::MotorPowerModel power_model{modules::MotorPowerModel::kM3508};
