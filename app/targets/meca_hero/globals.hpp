@@ -255,6 +255,8 @@ inline StateMachine::GimbalState gimbal_state;
 inline StateMachine::AmmoState ammo_state;
 inline StateMachine::AmmoSubState ammo_sub_state;
 
+inline bool OverOverPower{false};
+
 // 电管输出状态
 inline int chassis_power_state{0};
 inline int gimbal_power_state{0};

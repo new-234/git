@@ -179,16 +179,18 @@ void ChassisHero::IfOverPower() {
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     // 超功率
     power_limit = 100;
-    if (abs(globals->ahrs.euler_angle().pitch) >= 0.6 &&
+    if (abs(globals->ahrs.euler_angle().pitch) >= 0.5 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
       power_limit = 200;
       overpower_count--;
+      OverOverPower = true;
     }
+OverOverPower = false;
   } else {
     power_limit = globals->ref.data().robot_status.chassis_power_limit == 0
                       ? 50
                       : static_cast<float>(globals->ref.data().robot_status.chassis_power_limit);
-    overpower_count = 400;
+    overpower_count = 90;
   }
 }
 

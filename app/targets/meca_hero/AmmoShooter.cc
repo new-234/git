@@ -1,7 +1,7 @@
 #include "AmmoShooter.hpp"
 
 void AmmoHero::Unabling() {
-  globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
+  // globals->magazine_motor.SetMitCommand(0, 0, 0, 0, 0);
   globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kDisable);
   if (globals->shooter_motor_6.rpm() < limit) {
     globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
