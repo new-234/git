@@ -120,12 +120,12 @@ struct Globals {
   M3508 shooter_motor_5{can2, 5, false};
   M3508 shooter_motor_6{can2, 6, false};
   // PID
-  modules::PID pid_shooter_1{30, 0.000001, 0, 10000, 1600};  // 20
-  modules::PID pid_shooter_2{30, 0.000001, 0, 10000, 1600};  // 20
-  modules::PID pid_shooter_3{30, 0.000001, 0, 10000, 1600};
-  modules::PID pid_shooter_4{30, 0.000001, 0, 10000, 1600};
-  modules::PID pid_shooter_5{30, 0.000001, 0, 10000, 1600};
-  modules::PID pid_shooter_6{30, 0.000001, 0, 10000, 1600};
+  modules::PID pid_shooter_1{30, 0.0000007, 0, 10000, 1600};  // 20
+  modules::PID pid_shooter_2{30, 0.0000007, 0, 10000, 1600};  // 20
+  modules::PID pid_shooter_3{30, 0.0000007, 0, 10000, 1600};
+  modules::PID pid_shooter_4{30, 0.0000007, 0, 10000, 1600};
+  modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
+  modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
 
   DR16 rc{globals_no_dtcm.dbus};           ///< DT7
   Referee<RefereeRevision::kNewV120> ref;  ///< 裁判系统
