@@ -116,7 +116,7 @@ void Init() {
 
   prepare_uart_rx_to_idle_dma(huart5, UART5_IRQn, DMA1_Stream0_IRQn);
   prepare_uart_rx_to_idle_dma(huart10, USART10_IRQn, DMA1_Stream5_IRQn);
-  prepare_uart_rx_to_idle_dma(huart7,UART7_IRQn,DMA1_Stream3_IRQn);
+  prepare_uart_rx_to_idle_dma(huart7, UART7_IRQn, DMA1_Stream3_IRQn);
 
   globals->rc.Begin();
   globals_no_dtcm.usart1_ref.Start();
@@ -174,8 +174,6 @@ void SubLoop500hz() {
 
   // 发送Dji电机控制帧
   DjiMotorBase::SendCommand();
-
-
 
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;
