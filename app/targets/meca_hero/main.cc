@@ -116,10 +116,12 @@ void Init() {
 
   prepare_uart_rx_to_idle_dma(huart5, UART5_IRQn, DMA1_Stream0_IRQn);
   prepare_uart_rx_to_idle_dma(huart10, USART10_IRQn, DMA1_Stream5_IRQn);
+  prepare_uart_rx_to_idle_dma(huart7,UART7_IRQn,DMA1_Stream3_IRQn);
 
   globals->rc.Begin();
   globals_no_dtcm.usart1_ref.Start();
   globals_no_dtcm.uart10_tc.Start();
+  globals_no_dtcm.uart7_debug.Start();
 
   globals->gyro_z_filter.set_cutoff_frequency(1000.0f, 50.0f);
 
@@ -152,6 +154,8 @@ void SubLoop100hz() {
 void SubLoop250hz() {
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
+  // VOFA
+  VOFASend();
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
@@ -171,8 +175,7 @@ void SubLoop500hz() {
   // 发送Dji电机控制帧
   DjiMotorBase::SendCommand();
 
-  // VOFA
-  // VOFASend();
+
 
   // 更新输入电压测量值
   globals->vbus = (globals_no_dtcm.adc_val * 3.3f / 65535) * 11.0f;

@@ -35,8 +35,8 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
 
-  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false},
-      uart10_tc{huart10, true, true};  ///< 串口接口
+  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true},
+      uart7_debug{huart7, true, true};  ///< 串口接口
 
   BMI088 *imu{nullptr};  ///< IMU
 

@@ -1,5 +1,7 @@
 #include "VOFA.hpp"
 
+#include "globals.hpp"
+
 #pragma once
 
 // 接收缓冲区定义
@@ -55,20 +57,20 @@ void VOFA_Receive_DMA(UART_HandleTypeDef *huart, uint8_t *rx_buffer) {
   }
 }
 
-Vofa_TxFrame tx_package;
+__attribute__((section(".sram4"))) Vofa_TxFrame tx_package;
 
 void VOFASend() {
   float buffer[10];
-  // buffer[0] = shooter_1;
-  // buffer[1] = shooter_2;
-  // buffer[2] = shooter_3;
-  // buffer[3] = shooter_4;
-  // buffer[4] = shooter_5;
-  // buffer[5] = shooter_6;
-  // buffer[6] = eulerangle_pitch;
-  // buffer[7] = eulerangle_yaw;
-  // buffer[8] = eulerangle_roll;
-  // buffer[9] = globals->imu->accel_x();
+  buffer[0] = globals->shooter_motor_1.rpm();
+  buffer[1] = globals->shooter_motor_2.rpm();
+  buffer[2] = globals->shooter_motor_3.rpm();
+  buffer[3] = globals->shooter_motor_4.rpm();
+  buffer[4] = globals->shooter_motor_5.rpm();
+  buffer[5] = globals->shooter_motor_6.rpm();
+  buffer[6] = -globals->ahrs.euler_angle().yaw;
+  buffer[7] = -globals->ahrs.euler_angle().pitch;
+  buffer[8] = globals->ahrs.euler_angle().roll;
+  buffer[9] = 1;
   VOFA_Prepare_Package(buffer, tx_package, 10);
-  VOFA_Send_JustFloat_DMA(&huart1, tx_package);
+  VOFA_Send_JustFloat_DMA(&huart7, tx_package);
 }
