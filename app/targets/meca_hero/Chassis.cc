@@ -178,10 +178,10 @@ void ChassisHero::IfOverPower() {
   // 超功率判断
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     // 超功率
-    power_limit = 100;
+    power_limit = 200;
     if (abs(globals->ahrs.euler_angle().pitch) >= 0.5 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
-      power_limit = 200;
+      power_limit = 500;
       overpower_count--;
       OverOverPower = true;
     }
