@@ -118,7 +118,7 @@ class StateMachine {
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
   rm::f32 now_angle{0};
-  rm::f32 next_angle{0};  ///< 初始位
+  rm::f32 next_angle{-0.43};  ///< 初始位
 
  private:
   MainState current_main_state_{MainState::kOffline};
