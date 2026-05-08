@@ -197,6 +197,9 @@ struct Globals {
     buzzer.Init();
     led_controller.SetPattern<modules::led_pattern::RgbFlow>();
     buzzer_controller.Play<modules::buzzer_melody::Startup>();
+
+    // UART7 PID 调参 RX
+    PidTuner::Init();
   }
 };
 

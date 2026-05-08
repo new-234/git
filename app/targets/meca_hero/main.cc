@@ -55,6 +55,9 @@ void Monitor() {
   // 状态机更新
   globals->state_machine.StateUpdate();
 
+  // PID 调参命令处理
+  PidTuner::Process();
+
   // 状态机监测
   main_state = globals->state_machine.getMainState_();
   sub_state = globals->state_machine.getSubState_();
