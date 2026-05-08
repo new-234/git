@@ -132,7 +132,7 @@ void Init() {
   globals->gimbal_hero = new GimbalHero();
   globals->ammo_hero = new AmmoHero();
 
-  HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 }
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/

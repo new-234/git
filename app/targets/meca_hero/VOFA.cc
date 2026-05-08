@@ -314,10 +314,14 @@ const ParamEntry *PidTuner::FindEntry(const char *name) {
  */
 static float ReadPidParam(const ParamEntry &e) {
   switch (e.param) {
-    case 'p': return e.pid_first->kp();
-    case 'i': return e.pid_first->ki();
-    case 'd': return e.pid_first->kd();
-    default:  return 0;
+    case 'p':
+      return e.pid_first->kp();
+    case 'i':
+      return e.pid_first->ki();
+    case 'd':
+      return e.pid_first->kd();
+    default:
+      return 0;
   }
 }
 
@@ -327,9 +331,15 @@ static float ReadPidParam(const ParamEntry &e) {
 static void WritePidParam(const ParamEntry &e, float value) {
   for (uint8_t i = 0; i < e.pid_count; i++) {
     switch (e.param) {
-      case 'p': e.pid_first[i].SetKp(value); break;
-      case 'i': e.pid_first[i].SetKi(value); break;
-      case 'd': e.pid_first[i].SetKd(value); break;
+      case 'p':
+        e.pid_first[i].SetKp(value);
+        break;
+      case 'i':
+        e.pid_first[i].SetKi(value);
+        break;
+      case 'd':
+        e.pid_first[i].SetKd(value);
+        break;
     }
   }
 }
@@ -365,8 +375,7 @@ void PidTuner::CmdGetAll() {
   int pos = 0;
   for (int i = 0; i < count; i++) {
     float v = ReadPidParam(table[i]);
-    pos += snprintf(buf + pos, sizeof(buf) - pos, "%-16s %-10.6g  %s\r\n",
-                    table[i].name, (double)v, table[i].desc);
+    pos += snprintf(buf + pos, sizeof(buf) - pos, "%-16s %-10.6g  %s\r\n", table[i].name, (double)v, table[i].desc);
 
     // 每 8 行发一批
     if ((i + 1) % 8 == 0 || i == count - 1) {
@@ -391,8 +400,8 @@ void PidTuner::CmdFuzzyScale(const ParamEntry *e, float e_scale, float de_scale)
     e->pid_first[i].SetFuzzyErrorScale(e_scale).SetFuzzyDErrorScale(de_scale);
   }
   char buf[128];
-  snprintf(buf, sizeof(buf), "OK: %s fuzzy error_scale=%.6g d_error_scale=%.6g\r\n",
-           e->name, (double)e_scale, (double)de_scale);
+  snprintf(buf, sizeof(buf), "OK: %s fuzzy error_scale=%.6g d_error_scale=%.6g\r\n", e->name, (double)e_scale,
+           (double)de_scale);
   SendResponse(buf);
 }
 
@@ -407,18 +416,17 @@ void PidTuner::CmdSave() {
 
   // 底盘速度环
   for (int i = 0; i < 4; i++) {
-    pos += snprintf(buf + pos, sizeof(buf) - pos,
-                    "  {%-5.6gf, %-5.6gf, %-5.6gf, %-5.0ff, %-5.0ff}%s\r\n",
+    pos += snprintf(buf + pos, sizeof(buf) - pos, "  {%-5.6gf, %-5.6gf, %-5.6gf, %-5.0ff, %-5.0ff}%s\r\n",
                     (double)globals->velocity_pid[i].kp(), (double)globals->velocity_pid[i].ki(),
                     (double)globals->velocity_pid[i].kd(), (double)globals->velocity_pid[i].max_out(),
                     (double)globals->velocity_pid[i].max_iout(), i < 3 ? "," : "");
   }
 
   // 其他 PID 用一个宏风格的格式
-#define SAVE_ONE(pid_var)                                                                              \
-  pos += snprintf(buf + pos, sizeof(buf) - pos, "  {%-5.6gf, %-5.6gf, %-5.6gf, %-5.0ff, %-5.0ff}  // " #pid_var "\r\n", \
-                  (double)pid_var.kp(), (double)pid_var.ki(), (double)pid_var.kd(),                    \
-                  (double)pid_var.max_out(), (double)pid_var.max_iout())
+#define SAVE_ONE(pid_var)                                                                                       \
+  pos += snprintf(buf + pos, sizeof(buf) - pos,                                                                 \
+                  "  {%-5.6gf, %-5.6gf, %-5.6gf, %-5.0ff, %-5.0ff}  // " #pid_var "\r\n", (double)pid_var.kp(), \
+                  (double)pid_var.ki(), (double)pid_var.kd(), (double)pid_var.max_out(), (double)pid_var.max_iout())
 
   SAVE_ONE(globals->pid_chassis_follow_pos);
   SAVE_ONE(globals->pid_chassis_follow_vel);

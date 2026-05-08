@@ -18,12 +18,12 @@ void VOFASend();
  * @brief PID 参数表条目 — 将命令名映射到具体 PID 对象和参数类型
  */
 struct ParamEntry {
-  const char *name;                  ///< 命令名 e.g. "kp_yaw_pos"
-  const char *desc;                  ///< 人类可读描述
-  rm::modules::PID *pid_first;       ///< PID 对象指针 (数组则为第一个元素)
-  uint8_t pid_count;                 ///< 1=单个PID, 4=底盘速度环数组
-  char param;                        ///< 'p'=Kp, 'i'=Ki, 'd'=Kd
-  float default_val;                 ///< 默认值 (save 时输出)
+  const char *name;             ///< 命令名 e.g. "kp_yaw_pos"
+  const char *desc;             ///< 人类可读描述
+  rm::modules::PID *pid_first;  ///< PID 对象指针 (数组则为第一个元素)
+  uint8_t pid_count;            ///< 1=单个PID, 4=底盘速度环数组
+  char param;                   ///< 'p'=Kp, 'i'=Ki, 'd'=Kd
+  float default_val;            ///< 默认值 (save 时输出)
 };
 
 /**

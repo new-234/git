@@ -26,7 +26,7 @@ class GimbalHero {
   // 遥控值
   float target_yaw_;
   float target_pitch_;
-  int servo_angle_{1410}; // 1410--1730
+  int servo_angle_{1410};  // 1410--1730
 
   bool EnableJudgement();
   void Unabling();
@@ -37,6 +37,6 @@ class GimbalHero {
   void RemoterControl();
   void MotorUpdate();
 
-public:
+ public:
   void ServoMotorUpdate();
 };
