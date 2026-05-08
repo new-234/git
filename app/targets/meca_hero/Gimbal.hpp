@@ -24,8 +24,9 @@ class GimbalHero {
     int pitch_ff_{0};                  // pitch轴PID前馈
   } hyperparameters_;
   // 遥控值
-  float target_yaw;
-  float target_pitch;
+  float target_yaw_;
+  float target_pitch_;
+  int servo_angle_{1410}; // 1410--1730
 
   bool EnableJudgement();
   void Unabling();
@@ -35,4 +36,7 @@ class GimbalHero {
   void AimbotControl();
   void RemoterControl();
   void MotorUpdate();
+
+public:
+  void ServoMotorUpdate();
 };

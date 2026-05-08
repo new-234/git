@@ -95,6 +95,7 @@ struct Globals {
   DmMotor<DmMotorControlMode::kMit> gimbal_motor_yaw{
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   M3508 gimbal_motor_pitch{can2, 7, true};
+  M2006 gimbal_telescope{can3,};
   // PID
   modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
   modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
