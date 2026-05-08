@@ -115,14 +115,14 @@ void GimbalHero::MotorUpdate() {
 
   // 发送CAN
   globals->gimbal_motor_yaw.SetMitCommand(
-      0, 0, (0.98 + 0.5 * globals->ahrs.euler_angle().pitch / 0.8) * globals->pid_yaw_velocity.out(), 0, 1.4);
+      0, 0, (1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) * globals->pid_yaw_velocity.out(), 0, 1.4);
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     globals->gimbal_motor_pitch.SetCurrent(0);
   } else {
     globals->gimbal_motor_pitch.SetCurrent(
-        static_cast<int16_t>((globals->pid_pitch_velocity.out()) /*+out_feedforward*/));
+        static_cast<int16_t>(((0.7 - 0.3 * globals->ahrs.euler_angle().pitch / 0.3) *globals->pid_pitch_velocity.out()) /*+out_feedforward*/));
   }
 }
 

@@ -87,8 +87,8 @@ struct Globals {
   // 输出电流
   rm::f32 output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{300, 0, 3, 1500, 0};
-  modules::PID pid_chassis_follow_vel{36, 0, 0.2, 16000, 0};
+  modules::PID pid_chassis_follow_pos{400, 0, 3.3, 1500, 0};
+  modules::PID pid_chassis_follow_vel{34, 0, 0.22, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
@@ -96,8 +96,8 @@ struct Globals {
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   M3508 gimbal_motor_pitch{can2, 7, true};
   // PID
-  modules::PID pid_yaw_position{20, 0, 0.0, 15, 0};
-  modules::PID pid_yaw_velocity{4, 0, 0.0001, 9, 0};
+  modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
+  modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
   modules::PID pid_pitch_position{60, 0.0, 0, 1, 0.1};
   modules::PID pid_pitch_velocity{5000, 20, 40, 16000, 4000};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
