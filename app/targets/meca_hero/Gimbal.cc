@@ -57,39 +57,97 @@ void GimbalHero::AimbotControl() {
   }
 }
 
+void GimbalHero::NormalRemoter() {
+  // tc->rc->cc
+  if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
+    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005 +
+                   static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
+    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
+                     static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
+  } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
+    target_yaw_ +=
+        static_cast<float>(globals->rc.right_x()) * 0.000005 + static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;
+    target_pitch_ +=
+        static_cast<float>(globals->rc.right_y()) * 0.0000005 + static_cast<float>(globals->rc.mouse_y() / 32768.0 * 3);
+  } else {
+    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005;
+    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005;
+  }
+}
+
+void GimbalHero::SnipeRemoter() {
+  // tc->rc->cc
+  if ( globals->tc_manager.all_device_ok()) {
+    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
+    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
+    if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
+      target_pitch_ += 0.000005;
+    }
+    if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
+      target_pitch_ -= 0.000005;
+    }
+    if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD)) {
+      target_yaw_ += 0.000005;
+    }
+    if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA)) {
+      target_yaw_ -= 0.000005;
+    }
+  } else if (globals->rc_manager.all_device_ok()) {
+    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
+    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
+    if (globals->rc.key(DR16::Key::kW)) {
+      target_pitch_ += 0.000005;
+    }
+    if (globals->rc.key(DR16::Key::kS)) {
+      target_pitch_ -= 0.000005;
+    }
+    if (globals->rc.key(DR16::Key::kD)) {
+      target_yaw_ += 0.000005;
+    }
+    if (globals->rc.key(DR16::Key::kA)) {
+      target_yaw_ -= 0.000005;
+    }
+  } else {
+    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
+    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
+  }
+}
+
 void GimbalHero::RemoterControl() {
-  switch (globals->state_machine.getGimbalState_()) {
+  switch (globals->state_machine.getSubState_()) {
+    // 普通控制
     default:
-      Unabling();
-      break;
-    case StateMachine::GimbalState::kRadarAimbot:
-      AimbotControl();
+      switch (globals->state_machine.getGimbalState_()) {
+        default:
+          Unabling();
+          break;
+
+        case StateMachine::GimbalState::kRadarAimbot:
+          AimbotControl();
+          break;
+
+        case StateMachine::GimbalState::kNormal:
+          NormalRemoter();
+          break;
+      }
       break;
 
-    case StateMachine::GimbalState::kNormal:
-      // tc->rc->cc
-      if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
-        target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005 +
-                       static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
-        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-        target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
-                         static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
-      } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
-        target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005 +
-                       static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;  // ≈0.003/per
-        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-        target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005 +
-                         static_cast<float>(globals->rc.mouse_y() / 32768.0 * 3);
-      } else {
-        target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005;
-        // +static_cast<float>(globals->custom_client->mouse_x()) * 0.000015;  // ≈0.003/per
-        // snipe_yaw -= static_cast<float>(globals->rc.right_x()) * 0.000005 * 0.5 +
-        //                  static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8 * 0.5;
-        target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005;
-        // +static_cast<float>(globals->custom_client->mouse_y()) * 0.000015;  // 0.00033/per
+    case StateMachine::SubState::kSnipe:
+      // 吊射模式
+      switch (globals->state_machine.getGimbalState_()) {
+        default:
+          Unabling();
+          break;
+
+        case StateMachine::GimbalState::kRadarAimbot:
+          AimbotControl();
+          break;
+
+        case StateMachine::GimbalState::kNormal:
+          SnipeRemoter();
+          break;
       }
+
       break;
   }
 

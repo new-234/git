@@ -35,6 +35,8 @@ class GimbalHero {
   void GimbalControl();
   void AimbotControl();
   void RemoterControl();
+  void NormalRemoter();
+  void SnipeRemoter();
   void MotorUpdate();
 
  public:
