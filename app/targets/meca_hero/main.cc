@@ -1,7 +1,6 @@
 #include "AmmoShooter.hpp"
 #include "Chassis.hpp"
 #include "Gimbal.hpp"
-#include "PitchIdent.hpp"
 #include "common/bsp/timer_task.hpp"
 #include "adc.h"
 #include "globals.hpp"
@@ -134,9 +133,6 @@ void Init() {
   globals->ammo_hero = new AmmoHero();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-
-  // 初始化 Pitch 轴动力学辨识模块
-  PitchIdent::Init();
 }
 
 /*---------------------------------------------------100HZ---------------------------------------------------*/
@@ -164,7 +160,7 @@ void SubLoop250hz() {
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
   // VOFA
-
+  VOFASend();
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
@@ -192,10 +188,6 @@ void SubLoop500hz() {
 void SubLoop1000hz() {
   // 云台状态更新
   globals->gimbal_hero->GimbalUpdate();
-  // 辨识期间暂停 VOFA，释放 UART7 全部带宽给 PitchIdent 数据流
-  if (PitchIdent::state() != PitchIdent::State::kRunning) {
-    VOFASend();
-  }
 }
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
@@ -226,7 +218,7 @@ void MainLoop2khz() {
 extern "C" {
 
 void AppMain() {
-  HAL_Delay(500);
+  HAL_Delay(1000);
   // 创建主循环定时任务，定频2khz
   TimerTask mainloop{
       &htim13,                                       //
