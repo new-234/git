@@ -77,7 +77,7 @@ void GimbalHero::NormalRemoter() {
 
 void GimbalHero::SnipeRemoter() {
   // tc->rc->cc
-  if ( globals->tc_manager.all_device_ok()) {
+  if (globals->tc_manager.all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
     target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
@@ -177,7 +177,8 @@ void GimbalHero::MotorUpdate() {
       0, 0, (1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) * globals->pid_yaw_velocity.out(), 0, 1.4);
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
-  if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
+  if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower ||
+      globals->state_machine.getGimbalSubState_() == StateMachine::GimbalSubState::kPitchlock) {
     globals->gimbal_motor_pitch.SetCurrent(0);
   } else {
     globals->gimbal_motor_pitch.SetCurrent(

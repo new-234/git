@@ -8,6 +8,7 @@ bool overpower{false};     ///< 爬坡-自动触发
 bool follow{true};         ///< 随动标志位
 bool radar_aimbot{false};  ///< 部署模式下的雷达自瞄
 bool fire = {false};       ///< 允许自瞄开火标志位
+bool pitchlock{false};     ///< pitch锁定标志位
 
 /**
  * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
@@ -180,6 +181,12 @@ void StateMachine::GameState() {
             current_gimbal_state_ = GimbalState::kRadarAimbot;
           } else {
             current_gimbal_state_ = GimbalState::kNormal;
+          }
+          if (pitchlock) {
+            last_gimbal_sub_state_ = current_gimbal_sub_state_;
+            current_gimbal_sub_state_ = GimbalSubState::kPitchlock;
+          } else {
+            current_gimbal_sub_state_ = GimbalSubState::kNormal;
           }
           break;
 
@@ -365,6 +372,7 @@ void StateMachine::StateUpdate() {
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
   fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
          globals->rc.key(DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kF)) pitchlock = !pitchlock;
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/
   // 图传最高优先级，图传在C强制失能，S强制进入比赛并进入子模式
