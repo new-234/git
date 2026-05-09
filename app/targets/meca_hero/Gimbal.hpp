@@ -28,6 +28,8 @@ class GimbalHero {
   float target_pitch_;
   int servo_angle_{1410};  // 1410--1730
 
+  float last_pitch_{0};
+
   bool EnableJudgement();
   void Unabling();
   void Enabling();

@@ -154,8 +154,8 @@ void GimbalHero::RemoterControl() {
   // pitch限位
   if (target_pitch_ < -0.02) {
     target_pitch_ = -0.02;
-  } else if (target_pitch_ > 0.8) {
-    target_pitch_ = 0.8;
+  } else if (target_pitch_ > 0.81) {
+    target_pitch_ = 0.81;
   }
 }
 
@@ -174,17 +174,18 @@ void GimbalHero::MotorUpdate() {
 
   // 发送CAN
   globals->gimbal_motor_yaw.SetMitCommand(
-      0, 0, (1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) * globals->pid_yaw_velocity.out(), 0, 1.4);
+      0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.45);
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower ||
       globals->state_machine.getGimbalSubState_() == StateMachine::GimbalSubState::kPitchlock) {
     globals->gimbal_motor_pitch.SetCurrent(0);
-  } else {
+  } else if (){
     globals->gimbal_motor_pitch.SetCurrent(
-        static_cast<int16_t>(((0.7 - 0.3 * globals->ahrs.euler_angle().pitch / 0.3) *
+        static_cast<int16_t>(((0.7 - 0.3 * globals->ahrs.euler_angle().pitch / 0.4) *
                               globals->pid_pitch_velocity.out()) /*+out_feedforward*/));
   }
+  last_pitch_ = globals->ahrs.euler_angle().pitch;
 }
 
 void GimbalHero::ServoMotorUpdate() {
@@ -193,7 +194,7 @@ void GimbalHero::ServoMotorUpdate() {
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1410);
       break;
     case (StateMachine::SubState::kSnipe):
-      servo_angle_ = (1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440;
+      servo_angle_ = 1730/*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, servo_angle_);
       break;
   }
