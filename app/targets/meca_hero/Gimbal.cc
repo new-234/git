@@ -1,5 +1,6 @@
 #include "Gimbal.hpp"
 #include "globals.hpp"
+#include "PitchIdent.hpp"
 
 void GimbalHero::Enabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
@@ -168,10 +169,6 @@ void GimbalHero::MotorUpdate() {
   globals->pid_yaw_velocity.Update(globals->pid_yaw_position.out(),
                                    -globals_no_dtcm.imu->gyro_z() - hyperparameters_.gyro_rectification_, 0.001);
 
-  // pitchPID计算
-  globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
-  globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
-
   // 发送CAN
   globals->gimbal_motor_yaw.SetMitCommand(
       0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.45);
@@ -180,10 +177,54 @@ void GimbalHero::MotorUpdate() {
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower ||
       globals->state_machine.getGimbalSubState_() == StateMachine::GimbalSubState::kPitchlock) {
     globals->gimbal_motor_pitch.SetCurrent(0);
-  } else if (){
+  } else if (globals->ahrs.euler_angle().pitch - last_pitch_ <= 0) {
+    // 辨识模式: 以谐波轨迹作为 pitch 目标，禁用手动前馈以获取纯净 PID 输出
+    if (PitchIdent::state() == PitchIdent::State::kRunning) {
+      target_pitch_ = PitchIdent::target_q();
+      positive_ff_ = 0;
+    }
+
+    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+    globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
+
+    if (PitchIdent::state() != PitchIdent::State::kRunning) {
+      if (globals->pid_pitch_velocity.out() > 500) {
+        positive_ff_ = 3000;
+      } else {
+        positive_ff_ = 0;
+      }
+    }
     globals->gimbal_motor_pitch.SetCurrent(
-        static_cast<int16_t>(((0.7 - 0.3 * globals->ahrs.euler_angle().pitch / 0.4) *
-                              globals->pid_pitch_velocity.out()) /*+out_feedforward*/));
+        static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_));
+
+    if (PitchIdent::state() == PitchIdent::State::kRunning) {
+      PitchIdent::Process(HAL_GetTick(), globals->pid_pitch_velocity.out() + positive_ff_,
+                          -globals->ahrs.euler_angle().pitch, -globals_no_dtcm.imu->gyro_x());
+    }
+  } else if (globals->ahrs.euler_angle().pitch - last_pitch_ > 0) {
+    // 辨识模式: 以谐波轨迹作为 pitch 目标，禁用手动前馈以获取纯净 PID 输出
+    if (PitchIdent::state() == PitchIdent::State::kRunning) {
+      target_pitch_ = PitchIdent::target_q();
+      negaive_ff_ = 0;
+    }
+
+    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+    globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
+
+    if (PitchIdent::state() != PitchIdent::State::kRunning) {
+      if (globals->pid_pitch_velocity.out() < -200) {
+        negaive_ff_ = -2500;
+      } else {
+        negaive_ff_ = 0;
+      }
+    }
+    globals->gimbal_motor_pitch.SetCurrent(
+        static_cast<int16_t>(globals->pid_pitch_velocity.out() + negaive_ff_));
+
+    if (PitchIdent::state() == PitchIdent::State::kRunning) {
+      PitchIdent::Process(HAL_GetTick(), globals->pid_pitch_velocity.out() + negaive_ff_,
+                          -globals->ahrs.euler_angle().pitch, -globals_no_dtcm.imu->gyro_x());
+    }
   }
   last_pitch_ = globals->ahrs.euler_angle().pitch;
 }
@@ -194,7 +235,7 @@ void GimbalHero::ServoMotorUpdate() {
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1410);
       break;
     case (StateMachine::SubState::kSnipe):
-      servo_angle_ = 1730/*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
+      servo_angle_ = 1730 /*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, servo_angle_);
       break;
   }

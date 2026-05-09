@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "globals.hpp"
+#include "PitchIdent.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*  VOFA+ JustFloat 上行 (TX)                                                 */
@@ -35,7 +36,7 @@ void VOFASend() {
   buffer[6] = -globals->ahrs.euler_angle().yaw;
   buffer[7] = -globals->ahrs.euler_angle().pitch;
   buffer[8] = globals->ahrs.euler_angle().roll;
-  buffer[9] = 1;
+  buffer[9] = globals->pid_pitch_velocity.out();
   VOFA_Prepare_Package(buffer, tx_package, 10);
   // .sram4 NOLOAD: 帧尾需要每次显式写入, POR 上电时为随机值
   tx_package.tail[0] = 0x00;
@@ -286,6 +287,12 @@ void PidTuner::ExecuteCommand(char *line) {
     return;
   }
 
+  if (strcmp(token, "ident") == 0) {
+    const char *arg = strtok(nullptr, " \t");
+    CmdIdent(arg ? arg : "");
+    return;
+  }
+
   if (strcmp(token, "help") == 0) {
     CmdHelp(line);
     return;
@@ -449,6 +456,34 @@ void PidTuner::CmdSave() {
   SendResponse(buf);
 }
 
+void PidTuner::CmdIdent(const char *arg) {
+  if (strcmp(arg, "start") == 0) {
+    PitchIdent::Start();
+    if (PitchIdent::state() == PitchIdent::State::kRunning) {
+      SendResponse("OK: ident started. Run serial_collect.py to capture data.\r\n");
+    } else {
+      SendResponse("ERR: ident start failed (already running?)\r\n");
+    }
+  } else if (strcmp(arg, "stop") == 0) {
+    PitchIdent::Stop();
+    SendResponse("OK: ident stopped. Save ident_data.csv and run ident.ipynb.\r\n");
+  } else if (strcmp(arg, "status") == 0) {
+    switch (PitchIdent::state()) {
+      case PitchIdent::State::kIdle:
+        SendResponse("ident status: idle\r\n");
+        break;
+      case PitchIdent::State::kRunning:
+        SendResponse("ident status: running\r\n");
+        break;
+      case PitchIdent::State::kDone:
+        SendResponse("ident status: done\r\n");
+        break;
+    }
+  } else {
+    SendResponse("ERR: usage: ident <start|stop|status>\r\n");
+  }
+}
+
 void PidTuner::CmdHelp(char * /*unused*/) {
   SendResponse(
       "\r\n"
@@ -459,6 +494,7 @@ void PidTuner::CmdHelp(char * /*unused*/) {
       "  fuzzy <param> <0|1>    e.g. fuzzy yaw_pos 1\r\n"
       "  fscale <param> <e> <de> e.g. fscale yaw_pos 0.5 5.0\r\n"
       "  save                   dump all as init code\r\n"
+      "  ident <start|stop|status> pitch axis identification\r\n"
       "  help                   this message\r\n"
       "\r\n"
       "Params: kp/ki/kd _cv | _cf_(pos|vel) | _yaw_(pos|vel) | _pt_(pos|vel)\r\n"

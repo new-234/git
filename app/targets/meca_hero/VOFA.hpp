@@ -40,6 +40,7 @@ struct ParamEntry {
  *   fuzzy <param> <0|1>    - 开关模糊 PID
  *   fscale <param> <e> <de> - 设置模糊尺度因子
  *   save                   - 输出所有参数初始值代码
+ *   ident <start|stop|status> - Pitch 轴动力学辨识
  *   help                   - 帮助
  */
 class PidTuner {
@@ -59,5 +60,6 @@ class PidTuner {
   static void CmdFuzzy(const ParamEntry *e, bool enable);
   static void CmdFuzzyScale(const ParamEntry *e, float e_scale, float de_scale);
   static void CmdSave();
+  static void CmdIdent(const char *arg);
   static void CmdHelp(char *line);
 };
