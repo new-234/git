@@ -67,7 +67,7 @@ void StateMachine::AmmoSubStateUpdate() {
 
     case StateMachine::AmmoSubState::kCooling:
       if ((globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-           globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 120) ||
+           globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100) ||
           globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
       }

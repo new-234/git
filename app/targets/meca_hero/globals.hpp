@@ -100,7 +100,7 @@ struct Globals {
   modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
   modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
   modules::PID pid_pitch_position{70, 0.01, 0, 1, 0.7};
-  modules::PID pid_pitch_velocity{6000, 20, 100, 16000, 4000};
+  modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
