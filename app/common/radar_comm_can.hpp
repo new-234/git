@@ -10,7 +10,7 @@ class RadarCanCommunicator final : public CanDevice {
   RadarCanCommunicator() = delete;
   ~RadarCanCommunicator() override = default;
 
-  [[nodiscard]] u16 distance_mm() const { return distance_mm_; };
+  [[nodiscard]] float pitch_mard() const { return static_cast<float>(pitch_mard_/1000.0); };
   [[nodiscard]] u16 planner_distance_mm() const { return planner_distance_mm_; };
   [[nodiscard]] float yaw_mard() const { return static_cast<float>(yaw_mard_ / 1000.0); };
   [[nodiscard]] u8 status() const { return status_; };
@@ -22,7 +22,7 @@ class RadarCanCommunicator final : public CanDevice {
 
  private:
   // 收nuc
-  u16 distance_mm_{};
+  u16 pitch_mard_{};
   u16 planner_distance_mm_{};
   i16 yaw_mard_{};
   u8 status_{};

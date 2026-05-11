@@ -7,7 +7,7 @@ RadarCanCommunicator::RadarCanCommunicator(rm::hal::CanInterface &can) : CanDevi
 void RadarCanCommunicator::RxCallback(const hal::CanFrame *msg) {
   if (msg->rx_std_id == 0x301) {
     ReportStatus(kOk);
-    distance_mm_ = static_cast<u16>((static_cast<uint16_t>(msg->data[1]) << 8) | msg->data[0]);
+    pitch_mard_ = static_cast<u16>((static_cast<uint16_t>(msg->data[1]) << 8) | msg->data[0]);
     planner_distance_mm_ = static_cast<u16>((static_cast<uint16_t>(msg->data[3]) << 8) | msg->data[2]);
     yaw_mard_ = static_cast<i16>((static_cast<uint16_t>(msg->data[5]) << 8) | msg->data[4]);
     status_ = static_cast<u8>(msg->data[6]);
