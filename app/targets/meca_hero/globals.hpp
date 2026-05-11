@@ -153,6 +153,7 @@ struct Globals {
   DeviceManager<1> tc_manager;
   DeviceManager<1> rc_manager;
   DeviceManager<1> cms_manager;
+  DeviceManager<1> radar_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -194,6 +195,7 @@ struct Globals {
     ammo_manager << &shooter_motor_1 << &shooter_motor_2 << &shooter_motor_3 << &shooter_motor_4 << &shooter_motor_5
                  << &shooter_motor_6;
     cms_manager << &cms;
+    radar_manager << &radar_can_communicator;
 
     buzzer.Init();
     led_controller.SetPattern<modules::led_pattern::RgbFlow>();

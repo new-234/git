@@ -181,6 +181,7 @@ void SubLoop500hz() {
   globals->rc_manager.Update();
   globals->ammo_manager.Update();
   globals->cms_manager.Update();
+  globals->radar_manager.Update();
 
   // 发射机构更新
   globals->ammo_hero->AmmoUpdate();
