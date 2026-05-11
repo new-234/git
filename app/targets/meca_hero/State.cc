@@ -284,6 +284,11 @@ void StateMachine::DT7Switch() {
                   if (Waiting(waiting_count_ / 10, ammo_tick_)) current_ammo_state_ = AmmoState::kNormal;
                   break;
                 case AmmoState::kNormal:
+                  if (abs(globals->rc.left_y()) > 650) {
+                    radar_aimbot = true;
+                  } else {
+                    radar_aimbot = false;
+                  }
                   globals->state_machine.AmmoSubStateUpdate();
                   break;
               }
@@ -370,8 +375,9 @@ void StateMachine::StateUpdate() {
 
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
+
   fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
-         globals->rc.key(DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
+         globals->rc.key(DR16::Key::kCtrl) || key_once_tc(VT03::KeyboardKey::kX);  ///< 允许自瞄开火标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kF)) pitchlock = !pitchlock;
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/
