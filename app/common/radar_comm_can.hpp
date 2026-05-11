@@ -10,7 +10,7 @@ class RadarCanCommunicator final : public CanDevice {
   RadarCanCommunicator() = delete;
   ~RadarCanCommunicator() override = default;
 
-  [[nodiscard]] float pitch_mard() const { return static_cast<float>(pitch_mard_/1000.0); };
+  [[nodiscard]] float pitch_mard() const { return static_cast<float>(pitch_mard_ / 1000.0); };
   [[nodiscard]] u16 planner_distance_mm() const { return planner_distance_mm_; };
   [[nodiscard]] float yaw_mard() const { return static_cast<float>(yaw_mard_ / 1000.0); };
   [[nodiscard]] u8 status() const { return status_; };
