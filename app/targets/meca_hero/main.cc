@@ -55,6 +55,9 @@ void Monitor() {
   // 状态机更新
   globals->state_machine.StateUpdate();
 
+  // PID 调参命令处理
+  PidTuner::Process();
+
   // 状态机监测
   main_state = globals->state_machine.getMainState_();
   sub_state = globals->state_machine.getSubState_();
@@ -157,7 +160,7 @@ void SubLoop250hz() {
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
   // VOFA
-  // VOFASend();
+
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
