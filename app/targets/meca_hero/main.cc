@@ -26,6 +26,7 @@ Graph_Data linex0, linex1, linex2, linex3, linex4;
 
 // 瞄准角度
 Float_Data linef1;
+
 // Cap
 Float_Data CapData;
 
@@ -46,6 +47,12 @@ Graph_Data mouse_left, mouse_right;
 
 // 自瞄提示字符
 String_Data aimbotUI;  // 自瞄状态
+
+// 低发弹量警告
+Graph_Data low_allowance;
+
+// 卡弹警告
+Graph_Data magz_structed;
 
 void UiRefresh();
 void UiSend();
@@ -260,7 +267,8 @@ void UiRefresh() {
     Line_Draw(&linex3, "xx3", UI_Graph_ADD, 2, UI_Color_Black, 2, 920, 450, 1000, 450);
     Line_Draw(&linex4, "xx4", UI_Graph_ADD, 2, UI_Color_Cyan, 2, 930, 420, 990, 420);
 
-    Float_Draw(&CapData, "cms", UI_Graph_ADD, 2, UI_Color_Main, 27, 2, 5, 7050, 150, cms_v * 1000);
+    Float_Draw(&CapData, "cms", UI_Graph_ADD, 2, UI_Color_Main, 27, 2, 5, 7050, 150,
+               globals->cms.rx_data_.cap_energy * 1000);
     Float_Draw(&Pitch, "gbp", UI_Graph_ADD, 2, UI_Color_Green, 27, 1, 3, 7300, 500, 0);
     Float_Draw(&AmmoSpeed, "amm", UI_Graph_ADD, 2, UI_Color_White, 27, 1, 3, 7300, 560, 0);
     Arc_Draw(&YawAngle, "yaw", UI_Graph_ADD, 2, UI_Color_Green, 0, 30, 2, 960, 540, 300, 300);
@@ -318,22 +326,25 @@ void UiRefresh() {
       Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Main, 27, 1, 5, 900, 270,
                  globals->cms.rx_data_.cap_energy * 1000.0f);
     }
-    // 弹速调节
+    // 弹速调节+鼠标操作监控
     if ((globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left) &&
         (globals->rc.mouse_button_right() || globals->tc.data().mouse_button_right))
       Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Purplish_red, 25, 2, 2, 7300, 560,
                  -globals->ammo_hero->shooter_m * 100.0f);
-    else if (globals->rc->mouse_button_right() || globals->tc->data().mouse_button_right) {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Yellow, 25, 2, 2, 7300, 560, -shooter_m * 100.0f);
-    } else if (globals->rc->mouse_button_left() || globals->tc->data().mouse_button_left) {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Orange, 25, 2, 2, 7300, 560, -shooter_m * 100.0f);
+    else if (globals->rc.mouse_button_right() || globals->tc.data().mouse_button_right) {
+      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Yellow, 25, 2, 2, 7300, 560,
+                 -globals->ammo_hero->shooter_m * 100.0f);
+    } else if (globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left) {
+      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Orange, 25, 2, 2, 7300, 560,
+                 -globals->ammo_hero->shooter_m * 100.0f);
     } else {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_White, 25, 2, 2, 7300, 560, -shooter_m * 100.0f);
+      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_White, 25, 2, 2, 7300, 560,
+                 -globals->ammo_hero->shooter_m * 100.0f);
     }
 
     // Pitch
-    if (globals->rc->key(DR16::Key::kCtrl) ||
-        (globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl)))
+    if (globals->rc.key(DR16::Key::kCtrl) ||
+        (globals->tc.data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl)))
       Float_Draw(&Pitch, "gbp", UI_Graph_Change, 2, UI_Color_Purplish_red, 27, 1, 3, 7300, 500,
                  (eulerangle_pitch / 3.14f * 180) * 1000);
     else
@@ -343,13 +354,13 @@ void UiRefresh() {
     // 底盘夹角
     if (globals->state_machine.getChassisState_() == StateMachine::ChassisState::kFollow) {
       Arc_Draw(&YawAngle, "yaw", UI_Graph_Change, 2, UI_Color_Green,
-               rm::modules::Wrap((globals->gimbal_motor_yaw->pos() - 0.49) / 3.14f * 180 - 15, 0, 360),
-               rm::modules::Wrap((globals->gimbal_motor_yaw->pos() - 0.49) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
+               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 - 15, 0, 360),
+               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
                300, 300);
     } else {
       Arc_Draw(&YawAngle, "yaw", UI_Graph_Change, 2, UI_Color_Purplish_red,
-               rm::modules::Wrap((globals->gimbal_motor_yaw->pos() - 0.49) / 3.14f * 180 - 15, 0, 360),
-               rm::modules::Wrap((globals->gimbal_motor_yaw->pos() - 0.49) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
+               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 - 15, 0, 360),
+               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
                300, 300);
     }
 
