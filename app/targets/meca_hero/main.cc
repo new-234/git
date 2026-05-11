@@ -302,9 +302,11 @@ void UiRefresh() {
   } else {
     // 电容电压
     if (globals->state_machine.getSubState_() != StateMachine::SubState::kOverPower) {
-      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 5, 900, 270, globals->cms.rx_data_.cap_energy * 1000.0f);
+      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 5, 900, 270,
+                 globals->cms.rx_data_.cap_energy * 1000.0f);
     } else {
-      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Main, 27, 1, 5, 900, 270, globals->cms.rx_data_.cap_energy * 1000.0f);
+      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Main, 27, 1, 5, 900, 270,
+                 globals->cms.rx_data_.cap_energy * 1000.0f);
     }
     // 弹速调节
     if ((globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left) &&
@@ -411,12 +413,12 @@ void UiSend() {
       UI_ReFresh(1, *(Graph_Data *)tmp_send[0]);
     }
     UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
-      } else if (!IsEmpty(&UI_send_buffer[1]) && !globals->ui_send_choice) {
-        UI_Pop(&UI_send_buffer[1], (u8 *)&tmp_send[0]);
-        Char_ReFresh(*(String_Data *)tmp_send[0]);
-        UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
-      }
+  } else if (!IsEmpty(&UI_send_buffer[1]) && !globals->ui_send_choice) {
+    UI_Pop(&UI_send_buffer[1], (u8 *)&tmp_send[0]);
+    Char_ReFresh(*(String_Data *)tmp_send[0]);
+    UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
+  }
   globals->ui_send_choice ^= true;
 }
 
-void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len,50); }
+void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
