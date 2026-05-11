@@ -124,8 +124,10 @@ class StateMachine {
   [[nodiscard]] AmmoSubState getlastAmmoSubState_() const { return last_ammo_sub_state_; }
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
-  rm::f32 now_angle{0};
-  rm::f32 next_angle{-0.43};  ///< 初始位
+  rm::f32 now_angle{0}; ///< 拨盘真实位置
+  rm::f32 next_angle{-0.43};  ///< 拨盘初始位/应该在的位置
+
+  bool magz_stucked_{false}; ///< 卡弹标志位
 
  private:
   MainState current_main_state_{MainState::kOffline};
@@ -173,6 +175,7 @@ class StateMachine {
 
  public:
   void AmmoSubStateUpdate();
+
   /**
    *
    * @param now

@@ -54,8 +54,10 @@ void StateMachine::AmmoSubStateUpdate() {
       // 堵转检测
       if (globals->state_machine.Waiting(waiting_count_ / 2, ammo_sub_tick_)) {
         if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
-          now_angle = globals->magazine_motor.pos() + 3.141593 / 18;
+          magz_stucked_ = true;
+          now_angle = globals->magazine_motor.pos() + 3.141593 / 9;
         } else {
+          magz_stucked_ = false;
           next_angle -= 3.141593 / 3;
           if (next_angle < -3.141593) {
             next_angle += 2 * 3.141593;
