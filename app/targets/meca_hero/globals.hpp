@@ -251,6 +251,13 @@ inline float limit{0};
 inline float V1{0};
 inline float V2{0};
 
+// 弹速
+inline f32 bullet_initial_speed{0};
+
+// 42mm允许发单量
+inline u16 projectile_allowance_42mm{0};
+inline bool low_allowance_42mm{false};
+
 inline i16 dial{0};
 
 // 状态机
