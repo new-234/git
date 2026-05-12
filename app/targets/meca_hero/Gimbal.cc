@@ -190,6 +190,9 @@ void GimbalHero::MotorUpdate() {
 
     negaive_ff_ = 0;
 
+    globals->gimbal_motor_pitch.SetCurrent(
+      static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+
   } else if (target_pitch_ - last_target_pitch_ < 0) {
     globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
@@ -197,9 +200,10 @@ void GimbalHero::MotorUpdate() {
     negaive_ff_ = 1000;
 
     positive_ff_ = 0;
-  }
-  globals->gimbal_motor_pitch.SetCurrent(
+    globals->gimbal_motor_pitch.SetCurrent(
       static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+  }
+
   last_pitch_ = globals->ahrs.euler_angle().pitch;
 }
 
