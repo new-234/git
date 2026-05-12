@@ -1,8 +1,8 @@
 #include "UI.hpp"
 
 bool push_flag = 0;
-uint8_t Info_Arr[128];
-uint8_t len = 0;
+__attribute__((section(".sram4"))) uint8_t Info_Arr[128];
+__attribute__((section(".sram4"))) uint8_t len = 0;
 unsigned char UI_Seq;  // 包序号
 uint16_t robot_id;
 

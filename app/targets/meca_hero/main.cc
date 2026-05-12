@@ -10,9 +10,9 @@ Globals *globals{nullptr};
 
 volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
-Queue_t UI_send_buffer[2];
-u32 irq;
-u32 tmp_send[7];
+__attribute__((section(".sram4"))) Queue_t UI_send_buffer[2];
+__attribute__((section(".sram4"))) u32 irq;
+__attribute__((section(".sram4"))) u32 tmp_send[7];
 
 extern u16 robot_id;
 extern u8 len;
@@ -62,8 +62,8 @@ void Monitor() {
   // 状态机更新
   globals->state_machine.StateUpdate();
 
-  // PID 调参命令处理
-  PidTuner::Process();
+  // // PID 调参命令处理
+  // PidTuner::Process();
 
   // 状态机监测
   main_state = globals->state_machine.getMainState_();
@@ -140,8 +140,20 @@ void Init() {
   globals->ammo_hero = new AmmoHero();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+
+  // 初始化队列
+  QueueInit(&UI_send_buffer[0]);
+  QueueInit(&UI_send_buffer[1]);
+}
+/*---------------------------------------------------10HZ---------------------------------------------------*/
+void SubLoop10hz() {
+  UiRefresh();
 }
 
+/*---------------------------------------------------50HZ---------------------------------------------------*/
+void SubLoop50hz() {
+  UiSend();
+}
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
   // 超电更新
@@ -215,7 +227,12 @@ void MainLoop2khz() {
   static size_t loop_divisor = 0;
 
   Monitor();
-
+  if (loop_divisor % 200 == 0) {
+    SubLoop10hz();
+  }
+  if (loop_divisor % 40 == 0) {
+    SubLoop50hz();
+  }
   if (loop_divisor % 20 == 0) {  // 100hz
     SubLoop100hz();
   }
