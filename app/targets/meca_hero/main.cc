@@ -59,8 +59,7 @@ void UiSend();
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len);
 
 void Monitor() {
-  // 状态机更新
-  globals->state_machine.StateUpdate();
+
 
   // // PID 调参命令处理
   // PidTuner::Process();
@@ -225,6 +224,9 @@ void SubLoop1000hz() {
  */
 void MainLoop2khz() {
   static size_t loop_divisor = 0;
+
+  // 状态机更新
+  globals->state_machine.StateUpdate();
 
   Monitor();
   if (loop_divisor % 200 == 0) {

@@ -11,9 +11,38 @@ bool fire = {false};       ///< 允许自瞄开火标志位
 bool pitchlock{false};     ///< pitch锁定标志位
 
 /**
+ * @brief 本地计算热量并同步裁判系统更新，防止热量更新频率低导致超热量。
+ * @param fired 是否已开火
+ * @param cooling_value 裁判系统每秒冷却值
+ * @param heat_limit 裁判系统热量限制
+ * @param barrel_heat 裁判系统当前热量
+ * @param frequency 函数执行频率
+ * @param heat_per_bullet 每发弹丸所需热量
+ * @return bool:是否允许发弹
+ */
+bool HeatLocalCaculate(bool fired, const u16 cooling_value, const u16 heat_limit, const u16 barrel_heat, int frequency,
+                       int heat_per_bullet) {
+  static float local_barrel_heat;   ///< 实时计算值
+  static u16 last_ref_barrel_heat;  ///< 检测值
+  if (last_ref_barrel_heat == barrel_heat && barrel_heat != 0 ) {
+    local_barrel_heat -=
+        static_cast<float>(cooling_value) / static_cast<float>(frequency) - static_cast<float>(fired * heat_per_bullet);
+  } else {
+    last_ref_barrel_heat = barrel_heat;
+    local_barrel_heat = barrel_heat;
+  }
+  if (static_cast<float>(heat_limit) - local_barrel_heat >= 100) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
  * @brief 发射机构子状态切换逻辑（拨盘打弹逻辑）
  */
 void StateMachine::AmmoSubStateUpdate() {
+  static bool fired{false};
   switch (current_ammo_sub_state_) {
     default:
       current_ammo_sub_state_ = StateMachine::AmmoSubState::kInit;
@@ -52,7 +81,7 @@ void StateMachine::AmmoSubStateUpdate() {
 
     case StateMachine::AmmoSubState::kFire:
       // 堵转检测
-      if (globals->state_machine.Waiting(waiting_count_ / 2, ammo_sub_tick_)) {
+      if (globals->state_machine.Waiting(waiting_count_ / 5, ammo_sub_tick_)) {
         if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
           magz_stucked_ = true;
           now_angle = globals->magazine_motor.pos() + 3.141593 / 9;
@@ -63,16 +92,19 @@ void StateMachine::AmmoSubStateUpdate() {
             next_angle += 2 * 3.141593;
           }
         }
+        fired = true;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kCooling;
       }
       break;
 
     case StateMachine::AmmoSubState::kCooling:
-      if ((globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-           globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100) ||
+      if (HeatLocalCaculate(fired, globals->ref.data().robot_status.shooter_barrel_cooling_value,
+                            globals->ref.data().robot_status.shooter_barrel_heat_limit,
+                            globals->ref.data().power_heat_data.shooter_42mm_barrel_heat, 2000, 100) ||
           globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
       }
+      fired = false;
   }
 }
 
