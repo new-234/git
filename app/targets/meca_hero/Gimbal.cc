@@ -51,7 +51,8 @@ void GimbalHero::AimbotControl() {
   if (count < 1000 * 2) {
     count++;
   } else {
-    if (globals->radar_can_communicator.vaild() && globals->radar_can_communicator.fresh() && globals->radar_manager.all_device_ok()) {
+    if (globals->radar_can_communicator.vaild() && globals->radar_can_communicator.fresh() &&
+        globals->radar_manager.all_device_ok()) {
       target_yaw_ = -globals->ahrs.euler_angle().yaw - globals->radar_can_communicator.yaw_mard();
       target_pitch_ = -globals->ahrs.euler_angle().pitch - globals->radar_can_communicator.pitch_mard();
       count = 0;
