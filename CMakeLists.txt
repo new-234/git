@@ -62,6 +62,7 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 
 # fix sprintf float issue
 add_link_options(-u_printf_float)
+add_compile_definitions(LIBRM_BYPASS_HAL_ASSERT)
 
 add_subdirectory(libs)
 
