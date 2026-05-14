@@ -285,7 +285,7 @@ void UiRefresh() {
   if (globals->tc.data().keyboard_key & static_cast<int16_t>(device::VT03::KeyboardKey::kR) ||
       globals->rc.key(device::DR16::Key::kR)) {
     // Line_Draw(&image_x, "xxx", UI_Graph_ADD, 0, UI_Color_Orange, 2, 918, 515, 978, 515);
-    Line_Draw(&image_y, "yyy", UI_Graph_ADD, 2, UI_Color_Orange, 2, 948, 465, 948, 565);
+    Line_Draw(&image_y, "yyy", UI_Graph_ADD, 2, UI_Color_Orange, 2, 948, 0, 948, 1080);
     Line_Draw(&linex0, "xx0", UI_Graph_ADD, 2, UI_Color_Purplish_red, 2, 940, 525, 980, 525);
     Line_Draw(&linex1, "xx1", UI_Graph_ADD, 2, UI_Color_Green, 2, 900, 500, 1020, 500);
     Line_Draw(&linex2, "xx2", UI_Graph_ADD, 2, UI_Color_Pink, 2, 910, 470, 1010, 470);
@@ -301,7 +301,7 @@ void UiRefresh() {
     Rectangle_Draw(&p1, "p01", UI_Graph_ADD, 3, UI_Color_Purplish_red, 0, 360, 800, 420, 750);
     Rectangle_Draw(&p2, "p02", UI_Graph_ADD, 3, UI_Color_Purplish_red, 0, 360, 750, 420, 700);
 
-    Char_Draw(&aimbotUI, "aim", UI_Graph_ADD, 0, UI_Color_Green, 25, 15, 2, 360, 800, "AIMBOT\nAUTOFIRE");
+    Char_Draw(&aimbotUI, "aim", UI_Graph_ADD, 0, UI_Color_Green, 25, 11, 2, 360, 800, "vaild\nfrash");
 
     // Circle_Draw(&mouse_left, "msl", UI_Graph_ADD, 4, UI_Color_Black, 25, 1800, 100, 50);
     // Circle_Draw(&mouse_right, "msr", UI_Graph_ADD, 4, UI_Color_Black, 25, 1850, 100, 50);

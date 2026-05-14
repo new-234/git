@@ -99,7 +99,7 @@ struct Globals {
   // PID
   modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
   modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
-  modules::PID pid_pitch_position{70, 0.01, 0, 1, 0.7};
+  modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
@@ -304,4 +304,10 @@ inline bool key_once_tc(VT03::KeyboardKey key) {
     key_once_flag &= ~static_cast<int16_t>(key);  // 按键松开，清除标记
     return false;
   }
+}
+
+inline void ChangePID(rm::modules::PID &pid, f32 kp, f32 ki, f32 kd) {
+  pid.SetKp(kp);
+  pid.SetKi(ki);
+  pid.SetKd(kd);
 }
