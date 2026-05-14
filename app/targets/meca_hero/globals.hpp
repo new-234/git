@@ -282,6 +282,12 @@ inline float cap_energy{0};
 inline float cap_power{0};
 inline u8 cap_error{0};
 inline bool cap_online{false};
+inline int cap_error_count{0};
+
+// radar
+inline bool radar_online{false};
+inline float radar_yaw{0};
+inline float radar_pitch{0};
 
 extern Globals *globals;
 

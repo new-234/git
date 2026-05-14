@@ -59,8 +59,6 @@ void UiSend();
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len);
 
 void Monitor() {
-
-
   // // PID 调参命令处理
   // PidTuner::Process();
 
@@ -103,6 +101,10 @@ void Monitor() {
   cap_power = globals->cms.rx_data_.chassis_power;
   cap_error = globals->cms.rx_data_.error_code;
   cap_online = globals->cms_manager.all_device_ok();
+
+  radar_online = globals->radar_manager.all_device_ok();
+  radar_yaw = globals->radar_can_communicator.yaw_mard();
+  radar_pitch = globals->radar_can_communicator.pitch_mard();
 }
 
 void Init() {
@@ -145,21 +147,24 @@ void Init() {
   QueueInit(&UI_send_buffer[1]);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
-void SubLoop10hz() {
-  UiRefresh();
-}
+void SubLoop10hz() { UiRefresh(); }
 
 /*---------------------------------------------------50HZ---------------------------------------------------*/
-void SubLoop50hz() {
-  UiSend();
-}
+void SubLoop50hz() { UiSend(); }
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
   // 超电更新
   globals->cap_tx_data.feedback_referee_energy_buffer = globals->ref.data().power_heat_data.buffer_energy;
   globals->cap_tx_data.feedback_referee_power_limit = globals->ref.data().robot_status.chassis_power_limit;
   globals->cap_tx_data.enable_dcdc = 0x01;
-  globals->cap_tx_data.system_restart = 0;
+  static int cap_error_count = 0;
+  ::cap_error_count = cap_error_count;
+  if (globals->cms.rx_data_.error_code != 0 && cap_error_count < 5) {
+    globals->cap_tx_data.system_restart = 1;
+    cap_error_count++;
+  } else {
+    globals->cap_tx_data.system_restart = 0;
+  }
   globals->cap_tx_data.resv0 = 0;
   globals->cap_tx_data.resv1[0] = 0;
   globals->cap_tx_data.resv1[1] = 0;
@@ -229,6 +234,7 @@ void MainLoop2khz() {
   globals->state_machine.StateUpdate();
 
   Monitor();
+
   if (loop_divisor % 200 == 0) {
     SubLoop10hz();
   }

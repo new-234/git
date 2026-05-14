@@ -48,13 +48,13 @@ void GimbalHero::AhrsUpdate() {
 
 void GimbalHero::AimbotControl() {
   static int count{0};
-  if (count < 1000 * 2) {
+  if (count < 100) {
     count++;
   } else {
     if (globals->radar_can_communicator.vaild() && globals->radar_can_communicator.fresh() &&
         globals->radar_manager.all_device_ok()) {
       target_yaw_ = -globals->ahrs.euler_angle().yaw - globals->radar_can_communicator.yaw_mard();
-      target_pitch_ = -globals->ahrs.euler_angle().pitch - globals->radar_can_communicator.pitch_mard();
+      target_pitch_ = globals->radar_can_communicator.pitch_mard();
       count = 0;
     }
   }
@@ -179,10 +179,32 @@ void GimbalHero::MotorUpdate() {
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower ||
-      globals->state_machine.getGimbalSubState_() == StateMachine::GimbalSubState::kPitchlock ||
+      // globals->state_machine.getGimbalSubState_() == StateMachine::GimbalSubState::kPitchlock ||
       globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe) {
-    globals->gimbal_motor_pitch.SetCurrent(0);
-    target_pitch_ = globals->ahrs.euler_angle().pitch;
+    if (target_pitch_ - last_target_pitch_ > 0) {
+      globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+      globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
+
+      positive_ff_ = 3000;
+
+      negaive_ff_ = 0;
+
+      globals->gimbal_motor_pitch.SetCurrent(
+          static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+
+    } else if (target_pitch_ - last_target_pitch_ < 0) {
+      globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+      globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
+
+      negaive_ff_ = 1000;
+
+      positive_ff_ = 0;
+      globals->gimbal_motor_pitch.SetCurrent(
+          static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+    } else if (target_pitch_ == last_target_pitch_) {
+      globals->gimbal_motor_pitch.SetCurrent(0);
+      target_pitch_ = -globals->ahrs.euler_angle().pitch;
+    }
   } else if (target_pitch_ - last_target_pitch_ >= 0) {
     globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
@@ -192,7 +214,7 @@ void GimbalHero::MotorUpdate() {
     negaive_ff_ = 0;
 
     globals->gimbal_motor_pitch.SetCurrent(
-      static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+        static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
 
   } else if (target_pitch_ - last_target_pitch_ < 0) {
     globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
@@ -202,7 +224,7 @@ void GimbalHero::MotorUpdate() {
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(
-      static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
+        static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
   }
 
   last_pitch_ = globals->ahrs.euler_angle().pitch;

@@ -44,10 +44,10 @@ class StateMachine {
     kRadarAimbot,
   };
 
-  enum class GimbalSubState {
-    kNormal,
-    kPitchlock,
-  };
+  // enum class GimbalSubState {
+  //   kNormal,
+  //   kPitchlock,
+  // };
 
   enum class AmmoState {
     kOffline,
@@ -114,8 +114,8 @@ class StateMachine {
   void setChassisState(ChassisState state) { current_chassis_state_ = state; }
   [[nodiscard]] GimbalState getGimbalState_() const { return current_gimbal_state_; }
   [[nodiscard]] GimbalState getlastGimbalState_() const { return last_gimbal_state_; }
-  [[nodiscard]] GimbalSubState getGimbalSubState_() const { return current_gimbal_sub_state_; }
-  [[nodiscard]] GimbalSubState getlastGimbalSubState_() const { return last_gimbal_sub_state_; }
+  // [[nodiscard]] GimbalSubState getGimbalSubState_() const { return current_gimbal_sub_state_; }
+  // [[nodiscard]] GimbalSubState getlastGimbalSubState_() const { return last_gimbal_sub_state_; }
   void setGimbalState(GimbalState state) { current_gimbal_state_ = state; }
   [[nodiscard]] AmmoState getAmmoState_() const { return current_ammo_state_; }
   [[nodiscard]] AmmoState getlastAmmoState_() const { return last_ammo_state_; }
@@ -153,8 +153,8 @@ class StateMachine {
   GimbalState last_gimbal_state_{GimbalState::kNormal};
   TickTimer gimbal_tick_;
 
-  GimbalSubState current_gimbal_sub_state_{GimbalSubState::kNormal};
-  GimbalSubState last_gimbal_sub_state_{GimbalSubState::kNormal};
+  // GimbalSubState current_gimbal_sub_state_{GimbalSubState::kNormal};
+  // GimbalSubState last_gimbal_sub_state_{GimbalSubState::kNormal};
   TickTimer gimbal_sub_tick_;
 
   TickTimer test_switch_tick_;
