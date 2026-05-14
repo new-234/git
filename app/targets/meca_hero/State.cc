@@ -24,7 +24,7 @@ bool HeatLocalCaculate(bool fired, const u16 cooling_value, const u16 heat_limit
                        int heat_per_bullet) {
   static float local_barrel_heat;   ///< 实时计算值
   static u16 last_ref_barrel_heat;  ///< 检测值
-  if (last_ref_barrel_heat == barrel_heat && barrel_heat != 0 ) {
+  if (last_ref_barrel_heat == barrel_heat && barrel_heat != 0) {
     local_barrel_heat -=
         static_cast<float>(cooling_value) / static_cast<float>(frequency) - static_cast<float>(fired * heat_per_bullet);
   } else {
