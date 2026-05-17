@@ -38,7 +38,7 @@ struct GlobalsNoDtcm {
 
   hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true};
 
-  hal::Serial<200> uart7_debug{huart7, true, true};  ///< 串口接口
+  hal::Serial<128> uart7_debug{huart7, true, true};  ///< 串口接口
 
   BMI088 *imu{nullptr};  ///< IMU
 
@@ -102,7 +102,7 @@ struct Globals {
   M2006 gimbal_telescope{can3, 1, false};
   // PID
   modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
-  modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
+  modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
   modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
@@ -138,8 +138,8 @@ struct Globals {
   RefereeUser<RefereeRevision::kNewV120> refSub = RefereeUser<RefereeRevision::kNewV120>(ref); /// 子协议
   VT03 tc;                                 ///< 图传
 
-  // modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
-  device::HipnucImu ahrs{globals_no_dtcm.uart7_debug};
+  modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
   modules::LowPassFilterConstDt<float> gyro_z_filter;
 
   Buzzer buzzer;  ///< 蜂鸣器
@@ -207,7 +207,7 @@ struct Globals {
                  << &shooter_motor_6;
     cms_manager << &cms;
     radar_manager << &radar_can_communicator;
-    Imu_manager << &ahrs;
+    Imu_manager << &HipnucImu;
 
     buzzer.Init();
     led_controller.SetPattern<modules::led_pattern::RgbFlow>();

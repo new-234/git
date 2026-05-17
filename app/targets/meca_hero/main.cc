@@ -229,7 +229,7 @@ void SubLoop500hz() {
 void SubLoop1000hz() {
   // 云台状态更新
   globals->gimbal_hero->GimbalUpdate();
-  VOFASend();
+  // VOFASend();
 }
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
