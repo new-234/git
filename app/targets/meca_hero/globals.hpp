@@ -35,8 +35,9 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
 
-  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true},
-      uart7_debug{huart7, true, true};  ///< 串口接口
+  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true};
+
+  hal::Serial<200> uart7_debug{huart7, true, true};  ///< 串口接口
 
   BMI088 *imu{nullptr};  ///< IMU
 
@@ -64,6 +65,8 @@ struct Globals {
   GkSupercap cms{can3};                                  ///< 超电
   GkSupercap::TxData cap_tx_data;
   RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
+
+  // modules::KeyboardHandler<> keyboard_handler(device::DR16::Key);
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
    */
@@ -95,12 +98,13 @@ struct Globals {
   DmMotor<DmMotorControlMode::kMit> gimbal_motor_yaw{
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
   M3508 gimbal_motor_pitch{can2, 7, true};
-  // M2006 gimbal_telescope{can3,};
+  M2006 gimbal_telescope{can3, 1, false};
   // PID
   modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
   modules::PID pid_yaw_velocity{8, 0, 0.0001, 9, 0};
   modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
+  modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
@@ -132,7 +136,8 @@ struct Globals {
   Referee<RefereeRevision::kNewV120> ref;  ///< 裁判系统
   VT03 tc;                                 ///< 图传
 
-  modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  // modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  device::HipnucImu ahrs{globals_no_dtcm.uart7_debug};
   modules::LowPassFilterConstDt<float> gyro_z_filter;
 
   Buzzer buzzer;  ///< 蜂鸣器
@@ -154,6 +159,7 @@ struct Globals {
   DeviceManager<1> rc_manager;
   DeviceManager<1> cms_manager;
   DeviceManager<1> radar_manager;
+  DeviceManager<1> Imu_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -196,13 +202,14 @@ struct Globals {
                  << &shooter_motor_6;
     cms_manager << &cms;
     radar_manager << &radar_can_communicator;
+    Imu_manager << &ahrs;
 
     buzzer.Init();
     led_controller.SetPattern<modules::led_pattern::RgbFlow>();
     buzzer_controller.Play<modules::buzzer_melody::Startup>();
 
     // UART7 PID 调参 RX
-    PidTuner::Init();
+    // PidTuner::Init();
   }
 };
 
@@ -288,6 +295,9 @@ inline int cap_error_count{0};
 inline bool radar_online{false};
 inline float radar_yaw{0};
 inline float radar_pitch{0};
+
+// Imu
+inline bool Imu_online{false};
 
 extern Globals *globals;
 

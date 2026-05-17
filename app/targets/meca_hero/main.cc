@@ -32,6 +32,7 @@ Float_Data CapData;
 
 // IMU
 Float_Data Pitch;
+Float_Data Yaw;
 
 // 弹速偏置
 Float_Data AmmoSpeed;
@@ -105,6 +106,8 @@ void Monitor() {
   radar_online = globals->radar_manager.all_device_ok();
   radar_yaw = globals->radar_can_communicator.yaw_mard();
   radar_pitch = globals->radar_can_communicator.pitch_mard();
+
+  Imu_online = globals->Imu_manager.all_device_ok();
 }
 
 void Init() {
@@ -205,6 +208,7 @@ void SubLoop500hz() {
   globals->ammo_manager.Update();
   globals->cms_manager.Update();
   globals->radar_manager.Update();
+  globals->Imu_manager.Update();
 
   // 发射机构更新
   globals->ammo_hero->AmmoUpdate();
@@ -295,6 +299,7 @@ void UiRefresh() {
     Float_Draw(&CapData, "cms", UI_Graph_ADD, 2, UI_Color_Main, 27, 2, 5, 7050, 150,
                globals->cms.rx_data_.cap_energy * 1000);
     Float_Draw(&Pitch, "gbp", UI_Graph_ADD, 2, UI_Color_Green, 27, 1, 3, 7300, 500, 0);
+    Float_Draw(&Yaw, "gby", UI_Graph_ADD, 2, UI_Color_Green, 27, 1, 3, 7300, 440, 0);
     Float_Draw(&AmmoSpeed, "amm", UI_Graph_ADD, 2, UI_Color_White, 27, 1, 3, 7300, 560, 0);
     Arc_Draw(&YawAngle, "yaw", UI_Graph_ADD, 2, UI_Color_Green, 0, 30, 2, 960, 540, 300, 300);
 
@@ -323,6 +328,8 @@ void UiRefresh() {
     irq = (u32)&AmmoSpeed;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
     irq = (u32)&Pitch;
+    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
+    irq = (u32)&Yaw;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
     irq = (u32)&YawAngle;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
@@ -376,6 +383,9 @@ void UiRefresh() {
       Float_Draw(&Pitch, "gbp", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 3, 7300, 500,
                  (eulerangle_pitch / 3.14f * 180) * 1000);
 
+    Float_Draw(&Yaw, "gby", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 3, 7300, 440,
+                 (eulerangle_yaw / 3.14f * 180) * 1000);
+
     // 底盘夹角
     if (globals->state_machine.getChassisState_() == StateMachine::ChassisState::kFollow) {
       Arc_Draw(&YawAngle, "yaw", UI_Graph_Change, 2, UI_Color_Green,
@@ -418,6 +428,8 @@ void UiRefresh() {
     irq = (u32)&AmmoSpeed;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
     irq = (u32)&Pitch;
+    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
+    irq = (u32)&Yaw;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
     irq = (u32)&YawAngle;
     EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);

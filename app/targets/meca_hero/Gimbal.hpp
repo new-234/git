@@ -43,7 +43,6 @@ class GimbalHero {
   void NormalRemoter();
   void SnipeRemoter();
   void MotorUpdate();
-
- public:
   void ServoMotorUpdate();
+  void ScopeMotorUpdate();
 };

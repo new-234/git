@@ -24,7 +24,7 @@ bool HeatLocalCaculate(bool fired, const u16 cooling_value, const u16 heat_limit
                        int heat_per_bullet) {
   static float local_barrel_heat;   ///< 实时计算值
   static u16 last_ref_barrel_heat;  ///< 检测值
-  if (last_ref_barrel_heat == barrel_heat && barrel_heat != 0 ) {
+  if (last_ref_barrel_heat == barrel_heat && barrel_heat != 0) {
     local_barrel_heat -=
         static_cast<float>(cooling_value) / static_cast<float>(frequency) - static_cast<float>(fired * heat_per_bullet);
   } else {
@@ -73,7 +73,7 @@ void StateMachine::AmmoSubStateUpdate() {
                  globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/)/* &&
               (globals->ref.data().robot_status.shooter_barrel_heat_limit >=
                globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100)*/ &&
-              (globals->shooter_motor_1.rpm() < -3500 && globals->shooter_motor_4.rpm() < -3500)) {
+              (globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800)) {
         now_angle = next_angle;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
       }
@@ -81,7 +81,7 @@ void StateMachine::AmmoSubStateUpdate() {
 
     case StateMachine::AmmoSubState::kFire:
       // 堵转检测
-      if (globals->state_machine.Waiting(waiting_count_ / 5, ammo_sub_tick_)) {
+      if (globals->state_machine.Waiting(waiting_count_, ammo_sub_tick_)) {
         if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
           magz_stucked_ = true;
           now_angle = globals->magazine_motor.pos() + 3.141593 / 9;
@@ -98,9 +98,9 @@ void StateMachine::AmmoSubStateUpdate() {
       break;
 
     case StateMachine::AmmoSubState::kCooling:
-      if (HeatLocalCaculate(fired, globals->ref.data().robot_status.shooter_barrel_cooling_value,
-                            globals->ref.data().robot_status.shooter_barrel_heat_limit,
-                            globals->ref.data().power_heat_data.shooter_42mm_barrel_heat, 2000, 100) ||
+      if (globals->ref.data().robot_status.shooter_barrel_heat_limit -
+                  globals->ref.data().power_heat_data.shooter_42mm_barrel_heat >=
+              100 ||
           globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
       }
@@ -393,6 +393,7 @@ void StateMachine::StateUpdate() {
   rc_switch_position_l = globals->rc.switch_l();
   tc_switch_position = globals->tc.data().switch_position;
   rc_switch_position_r = globals->rc.switch_r();
+  // globals->keyboard_handler().Update(DR16::Key::)
   // gimbal_power_management_last_flag_ = globals->ref.data().robot_status.power_management_gimbal_output;
   // ammo_power_management_last_flag_ = globals->ref.data().robot_status.power_management_shooter_output;
   // chassis_power_management_last_flag_ = globals->ref.data().robot_status.power_management_chassis_output;
@@ -412,6 +413,11 @@ void StateMachine::StateUpdate() {
 
   fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
          globals->rc.key(DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
+  if (key_once_tc(VT03::kV)) {
+    scope_state++;
+    scope_state %= 4;  // 循环切换状态（0→1→2→3→0）
+    scope_count = 0;
+  }
   // if (key_once_tc(rm::device::VT03::KeyboardKey::kF)) pitchlock = !pitchlock;
 
   /*---------------------------------------------------状态机逻辑----------------------------------------------------*/

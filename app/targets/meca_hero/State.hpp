@@ -176,6 +176,9 @@ class StateMachine {
  public:
   void AmmoSubStateUpdate();
 
+  rm::u16 scope_state{0};
+  rm::u16 scope_count{0};
+
   /**
    *
    * @param now

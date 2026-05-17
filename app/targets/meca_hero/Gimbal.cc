@@ -11,8 +11,8 @@ void GimbalHero::Unabling() {
   globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
   globals->gimbal_motor_pitch.SetCurrent(0);
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
-  target_yaw_ = -globals->ahrs.euler_angle().yaw;
-  target_pitch_ = -globals->ahrs.euler_angle().pitch;
+  target_yaw_ = -globals->ahrs.yaw();
+  target_pitch_ = -globals->ahrs.pitch();
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1600);
 }
 
@@ -22,17 +22,17 @@ void GimbalHero::Unabling() {
 void GimbalHero::AhrsUpdate() {
   globals_no_dtcm.imu->Update();
   // 右手坐标系（前 x，左 y，上 z）
-  hyperparameters_.gyro_rectification_ =
-      -0.0033 - (globals->ahrs.euler_angle().pitch + 0.8) / 0.8 * -0.0035;  //  这个放在姿态结算后面会有问题，待查
-  globals->ahrs.Update(rm::modules::ImuData6Dof{
-      -globals_no_dtcm.imu->gyro_y(), globals_no_dtcm.imu->gyro_x(),
-      globals->gyro_z =
-          globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
-      -globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_z()});
+  // hyperparameters_.gyro_rectification_ =
+  //     -0.0033 - (globals->ahrs.euler_angle().pitch + 0.8) / 0.8 * -0.0035;  //  这个放在姿态结算后面会有问题，待查
+  // globals->ahrs.Update(rm::modules::ImuData6Dof{
+  //     -globals_no_dtcm.imu->gyro_y(), globals_no_dtcm.imu->gyro_x(),
+  //     globals->gyro_z =
+  //         globals->gyro_z_filter.apply(globals_no_dtcm.imu->gyro_z()) + hyperparameters_.gyro_rectification_,
+  //     -globals_no_dtcm.imu->accel_y(), globals_no_dtcm.imu->accel_x(), globals_no_dtcm.imu->accel_z()});
 
-  monitor_.euler_yaw_ = -globals->ahrs.euler_angle().yaw;
-  monitor_.euler_pitch_ = -globals->ahrs.euler_angle().pitch;
-  monitor_.euler_roll_ = -globals->ahrs.euler_angle().roll;
+  monitor_.euler_yaw_ = -globals->ahrs.yaw();
+  monitor_.euler_pitch_ = -globals->ahrs.pitch();
+  monitor_.euler_roll_ = -globals->ahrs.roll();
 
   // 监测
   eulerangle_yaw = monitor_.euler_yaw_;
@@ -53,7 +53,7 @@ void GimbalHero::AimbotControl() {
   } else {
     if (globals->radar_can_communicator.vaild() && globals->radar_can_communicator.fresh() &&
         globals->radar_manager.all_device_ok()) {
-      target_yaw_ = -globals->ahrs.euler_angle().yaw - globals->radar_can_communicator.yaw_mard();
+      target_yaw_ = -globals->ahrs.yaw() - globals->radar_can_communicator.yaw_mard();
       target_pitch_ = globals->radar_can_communicator.pitch_mard();
       count = 0;
     }
@@ -64,10 +64,8 @@ void GimbalHero::NormalRemoter() {
   // tc->rc->cc
   last_target_pitch_ = target_pitch_;
   if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
-    target_yaw_ +=
-                   static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
-    target_pitch_ +=
-                     static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
+    target_yaw_ += static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
+    target_pitch_ += static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
   } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
     target_yaw_ +=
         static_cast<float>(globals->rc.right_x()) * 0.000005 + static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;
@@ -167,7 +165,7 @@ void GimbalHero::MotorUpdate() {
   globals->pid_yaw_position.SetCircular(true).SetCircularCycle(3.141593 * 2);
 
   // yawPID计算
-  globals->pid_yaw_position.Update(target_yaw_, -globals->ahrs.euler_angle().yaw, 0.001);
+  globals->pid_yaw_position.Update(target_yaw_, -globals->ahrs.yaw(), 0.001);
   globals->pid_yaw_velocity.Update(globals->pid_yaw_position.out(),
                                    -globals_no_dtcm.imu->gyro_z() - hyperparameters_.gyro_rectification_, 0.001);
 
@@ -178,12 +176,12 @@ void GimbalHero::MotorUpdate() {
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     globals->gimbal_motor_pitch.SetCurrent(0);
-    target_pitch_ = -globals->ahrs.euler_angle().pitch;
+    target_pitch_ = -globals->ahrs.pitch();
 
   } else if (target_pitch_ - last_target_pitch_ > 0) {
     ChangePID(globals->pid_pitch_position, 65, 0.01, 0.0);
     ChangePID(globals->pid_pitch_velocity, 4500, 20, 50);
-    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.pitch(), 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
 
     positive_ff_ = 3000;
@@ -196,7 +194,7 @@ void GimbalHero::MotorUpdate() {
   } else if (target_pitch_ - last_target_pitch_ < 0) {
     ChangePID(globals->pid_pitch_position, 20, 0.01, 0.0);
     ChangePID(globals->pid_pitch_velocity, 4500, 20, 50);
-    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.euler_angle().pitch, 0.001);
+    globals->pid_pitch_position.Update(target_pitch_, -globals->ahrs.pitch(), 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -globals_no_dtcm.imu->gyro_x(), 0.001);
 
     negaive_ff_ = -800;
@@ -206,9 +204,9 @@ void GimbalHero::MotorUpdate() {
         static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
   } else if (target_pitch_ == last_target_pitch_) {
     globals->gimbal_motor_pitch.SetCurrent(0);
-    target_pitch_ = -globals->ahrs.euler_angle().pitch;
+    target_pitch_ = -globals->ahrs.pitch();
   }
-  last_pitch_ = globals->ahrs.euler_angle().pitch;
+  last_pitch_ = globals->ahrs.pitch();
 }
 
 void GimbalHero::ServoMotorUpdate() {
@@ -267,17 +265,18 @@ void GimbalHero::GimbalControl() {
   RemoterControl();
   MotorUpdate();
   ServoMotorUpdate();
+  ScopeMotorUpdate();
 }
 
 bool GimbalHero::EnableJudgement() {
   // 监测
-  yaw_pos = -globals->ahrs.euler_angle().yaw;
+  yaw_pos = -globals->ahrs.yaw();
   yaw_vel = -globals_no_dtcm.imu->gyro_z() - hyperparameters_.gyro_rectification_;
   yaw_pos_pid_out = globals->pid_yaw_position.out();
   yaw_vel_pid_out = globals->pid_yaw_velocity.out();
   ::target_yaw = target_yaw_;
 
-  pitch_pos = -globals->ahrs.euler_angle().pitch;
+  pitch_pos = -globals->ahrs.pitch();
   pitch_vel = globals_no_dtcm.imu->gyro_x();
   pitch_pos_pid_out = globals->pid_pitch_position.out();
   pitch_vel_pid_out = globals->pid_pitch_velocity.out();

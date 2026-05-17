@@ -96,7 +96,9 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
       break;
 
     case StateMachine::SubState::kSnipe:
-      if (globals->shooter_motor_6.rpm() > limit) {
+      if (globals->shooter_motor_6.rpm() > limit ||
+          (globals->ref.data().robot_status.power_management_chassis_output == 1 &&
+           globals->state_machine.getMainState_() != StateMachine::MainState::kTest)) {
         globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
         globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
         globals->pid_shooter_3.Update(limit, globals->shooter_motor_3.rpm());

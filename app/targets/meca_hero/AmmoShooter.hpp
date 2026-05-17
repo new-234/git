@@ -13,7 +13,7 @@ class AmmoHero {
   int16_t shooter_m{0};
 
   // 12m/s
-  rm::i16 V_shooter_1 = -4605;
+  rm::i16 V_shooter_1 = -4805;
   rm::i16 V_shooter_2 = -3770;
   // rm::i16 V_shooter_1 = -0;
   // rm::i16 V_shooter_2 = -0;
