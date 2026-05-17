@@ -83,8 +83,8 @@ struct EnemyRobotProjectileAllowance {
 };
 
 struct EnemyGoldCoinRFID {
-  u16 enemy_gold_remaining; // 字节0-1：对方剩余金币数
-  u16 enemy_gold_total; // 字节2-3：对方累计总金币数
+  u16 enemy_gold_remaining;  // 字节0-1：对方剩余金币数
+  u16 enemy_gold_total;      // 字节2-3：对方累计总金币数
 
   union {
     u32 raw;
@@ -158,17 +158,17 @@ struct EnemyGoldCoinRFID {
 
 struct EnemyRobotBuff {
   enum class SentryPosture : u8 {
-    ATTACK = 1, // 进攻姿态
-    DEFENSE = 2, // 防御姿态
-    MOBILE = 3 // 移动姿态
+    ATTACK = 1,   // 进攻姿态
+    DEFENSE = 2,  // 防御姿态
+    MOBILE = 3    // 移动姿态
   };
 
   struct RobotBuffInfo {
-    u8 hp_recovery; // 回血增益（百分比）
-    u16 heat_cooling; // 射击热量冷却增益（直接值）
-    u8 defense; // 防御增益（百分比）
-    u8 negative_defense; // 负防御增益（百分比）
-    u16 attack; // 攻击增益（百分比）
+    u8 hp_recovery;       // 回血增益（百分比）
+    u16 heat_cooling;     // 射击热量冷却增益（直接值）
+    u8 defense;           // 防御增益（百分比）
+    u8 negative_defense;  // 负防御增益（百分比）
+    u16 attack;           // 攻击增益（百分比）
   };
 
   // byte 0~6
@@ -244,43 +244,41 @@ constexpr int getCmd(const T &obj) {
 
 #pragma pack(push, 1)
 struct RefereeSubProtocol {
-  struct AllyRobotPosition ally_robot_position; // 0x0200
-  struct EnemyRobotPosition enemy_robot_position; // 0x0201
-  struct EnemyRobotHP enemy_robot_HP; // 0x0202
-  struct EnemyRobotProjectileAllowance enemy_robot_projectile_allowance; // 0x0203
-  struct EnemyGoldCoinRFID enemy_gold_coin_RFID; // 0x0204
-  struct EnemyRobotBuff enemy_robot_buff; // 0x0205
+  struct AllyRobotPosition ally_robot_position;                           // 0x0200
+  struct EnemyRobotPosition enemy_robot_position;                         // 0x0201
+  struct EnemyRobotHP enemy_robot_HP;                                     // 0x0202
+  struct EnemyRobotProjectileAllowance enemy_robot_projectile_allowance;  // 0x0203
+  struct EnemyGoldCoinRFID enemy_gold_coin_RFID;                          // 0x0204
+  struct EnemyRobotBuff enemy_robot_buff;                                 // 0x0205
   struct Hero2Drone hero_2_drone;
   struct Drone2Hero drone_2_hero;
 };
 #pragma pack(pop)
 
 struct RefereeSubProtocolMemoryMap {
-  static MAPBOX_ETERNAL_CONSTEXPR const auto map = mapbox::eternal::map<u16, usize>({
-      {RefereeSubCmdId::kAllyRobotPosition, offsetof(RefereeSubProtocol, ally_robot_position)},
-      {RefereeSubCmdId::kEnemyRobotPosition, offsetof(RefereeSubProtocol, enemy_robot_position)},
-      {RefereeSubCmdId::kEnemyRobotHP, offsetof(RefereeSubProtocol, enemy_robot_HP)},
-      {RefereeSubCmdId::kEnemyRobotProjectileAllowance, offsetof(RefereeSubProtocol, enemy_robot_projectile_allowance)},
-      {RefereeSubCmdId::kEnemyGoldCoinRFID, offsetof(RefereeSubProtocol, enemy_gold_coin_RFID)},
-      {RefereeSubCmdId::kEnemyRobotBuff, offsetof(RefereeSubProtocol, enemy_robot_buff)},
-      {RefereeSubCmdId::kAllRadarInfo, offsetof(RefereeSubProtocol, enemy_robot_HP)},
-      {RefereeSubCmdId::kHero2Drone, offsetof(RefereeSubProtocol, hero_2_drone)},
-      {RefereeSubCmdId::kDrone2Hero, offsetof(RefereeSubProtocol, drone_2_hero)}
-  });
-  static MAPBOX_ETERNAL_CONSTEXPR const auto mapSize = mapbox::eternal::map<u16, usize>({
-      {RefereeSubCmdId::kAllRadarInfo,
-       sizeof(RefereeSubProtocol) - sizeof(RefereeSubProtocol::ally_robot_position) - sizeof(
-         RefereeSubProtocol::enemy_robot_position)},
-      {RefereeSubCmdId::kAllyRobotPosition, sizeof(RefereeSubProtocol::ally_robot_position)},
-      {RefereeSubCmdId::kEnemyRobotPosition, sizeof(RefereeSubProtocol::enemy_robot_position)},
-      {RefereeSubCmdId::kEnemyRobotHP, sizeof(RefereeSubProtocol::enemy_robot_HP)},
-      {RefereeSubCmdId::kEnemyRobotProjectileAllowance, sizeof(RefereeSubProtocol::enemy_robot_projectile_allowance)},
-      {RefereeSubCmdId::kEnemyGoldCoinRFID, sizeof(RefereeSubProtocol::enemy_gold_coin_RFID)},
-      {RefereeSubCmdId::kEnemyRobotBuff, sizeof(RefereeSubProtocol::enemy_robot_buff)},
-      {RefereeSubCmdId::kHero2Drone, sizeof(RefereeSubProtocol::hero_2_drone)},
-      {RefereeSubCmdId::kDrone2Hero, sizeof(RefereeSubProtocol::drone_2_hero)}
-  });
+  static MAPBOX_ETERNAL_CONSTEXPR const auto map = mapbox::eternal::map<u16, usize>(
+      {{RefereeSubCmdId::kAllyRobotPosition, offsetof(RefereeSubProtocol, ally_robot_position)},
+       {RefereeSubCmdId::kEnemyRobotPosition, offsetof(RefereeSubProtocol, enemy_robot_position)},
+       {RefereeSubCmdId::kEnemyRobotHP, offsetof(RefereeSubProtocol, enemy_robot_HP)},
+       {RefereeSubCmdId::kEnemyRobotProjectileAllowance,
+        offsetof(RefereeSubProtocol, enemy_robot_projectile_allowance)},
+       {RefereeSubCmdId::kEnemyGoldCoinRFID, offsetof(RefereeSubProtocol, enemy_gold_coin_RFID)},
+       {RefereeSubCmdId::kEnemyRobotBuff, offsetof(RefereeSubProtocol, enemy_robot_buff)},
+       {RefereeSubCmdId::kAllRadarInfo, offsetof(RefereeSubProtocol, enemy_robot_HP)},
+       {RefereeSubCmdId::kHero2Drone, offsetof(RefereeSubProtocol, hero_2_drone)},
+       {RefereeSubCmdId::kDrone2Hero, offsetof(RefereeSubProtocol, drone_2_hero)}});
+  static MAPBOX_ETERNAL_CONSTEXPR const auto mapSize = mapbox::eternal::map<u16, usize>(
+      {{RefereeSubCmdId::kAllRadarInfo, sizeof(RefereeSubProtocol) - sizeof(RefereeSubProtocol::ally_robot_position) -
+                                            sizeof(RefereeSubProtocol::enemy_robot_position)},
+       {RefereeSubCmdId::kAllyRobotPosition, sizeof(RefereeSubProtocol::ally_robot_position)},
+       {RefereeSubCmdId::kEnemyRobotPosition, sizeof(RefereeSubProtocol::enemy_robot_position)},
+       {RefereeSubCmdId::kEnemyRobotHP, sizeof(RefereeSubProtocol::enemy_robot_HP)},
+       {RefereeSubCmdId::kEnemyRobotProjectileAllowance, sizeof(RefereeSubProtocol::enemy_robot_projectile_allowance)},
+       {RefereeSubCmdId::kEnemyGoldCoinRFID, sizeof(RefereeSubProtocol::enemy_gold_coin_RFID)},
+       {RefereeSubCmdId::kEnemyRobotBuff, sizeof(RefereeSubProtocol::enemy_robot_buff)},
+       {RefereeSubCmdId::kHero2Drone, sizeof(RefereeSubProtocol::hero_2_drone)},
+       {RefereeSubCmdId::kDrone2Hero, sizeof(RefereeSubProtocol::drone_2_hero)}});
 };
-} // namespace rm::device
+}  // namespace rm::device
 
 #endif  // LIBRM_DEVICE_REFEREE_PROTOCOL_USER_HPP

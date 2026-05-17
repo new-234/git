@@ -57,9 +57,9 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
-  StateMachine state_machine{2000};                      ///< 状态机
+  StateMachine state_machine{2000};                          ///< 状态机
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2}, can3{hfdcan3};  ///< CAN 总线接口
-  rm::device::GkSupercap cms{can3};                                  ///< 超电
+  rm::device::GkSupercap cms{can3};                          ///< 超电
   rm::device::GkSupercap::TxData cap_tx_data;
   rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
 
@@ -76,9 +76,9 @@ struct Globals {
   rm::device::M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
 
   rm::modules::PID velocity_pid[4] = {{10, 0.5, 0.0, 16384, 5000},
-                                  {10, 0.5, 0.0, 16384, 5000},
-                                  {10, 0.5, 0.0, 16384, 5000},
-                                  {10, 0.5, 0.0, 16384, 5000}};
+                                      {10, 0.5, 0.0, 16384, 5000},
+                                      {10, 0.5, 0.0, 16384, 5000},
+                                      {10, 0.5, 0.0, 16384, 5000}};
 
   std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
   rm::modules::MotorPowerModel power_model{rm::modules::MotorPowerModel::kM3508};
@@ -108,8 +108,8 @@ struct Globals {
   /* ------------------------------------------------发射机构---------------------------------------------------------*/
   AmmoHero *ammo_hero{nullptr};
   // 拨盘电机
-  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{can1,
-                                                   {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
+  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{
+      can1, {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // PID
   rm::modules::PID pid_magz_position{42, 0.001, 0.56, 24, 0};
   rm::modules::PID pid_magz_velocity{0.35, 0, 0.001, 7, 0};
@@ -129,10 +129,11 @@ struct Globals {
   rm::modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
   rm::modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
 
-  rm::device::DR16 rc{globals_no_dtcm.dbus};           ///< DT7
+  rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> refSub = rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>(ref); /// 子协议
-  rm::device::VT03 tc;                                 ///< 图传
+  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> refSub =
+      rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>(ref);  /// 子协议
+  rm::device::VT03 tc;                                                      ///< 图传
 
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
   rm::device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
@@ -140,13 +141,13 @@ struct Globals {
 
   Buzzer buzzer;  ///< 蜂鸣器
   rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
-                            rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
-                            rm::modules::buzzer_melody::TheLick>
+                                rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
+                                rm::modules::buzzer_melody::TheLick>
       buzzer_controller;
-  WS2812Led led;                                            ///< WS2812 LED灯
+  WS2812Led led;                                                    ///< WS2812 LED灯
   rm::modules::RgbLedController<rm::modules::led_pattern::Off,      //
-                            rm::modules::led_pattern::RgbFlow,  //
-                            rm::modules::led_pattern::RedFlash>
+                                rm::modules::led_pattern::RgbFlow,  //
+                                rm::modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器
 
   rm::device::DeviceManager<2> gimbal_manager;
@@ -190,8 +191,8 @@ struct Globals {
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
 
-    ref.AttachCallback(std::bind(&rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>::AttachCallback, refSub, std::placeholders::_1,
-                                    std::placeholders::_2));
+    ref.AttachCallback(std::bind(&rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>::AttachCallback,
+                                 refSub, std::placeholders::_1, std::placeholders::_2));
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;

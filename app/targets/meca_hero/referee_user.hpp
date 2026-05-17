@@ -61,8 +61,8 @@ class RefereeUser final : public Device {
     ReportStatus(kOk);
     // 将裁判系统的数据拷贝到反序列化缓冲区。
     u16 subCmdID = referee_.data().robot_interaction_data.data_cmd_id;
-    if (cmd_id_ != 0x301)return;
-    if (!rm::device::RefereeSubProtocolMemoryMap::map.contains(subCmdID))return;
+    if (cmd_id_ != 0x301) return;
+    if (!rm::device::RefereeSubProtocolMemoryMap::map.contains(subCmdID)) return;
     const usize member_offset = rm::device::RefereeSubProtocolMemoryMap::map.at(subCmdID);
     u8 *dest_ptr = reinterpret_cast<u8 *>(&deserialize_buffer_) + member_offset;
     u8 *src_ptr = const_cast<u8 *>(referee_.data().robot_interaction_data.user_data);
@@ -104,8 +104,7 @@ struct TypeToCmd<MapRobotPosition> {
   static constexpr u16 value = 0x305;
 };
 template <typename T>
-inline u8 RefereeSendPrepare(u8 *data, const u16 start_index, T &info,
-                             const u8 sender, const u8 receiver) {
+inline u8 RefereeSendPrepare(u8 *data, const u16 start_index, T &info, const u8 sender, const u8 receiver) {
   static u8 seq_ = 0;
   u16 index_ = start_index;
   data[index_++] = kRefProtocolHeaderSof;
@@ -148,6 +147,6 @@ inline u8 RefereeSend(u8 *data, const u16 start_index, const struct MapRobotPosi
   data[index_++] = CRC16_ >> 8;
   return index_ - start_index;
 };
-}
+}  // namespace rm::device
 
 #endif  // LIBRM_DEVICE_REFEREE_USER_HPP
