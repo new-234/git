@@ -32,9 +32,9 @@ void VOFASend() {
   buffer[3] = globals->shooter_motor_4.rpm();
   buffer[4] = globals->shooter_motor_5.rpm();
   buffer[5] = globals->shooter_motor_6.rpm();
-  buffer[6] = -globals->ahrs.yaw();
-  buffer[7] = -globals->ahrs.pitch();
-  buffer[8] = globals->ahrs.roll();
+  buffer[6] = -globals->HipnucImu.yaw();
+  buffer[7] = -globals->HipnucImu.pitch();
+  buffer[8] = globals->HipnucImu.roll();
   buffer[9] = 1;
   VOFA_Prepare_Package(buffer, tx_package, 10);
   // .sram4 NOLOAD: 帧尾需要每次显式写入, POR 上电时为随机值

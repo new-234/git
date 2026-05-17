@@ -15,7 +15,16 @@ class GimbalHero {
     float euler_yaw_{0};
     float euler_pitch_{0};
     float euler_roll_{0};
+    float gyro_x_{0};
+    float gyro_y_{0};
+    float gyro_z_{0};
   } monitor_;
+
+  struct {
+    float euler_yaw_{0};
+    float euler_pitch_{0};
+    float euler_roll_{0};
+  }temp_euler_angle_;
 
  private:
   // 调参变量

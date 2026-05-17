@@ -109,6 +109,7 @@ class StateMachine {
   [[nodiscard]] MainState getLastMainState_() const { return last_main_state_; }
   [[nodiscard]] SubState getSubState_() const { return current_sub_state_; }
   [[nodiscard]] SubState getLastSubState_() const { return last_sub_state_; }
+  void setLastSubState(SubState state) { last_sub_state_ = state; }
   [[nodiscard]] ChassisState getChassisState_() const { return current_chassis_state_; }
   [[nodiscard]] ChassisState getLastChassisState_() const { return last_chassis_state_; }
   void setChassisState(ChassisState state) { current_chassis_state_ = state; }

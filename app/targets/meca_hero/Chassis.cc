@@ -25,7 +25,7 @@ void ChassisHero::IfFollow() {
       globals->pid_chassis_follow_vel.Update(globals->pid_chassis_follow_pos.out(), globals->gimbal_motor_yaw.vel(),
                                              0.002);
       Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out()) *
-           (1 + globals->ahrs.pitch() / 0.8 * 0.4);  ///< 理应pitch越大，输出越小，注意pitch的正负号
+           (1 + globals->HipnucImu.pitch() / 0.8 * 0.4);  ///< 理应pitch越大，输出越小，注意pitch的正负号
       break;
   }
 }
@@ -178,7 +178,7 @@ void ChassisHero::IfOverPower() {
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     // 超功率
     power_limit = 200;
-    if (abs(globals->ahrs.pitch()) >= 0.5 &&
+    if (abs(globals->HipnucImu.pitch()) >= 0.5 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
       power_limit = 500;
       overpower_count--;
