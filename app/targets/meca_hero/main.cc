@@ -58,6 +58,7 @@ Graph_Data magz_structed;
 void UiRefresh();
 void UiSend();
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len);
+void subRefereeInteraction();
 
 void Monitor() {
   // // PID 调参命令处理
@@ -150,10 +151,14 @@ void Init() {
   QueueInit(&UI_send_buffer[1]);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
-void SubLoop10hz() { UiRefresh(); }
+void SubLoop10hz() {
+  // UiRefresh();
+}
 
 /*---------------------------------------------------50HZ---------------------------------------------------*/
-void SubLoop50hz() { UiSend(); }
+void SubLoop50hz() {
+  // UiSend();
+}
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
   // 超电更新
@@ -256,6 +261,10 @@ void MainLoop2khz() {
   }
   if (loop_divisor % 2 == 0) {  // 1000hz
     SubLoop1000hz();
+  }
+  if (loop_divisor % 67 == 0) { // 30hz
+    // 多机通信
+    subRefereeInteraction();
   }
 
   loop_divisor = (loop_divisor + 1) % 2000;
@@ -479,4 +488,24 @@ void UiSend() {
   globals->ui_send_choice ^= true;
 }
 
+void h2dInteraction();
+
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
+
+void subRefereeInteraction() {
+  // 0.5hz
+  static u8 loop_counter = 0;
+  loop_counter = (loop_counter + 1) % 60;
+  // 请一定注意分配时不能重叠！！！
+  if (loop_counter % 3 == 0)h2dInteraction(); // 10hz
+  else if (loop_counter == 1); // 0.5hz
+  else if (loop_counter == 2); // 0.5hz
+  else {
+
+  }
+
+}
+
+void h2dInteraction() {
+  Hero2Drone h2d{globals->}
+}

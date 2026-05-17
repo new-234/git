@@ -15,6 +15,7 @@
 #include "common/radar_comm_can.hpp"
 #include "UI.hpp"
 #include "queue.hpp"
+#include "referee_user.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -134,6 +135,7 @@ struct Globals {
 
   DR16 rc{globals_no_dtcm.dbus};           ///< DT7
   Referee<RefereeRevision::kNewV120> ref;  ///< 裁判系统
+  RefereeUser<RefereeRevision::kNewV120> refSub = RefereeUser<RefereeRevision::kNewV120>(ref); /// 子协议
   VT03 tc;                                 ///< 图传
 
   // modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
@@ -191,6 +193,9 @@ struct Globals {
       }
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
+
+    ref.AttachCallback(std::bind(&rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>::AttachCallback, refSub, std::placeholders::_1,
+                                    std::placeholders::_2));
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
