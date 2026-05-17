@@ -10,12 +10,8 @@
 #include "common/bsp/buzzer.hpp"
 #include "common/bsp/ws2812.hpp"
 #include "State.hpp"
-#include "CMS.H"
-#include "VOFA.hpp"
-#include "common/radar_comm_can.hpp"
-#include "UI.hpp"
-#include "queue.hpp"
 #include "referee_user.hpp"
+#include "common/radar_comm_can.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -36,11 +32,11 @@ struct GlobalsNoDtcm {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
 
-  hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true};
+  rm::hal::Serial<128> dbus{huart5, false, true}, usart1_ref{huart1, false, false}, uart10_tc{huart10, true, true};
 
-  hal::Serial<128> uart7_debug{huart7, true, true};  ///< 串口接口
+  rm::hal::Serial<128> uart7_debug{huart7, true, true};  ///< 串口接口
 
-  BMI088 *imu{nullptr};  ///< IMU
+  rm::device::BMI088 *imu{nullptr};  ///< IMU
 
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -48,7 +44,7 @@ struct GlobalsNoDtcm {
   uint16_t adc_val;  ///< 输入电压ADC采样值
 
   void Init() {
-    imu = new BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
+    imu = new rm::device::BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
     // 初始化输入电压测量
     HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&adc_val), 1);
@@ -62,10 +58,10 @@ struct Globals {
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   /*---------------------------------------------------全局对象---------------------------------------------------*/
   StateMachine state_machine{2000};                      ///< 状态机
-  hal::Can can1{hfdcan1}, can2{hfdcan2}, can3{hfdcan3};  ///< CAN 总线接口
-  GkSupercap cms{can3};                                  ///< 超电
-  GkSupercap::TxData cap_tx_data;
-  RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
+  rm::hal::Can can1{hfdcan1}, can2{hfdcan2}, can3{hfdcan3};  ///< CAN 总线接口
+  rm::device::GkSupercap cms{can3};                                  ///< 超电
+  rm::device::GkSupercap::TxData cap_tx_data;
+  rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
 
   // modules::KeyboardHandler<> keyboard_handler(device::DR16::Key);
 
@@ -77,91 +73,91 @@ struct Globals {
   // M3508 chassis_motor_lr{globals_no_dtcm.can2, 4, false};
 
   ChassisHero *chassis_hero{nullptr};
-  M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
+  rm::device::M3508 chassis_motor[4] = {{can1, 1, false}, {can1, 2, false}, {can1, 3, false}, {can1, 4, false}};
 
-  modules::PID velocity_pid[4] = {{10, 0.5, 0.0, 16384, 5000},
+  rm::modules::PID velocity_pid[4] = {{10, 0.5, 0.0, 16384, 5000},
                                   {10, 0.5, 0.0, 16384, 5000},
                                   {10, 0.5, 0.0, 16384, 5000},
                                   {10, 0.5, 0.0, 16384, 5000}};
 
-  std::array<modules::MotorPowerModel::MotorState, 4> motor_states;
-  modules::MotorPowerModel power_model{modules::MotorPowerModel::kM3508};
+  std::array<rm::modules::MotorPowerModel::MotorState, 4> motor_states;
+  rm::modules::MotorPowerModel power_model{rm::modules::MotorPowerModel::kM3508};
   // 初始电流
-  rm::f32 initial_currents[4];
+  float initial_currents[4];
   // 输出电流
-  rm::f32 output_currents[4];
+  float output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{400, 0, 3.3, 1500, 0};
-  modules::PID pid_chassis_follow_vel{34, 0, 0.22, 16000, 0};
+  rm::modules::PID pid_chassis_follow_pos{400, 0, 3.3, 1500, 0};
+  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.22, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
-  DmMotor<DmMotorControlMode::kMit> gimbal_motor_yaw{
+  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> gimbal_motor_yaw{
       can1, {0x12, 0x02, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}, true};
-  M3508 gimbal_motor_pitch{can2, 7, true};
-  M2006 gimbal_telescope{can3, 1, false};
+  rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
+  rm::device::M2006 gimbal_telescope{can3, 1, false};
   // PID
-  modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
-  modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
-  modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
-  modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
-  modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
+  rm::modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
+  rm::modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
+  rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
+  rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
+  rm::modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
 
   /* ------------------------------------------------发射机构---------------------------------------------------------*/
   AmmoHero *ammo_hero{nullptr};
   // 拨盘电机
-  DmMotor<DmMotorControlMode::kMit> magazine_motor{can1,
+  rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> magazine_motor{can1,
                                                    {0x13, 0x03, 3.141593f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}}};
   // PID
-  modules::PID pid_magz_position{42, 0.001, 0.56, 24, 0};
-  modules::PID pid_magz_velocity{0.35, 0, 0.001, 7, 0};
+  rm::modules::PID pid_magz_position{42, 0.001, 0.56, 24, 0};
+  rm::modules::PID pid_magz_velocity{0.35, 0, 0.001, 7, 0};
 
   // 摩擦轮电机
-  M3508 shooter_motor_1{can2, 1, false};
-  M3508 shooter_motor_2{can2, 2, false};
-  M3508 shooter_motor_3{can2, 3, false};
-  M3508 shooter_motor_4{can2, 4, false};
-  M3508 shooter_motor_5{can2, 5, false};
-  M3508 shooter_motor_6{can2, 6, false};
+  rm::device::M3508 shooter_motor_1{can2, 1, false};
+  rm::device::M3508 shooter_motor_2{can2, 2, false};
+  rm::device::M3508 shooter_motor_3{can2, 3, false};
+  rm::device::M3508 shooter_motor_4{can2, 4, false};
+  rm::device::M3508 shooter_motor_5{can2, 5, false};
+  rm::device::M3508 shooter_motor_6{can2, 6, false};
   // PID
-  modules::PID pid_shooter_1{30, 0.0000007, 0, 10000, 1600};  // 20
-  modules::PID pid_shooter_2{30, 0.0000007, 0, 10000, 1600};  // 20
-  modules::PID pid_shooter_3{30, 0.0000007, 0, 10000, 1600};
-  modules::PID pid_shooter_4{30, 0.0000007, 0, 10000, 1600};
-  modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
-  modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_1{30, 0.0000007, 0, 10000, 1600};  // 20
+  rm::modules::PID pid_shooter_2{30, 0.0000007, 0, 10000, 1600};  // 20
+  rm::modules::PID pid_shooter_3{30, 0.0000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_4{30, 0.0000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
 
-  DR16 rc{globals_no_dtcm.dbus};           ///< DT7
-  Referee<RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  RefereeUser<RefereeRevision::kNewV120> refSub = RefereeUser<RefereeRevision::kNewV120>(ref); /// 子协议
-  VT03 tc;                                 ///< 图传
+  rm::device::DR16 rc{globals_no_dtcm.dbus};           ///< DT7
+  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
+  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> refSub = rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>(ref); /// 子协议
+  rm::device::VT03 tc;                                 ///< 图传
 
-  modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
-  device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
-  modules::LowPassFilterConstDt<float> gyro_z_filter;
+  rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
+  rm::device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
+  rm::modules::LowPassFilterConstDt<float> gyro_z_filter;
 
   Buzzer buzzer;  ///< 蜂鸣器
-  modules::BuzzerController<modules::buzzer_melody::Silent, modules::buzzer_melody::Beeps<1>,
-                            modules::buzzer_melody::Beeps<2>, modules::buzzer_melody::Startup,
-                            modules::buzzer_melody::TheLick>
+  rm::modules::BuzzerController<rm::modules::buzzer_melody::Silent, rm::modules::buzzer_melody::Beeps<1>,
+                            rm::modules::buzzer_melody::Beeps<2>, rm::modules::buzzer_melody::Startup,
+                            rm::modules::buzzer_melody::TheLick>
       buzzer_controller;
   WS2812Led led;                                            ///< WS2812 LED灯
-  modules::RgbLedController<modules::led_pattern::Off,      //
-                            modules::led_pattern::RgbFlow,  //
-                            modules::led_pattern::RedFlash>
+  rm::modules::RgbLedController<rm::modules::led_pattern::Off,      //
+                            rm::modules::led_pattern::RgbFlow,  //
+                            rm::modules::led_pattern::RedFlash>
       led_controller;  ///< LED控制器
 
-  DeviceManager<2> gimbal_manager;
-  DeviceManager<4> chassis_manager;
-  DeviceManager<7> ammo_manager;
-  DeviceManager<1> ref_manager;
-  DeviceManager<1> tc_manager;
-  DeviceManager<1> rc_manager;
-  DeviceManager<1> cms_manager;
-  DeviceManager<1> radar_manager;
-  DeviceManager<1> Imu_manager;
+  rm::device::DeviceManager<2> gimbal_manager;
+  rm::device::DeviceManager<4> chassis_manager;
+  rm::device::DeviceManager<7> ammo_manager;
+  rm::device::DeviceManager<1> ref_manager;
+  rm::device::DeviceManager<1> tc_manager;
+  rm::device::DeviceManager<1> rc_manager;
+  rm::device::DeviceManager<1> cms_manager;
+  rm::device::DeviceManager<1> radar_manager;
+  rm::device::DeviceManager<1> Imu_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -179,7 +175,7 @@ struct Globals {
     can3.Begin();
 
     // 裁判系统串口接收
-    const hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
+    const rm::hal::SerialRxCallbackFunction ref_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
         ref << byte;
       }
@@ -187,7 +183,7 @@ struct Globals {
     globals_no_dtcm.usart1_ref.AttachRxCallback(ref_rx_callback);
 
     // 图传串口接收
-    hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
+    rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
         tc << byte;
       }
@@ -210,8 +206,8 @@ struct Globals {
     Imu_manager << &HipnucImu;
 
     buzzer.Init();
-    led_controller.SetPattern<modules::led_pattern::RgbFlow>();
-    buzzer_controller.Play<modules::buzzer_melody::Startup>();
+    led_controller.SetPattern<rm::modules::led_pattern::RgbFlow>();
+    buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
 
     // UART7 PID 调参 RX
     // PidTuner::Init();
@@ -266,13 +262,13 @@ inline float V1{0};
 inline float V2{0};
 
 // 弹速
-inline f32 bullet_initial_speed{0};
+inline float bullet_initial_speed{0};
 
 // 42mm允许发单量
-inline u16 projectile_allowance_42mm{0};
+inline unsigned short projectile_allowance_42mm{0};
 inline bool low_allowance_42mm{false};
 
-inline i16 dial{0};
+inline short dial{0};
 
 // 状态机
 inline StateMachine::MainState main_state;
@@ -292,7 +288,7 @@ inline int ammo_power_state{0};
 // 超电
 inline float cap_energy{0};
 inline float cap_power{0};
-inline u8 cap_error{0};
+inline char cap_error{0};
 inline bool cap_online{false};
 inline int cap_error_count{0};
 
@@ -306,7 +302,7 @@ inline bool Imu_online{false};
 
 extern Globals *globals;
 
-inline bool key_once_tc(VT03::KeyboardKey key) {
+inline bool key_once_tc(rm::device::VT03::KeyboardKey key) {
   static int16_t key_once_flag{0};
   if (globals->tc.data().keyboard_key & static_cast<int16_t>(key)) {
     if (!(key_once_flag & static_cast<int16_t>(key))) {
@@ -321,7 +317,7 @@ inline bool key_once_tc(VT03::KeyboardKey key) {
   }
 }
 
-inline void ChangePID(rm::modules::PID &pid, f32 kp, f32 ki, f32 kd) {
+inline void ChangePID(rm::modules::PID &pid, float kp, float ki, float kd) {
   pid.SetKp(kp);
   pid.SetKi(ki);
   pid.SetKd(kd);

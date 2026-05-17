@@ -195,12 +195,12 @@ struct Hero2Drone {
   f32 hero_pitch_angle;
   u16 hero_projectile_allowance_42mm;
   f32 hero_initial_speed;
-  u16 hero_ammo_adjust;
+  i16 hero_ammo_adjust;
 };
 
 struct Drone2Hero {
   f32 cmd_yaw_angle{0};
-  u16 cmd_ammo_adjust{0};
+  i16 cmd_ammo_adjust{0};
   u8 cmd_shooting{0};
 };
 

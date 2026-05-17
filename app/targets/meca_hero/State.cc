@@ -10,6 +10,8 @@ bool radar_aimbot{false};  ///< 部署模式下的雷达自瞄
 bool fire = {false};       ///< 允许自瞄开火标志位
 // bool pitchlock{false};     ///< pitch锁定标志位
 
+using namespace rm;
+
 /**
  * @brief 本地计算热量并同步裁判系统更新，防止热量更新频率低导致超热量。
  * @param fired 是否已开火
@@ -412,8 +414,8 @@ void StateMachine::StateUpdate() {
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
 
   fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
-         globals->rc.key(DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
-  if (key_once_tc(VT03::kV)) {
+         globals->rc.key(rm::device::DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
+  if (key_once_tc(rm::device::VT03::kV)) {
     scope_state++;
     scope_state %= 4;  // 循环切换状态（0→1→2→3→0）
     scope_count = 0;

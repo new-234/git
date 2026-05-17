@@ -67,10 +67,10 @@ bool AmmoHero::EnableJudgement() {
 }
 
 void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
-  if (key_once_tc(device::VT03::KeyboardKey::kE)) {
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kE)) {
     shooter_m -= 10;
   }
-  if (key_once_tc(device::VT03::KeyboardKey::kQ)) {
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kQ)) {
     shooter_m += 10;
   }
   // 目标速度PID

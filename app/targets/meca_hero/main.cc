@@ -10,54 +10,14 @@ Globals *globals{nullptr};
 
 volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 
-__attribute__((section(".sram4"))) Queue_t UI_send_buffer[2];
-__attribute__((section(".sram4"))) u32 irq;
-__attribute__((section(".sram4"))) u32 tmp_send[7];
+using namespace rm;
+using namespace rm::device;
 
-extern u16 robot_id;
-extern u8 len;
-extern u8 Info_Arr[128];
+u8 len;
+u8 Info_Arr[128];
 
-// 瞄准参考线
-Graph_Data image_y;
-Graph_Data linex0, linex1, linex2, linex3, linex4;
-// // 飞坡、前进参考线
-// Graph_Data rfd1, rfd2, rfd3, rfd4;
-
-// 瞄准角度
-Float_Data linef1;
-
-// Cap
-Float_Data CapData;
-
-// IMU
-Float_Data Pitch;
-Float_Data Yaw;
-
-// 弹速偏置
-Float_Data AmmoSpeed;
-
-// YAW
-Graph_Data YawAngle;
-
-// 自瞄状态框选
-Graph_Data p1, p2;
-
-// 鼠标操作显示
-Graph_Data mouse_left, mouse_right;
-
-// 自瞄提示字符
-String_Data aimbotUI;  // 自瞄状态
-
-// 低发弹量警告
-Graph_Data low_allowance;
-
-// 卡弹警告
-Graph_Data magz_structed;
-
-void UiRefresh();
-void UiSend();
-void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len);
+void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
+void h2dInteraction();
 void subRefereeInteraction();
 
 void Monitor() {
@@ -145,19 +105,13 @@ void Init() {
   globals->ammo_hero = new AmmoHero();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-
-  // 初始化队列
-  QueueInit(&UI_send_buffer[0]);
-  QueueInit(&UI_send_buffer[1]);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
 void SubLoop10hz() {
-  // UiRefresh();
 }
 
 /*---------------------------------------------------50HZ---------------------------------------------------*/
 void SubLoop50hz() {
-  // UiSend();
 }
 /*---------------------------------------------------100HZ---------------------------------------------------*/
 void SubLoop100hz() {
@@ -199,7 +153,6 @@ void SubLoop100hz() {
 void SubLoop250hz() {
   // 底盘更新
   globals->chassis_hero->ChassisUpdate();
-  // VOFA
 }
 
 /*---------------------------------------------------500HZ---------------------------------------------------*/
@@ -227,9 +180,7 @@ void SubLoop500hz() {
 
 /*---------------------------------------------------1000HZ---------------------------------------------------*/
 void SubLoop1000hz() {
-  // 云台状态更新
   globals->gimbal_hero->GimbalUpdate();
-  // VOFASend();
 }
 
 /*---------------------------------------------------2000HZ---------------------------------------------------*/
@@ -262,7 +213,7 @@ void MainLoop2khz() {
   if (loop_divisor % 2 == 0) {  // 1000hz
     SubLoop1000hz();
   }
-  if (loop_divisor % 67 == 0) { // 30hz
+  if (loop_divisor % 67 == 0) {  // 30hz
     // 多机通信
     subRefereeInteraction();
   }
@@ -292,220 +243,26 @@ void AppMain() {
 }
 }
 
-void UiRefresh() {
-  // 接收机器人ID
-  robot_id = globals->ref.data().robot_status.robot_id;
-  if (globals->tc.data().keyboard_key & static_cast<int16_t>(device::VT03::KeyboardKey::kR) ||
-      globals->rc.key(device::DR16::Key::kR)) {
-    // Line_Draw(&image_x, "xxx", UI_Graph_ADD, 0, UI_Color_Orange, 2, 918, 515, 978, 515);
-    Line_Draw(&image_y, "yyy", UI_Graph_ADD, 2, UI_Color_Orange, 2, 948, 0, 948, 1080);
-    Line_Draw(&linex0, "xx0", UI_Graph_ADD, 2, UI_Color_Purplish_red, 2, 940, 525, 980, 525);
-    Line_Draw(&linex1, "xx1", UI_Graph_ADD, 2, UI_Color_Green, 2, 900, 500, 1020, 500);
-    Line_Draw(&linex2, "xx2", UI_Graph_ADD, 2, UI_Color_Pink, 2, 910, 470, 1010, 470);
-    Line_Draw(&linex3, "xx3", UI_Graph_ADD, 2, UI_Color_Black, 2, 920, 450, 1000, 450);
-    Line_Draw(&linex4, "xx4", UI_Graph_ADD, 2, UI_Color_Cyan, 2, 930, 420, 990, 420);
-
-    Float_Draw(&CapData, "cms", UI_Graph_ADD, 2, UI_Color_Main, 27, 2, 5, 7050, 150,
-               globals->cms.rx_data_.cap_energy * 1000);
-    Float_Draw(&Pitch, "gbp", UI_Graph_ADD, 2, UI_Color_Green, 27, 1, 3, 7300, 500, 0);
-    Float_Draw(&Yaw, "gby", UI_Graph_ADD, 2, UI_Color_Green, 27, 1, 3, 7300, 440, 0);
-    Float_Draw(&AmmoSpeed, "amm", UI_Graph_ADD, 2, UI_Color_White, 27, 1, 3, 7300, 560, 0);
-    Arc_Draw(&YawAngle, "yaw", UI_Graph_ADD, 2, UI_Color_Green, 0, 30, 2, 960, 540, 300, 300);
-
-    Rectangle_Draw(&p1, "p01", UI_Graph_ADD, 3, UI_Color_Purplish_red, 0, 360, 800, 420, 750);
-    Rectangle_Draw(&p2, "p02", UI_Graph_ADD, 3, UI_Color_Purplish_red, 0, 360, 750, 420, 700);
-
-    Char_Draw(&aimbotUI, "aim", UI_Graph_ADD, 0, UI_Color_Green, 25, 11, 2, 360, 800, "vaild\nfrash");
-
-    // Circle_Draw(&mouse_left, "msl", UI_Graph_ADD, 4, UI_Color_Black, 25, 1800, 100, 50);
-    // Circle_Draw(&mouse_right, "msr", UI_Graph_ADD, 4, UI_Color_Black, 25, 1850, 100, 50);
-
-    irq = (u32)&aimbotUI;
-    EnQueue(&UI_send_buffer[1], (u8 *)&irq, 4);
-    irq = (u32)&image_y;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-
-    // irq = (u32)&image_y;
-    // EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    // irq = (u32)&mouse_left;
-    // EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    // irq = (u32)&mouse_right;
-    // EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-
-    irq = (u32)&CapData;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&AmmoSpeed;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&Pitch;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&Yaw;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&YawAngle;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-
-    irq = (u32)&p1;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&p2;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-
-    irq = (u32)&linex0;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&linex1;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&linex2;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&linex3;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&linex4;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-  } else {
-    // 电容电压
-    if (globals->state_machine.getSubState_() != StateMachine::SubState::kOverPower) {
-      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 5, 900, 270,
-                 globals->cms.rx_data_.cap_energy * 1000.0f);
-    } else {
-      Float_Draw(&CapData, "cms", UI_Graph_Change, 2, UI_Color_Main, 27, 1, 5, 900, 270,
-                 globals->cms.rx_data_.cap_energy * 1000.0f);
-    }
-    // 弹速调节+鼠标操作监控
-    if ((globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left) &&
-        (globals->rc.mouse_button_right() || globals->tc.data().mouse_button_right))
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Purplish_red, 25, 2, 2, 7300, 560,
-                 -globals->ammo_hero->shooter_m * 100.0f);
-    else if (globals->rc.mouse_button_right() || globals->tc.data().mouse_button_right) {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Yellow, 25, 2, 2, 7300, 560,
-                 -globals->ammo_hero->shooter_m * 100.0f);
-    } else if (globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left) {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_Orange, 25, 2, 2, 7300, 560,
-                 -globals->ammo_hero->shooter_m * 100.0f);
-    } else {
-      Float_Draw(&AmmoSpeed, "amm", UI_Graph_Change, 2, UI_Color_White, 25, 2, 2, 7300, 560,
-                 -globals->ammo_hero->shooter_m * 100.0f);
-    }
-
-    // Pitch
-    if (globals->rc.key(DR16::Key::kCtrl) ||
-        (globals->tc.data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl)))
-      Float_Draw(&Pitch, "gbp", UI_Graph_Change, 2, UI_Color_Purplish_red, 27, 1, 3, 7300, 500,
-                 (eulerangle_pitch / 3.14f * 180) * 1000);
-    else
-      Float_Draw(&Pitch, "gbp", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 3, 7300, 500,
-                 (eulerangle_pitch / 3.14f * 180) * 1000);
-
-    Float_Draw(&Yaw, "gby", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 3, 7300, 440,
-               (eulerangle_yaw / 3.14f * 180) * 1000);
-
-    // 底盘夹角
-    if (globals->state_machine.getChassisState_() == StateMachine::ChassisState::kFollow) {
-      Arc_Draw(&YawAngle, "yaw", UI_Graph_Change, 2, UI_Color_Green,
-               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 - 15, 0, 360),
-               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
-               300, 300);
-    } else {
-      Arc_Draw(&YawAngle, "yaw", UI_Graph_Change, 2, UI_Color_Purplish_red,
-               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 - 15, 0, 360),
-               rm::modules::Wrap((globals->gimbal_motor_yaw.pos() + 0.288) / 3.14f * 180 + 15, 0, 360), 3, 960, 540,
-               300, 300);
-    }
-
-    // 自瞄模式
-    if (globals->radar_can_communicator.vaild()) {
-      Rectangle_Draw(&p1, "p01", UI_Graph_Change, 3, UI_Color_Purplish_red, 3, 350, 809, 513, 769);
-    } else {
-      Rectangle_Draw(&p1, "p01", UI_Graph_Change, 3, UI_Color_Purplish_red, 0, 350, 809, 513, 769);
-    }
-
-    if (globals->radar_can_communicator.fresh()) {
-      Rectangle_Draw(&p2, "p02", UI_Graph_Change, 3, UI_Color_Purplish_red, 3, 350, 765, 555, 730);
-    } else {
-      Rectangle_Draw(&p2, "p02", UI_Graph_Change, 3, UI_Color_Purplish_red, 0, 350, 765, 555, 730);
-    }
-
-    // 鼠标操作显示
-    // if (globals->tc->data().mouse_button_left || globals->rc->mouse_button_left())
-    //   Circle_Draw(&mouse_left, "msl", UI_Graph_Change, 4, UI_Color_Pink, 25, 1800, 200, 50);
-    // else
-    //   Circle_Draw(&mouse_left, "msl", UI_Graph_Change, 4, UI_Color_Pink, 0, 1800, 200, 50);
-
-    // if (globals->tc->data().mouse_button_right || globals->rc->mouse_button_right())
-    //   Circle_Draw(&mouse_right, "msr", UI_Graph_Change, 4, UI_Color_Pink, 25, 1850, 200, 50);
-    // else
-    //   Circle_Draw(&mouse_right, "msr", UI_Graph_Change, 4, UI_Color_Pink, 0, 1850, 200, 50);
-
-    irq = (u32)&CapData;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&AmmoSpeed;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&Pitch;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&Yaw;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&YawAngle;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&p1;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    irq = (u32)&p2;
-    EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-
-    // irq = (u32)&mouse_left;
-    // EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-    // irq = (u32)&mouse_right;
-    // EnQueue(&UI_send_buffer[0], (u8 *)&irq, 4);
-  }
-}
-
-void UiSend() {
-  if ((IsEmpty(&UI_send_buffer[1]) && !IsEmpty(&UI_send_buffer[0])) ||
-      (!IsEmpty(&UI_send_buffer[0]) && globals->ui_send_choice)) {
-    if (UI_send_buffer[0].counter / 4 >= 7) {
-      for (u8 i = 0; i < 7; i++) {
-        UI_Pop(&UI_send_buffer[0], (u8 *)&tmp_send[i]);
-      }
-      UI_ReFresh(7, *(Graph_Data *)tmp_send[0], *(Graph_Data *)tmp_send[1], *(Graph_Data *)tmp_send[2],
-                 *(Graph_Data *)tmp_send[3], *(Graph_Data *)tmp_send[4], *(Graph_Data *)tmp_send[5],
-                 *(Graph_Data *)tmp_send[6]);
-    } else if (UI_send_buffer[0].counter / 4 >= 5) {
-      for (u8 i = 0; i < 5; i++) {
-        UI_Pop(&UI_send_buffer[0], (u8 *)&tmp_send[i]);
-      }
-      UI_ReFresh(5, *(Graph_Data *)tmp_send[0], *(Graph_Data *)tmp_send[1], *(Graph_Data *)tmp_send[2],
-                 *(Graph_Data *)tmp_send[3], *(Graph_Data *)tmp_send[4]);
-    } else if (UI_send_buffer[0].counter / 4 >= 2) {
-      for (u8 i = 0; i < 2; i++) {
-        UI_Pop(&UI_send_buffer[0], (u8 *)&tmp_send[i]);
-      }
-      UI_ReFresh(2, *(Graph_Data *)tmp_send[0], *(Graph_Data *)tmp_send[1]);
-    } else {
-      UI_Pop(&UI_send_buffer[0], (u8 *)&tmp_send[0]);
-      UI_ReFresh(1, *(Graph_Data *)tmp_send[0]);
-    }
-    UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
-  } else if (!IsEmpty(&UI_send_buffer[1]) && !globals->ui_send_choice) {
-    UI_Pop(&UI_send_buffer[1], (u8 *)&tmp_send[0]);
-    Char_ReFresh(*(String_Data *)tmp_send[0]);
-    UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
-  }
-  globals->ui_send_choice ^= true;
-}
-
-void h2dInteraction();
-
-void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
-
 void subRefereeInteraction() {
   // 0.5hz
   static u8 loop_counter = 0;
   loop_counter = (loop_counter + 1) % 60;
   // 请一定注意分配时不能重叠！！！
-  if (loop_counter % 3 == 0)h2dInteraction(); // 10hz
-  else if (loop_counter == 1); // 0.5hz
-  else if (loop_counter == 2); // 0.5hz
+  if (loop_counter % 3 == 0)
+    h2dInteraction();  // 10hz
+  else if (loop_counter == 1)
+    ;  // 0.5hz
+  else if (loop_counter == 2)
+    ;  // 0.5hz
   else {
-
   }
-
 }
 
 void h2dInteraction() {
-  Hero2Drone h2d{globals->}
+  Hero2Drone h2d{globals->HipnucImu.yaw(), globals->HipnucImu.pitch(),
+                 globals->ref.data().projectile_allowance.projectile_allowance_42mm,
+                 globals->ref.data().shoot_data.initial_speed, globals->ammo_hero->shooter_m};
+  len = device::RefereeSendPrepare(Info_Arr, 0, h2d, globals->ref.data().robot_status.robot_id,
+                                   globals->ref.data().robot_status.robot_id + 5);
+  UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
 }

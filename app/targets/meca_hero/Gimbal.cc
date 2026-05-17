@@ -124,16 +124,16 @@ void GimbalHero::SnipeRemoter() {
   } else if (globals->rc_manager.all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
     target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
-    if (globals->rc.key(DR16::Key::kW)) {
+    if (globals->rc.key(rm::device::DR16::Key::kW)) {
       target_pitch_ += 0.000005;
     }
-    if (globals->rc.key(DR16::Key::kS)) {
+    if (globals->rc.key(rm::device::DR16::Key::kS)) {
       target_pitch_ -= 0.000005;
     }
-    if (globals->rc.key(DR16::Key::kD)) {
+    if (globals->rc.key(rm::device::DR16::Key::kD)) {
       target_yaw_ += 0.000005;
     }
-    if (globals->rc.key(DR16::Key::kA)) {
+    if (globals->rc.key(rm::device::DR16::Key::kA)) {
       target_yaw_ -= 0.000005;
     }
   } else {
