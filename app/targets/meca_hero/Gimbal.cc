@@ -223,6 +223,46 @@ void GimbalHero::ServoMotorUpdate() {
   }
 }
 
+void GimbalHero::ScopeMotorUpdate() {
+  // 望远镜状态机
+  if (globals->state_machine.scope_state == 1) {
+    // 状态1：伸出（负方向旋转）
+    globals->pid_scope_velocity.Update(-1000, globals->gimbal_telescope.rpm());  // 目标转速: -1000 rpm
+    globals->gimbal_telescope.SetCurrent(globals->pid_scope_velocity.out());
+
+    // 到位检测：转速 < 30 rpm 且持续计数 > 120
+    if (fabs(globals->gimbal_telescope.rpm()) < 30 && globals->state_machine.scope_count <= 120) {
+      globals->state_machine.scope_count++;
+    }
+    if (globals->state_machine.scope_count > 120) {
+      globals->state_machine.scope_state++;  // 切换到状态2
+      globals->state_machine.scope_count = 0;
+      globals->gimbal_telescope.SetCurrent(0);
+    }
+  } else if (globals->state_machine.scope_state == 2) {
+    // 状态2：保持（停止）
+    globals->gimbal_telescope.SetCurrent(0);
+  } else if (globals->state_machine.scope_state == 3) {
+    // 状态3：收回（正方向旋转）
+    globals->pid_scope_velocity.Update(1000, globals->gimbal_telescope.rpm());  // 目标转速: 1000 rpm
+    globals->gimbal_telescope.SetCurrent(globals->pid_scope_velocity.out());
+
+    // 到位检测
+    if (fabs(globals->gimbal_telescope.rpm()) < 30 && globals->state_machine.scope_count <= 120) {
+      globals->state_machine.scope_count++;
+    }
+    if (globals->state_machine.scope_count > 120) {
+      globals->state_machine.scope_state++;  // 切换到状态0
+      globals->state_machine.scope_count = 0;
+      globals->gimbal_telescope.SetCurrent(0);
+    }
+  } else {
+    // 状态0：停止
+    globals->gimbal_telescope.SetCurrent(0);
+  }
+}
+
+
 void GimbalHero::GimbalControl() {
   RemoterControl();
   MotorUpdate();
