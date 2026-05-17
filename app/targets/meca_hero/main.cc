@@ -384,7 +384,7 @@ void UiRefresh() {
                  (eulerangle_pitch / 3.14f * 180) * 1000);
 
     Float_Draw(&Yaw, "gby", UI_Graph_Change, 2, UI_Color_Green, 27, 1, 3, 7300, 440,
-                 (eulerangle_yaw / 3.14f * 180) * 1000);
+               (eulerangle_yaw / 3.14f * 180) * 1000);
 
     // 底盘夹角
     if (globals->state_machine.getChassisState_() == StateMachine::ChassisState::kFollow) {

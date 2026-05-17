@@ -260,7 +260,6 @@ void GimbalHero::ScopeMotorUpdate() {
   }
 }
 
-
 void GimbalHero::GimbalControl() {
   RemoterControl();
   MotorUpdate();
