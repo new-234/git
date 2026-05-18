@@ -415,7 +415,6 @@ void StateMachine::StateUpdate() {
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
-
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
 

@@ -132,10 +132,10 @@ struct Globals {
   rm::modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
   rm::modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
 
-  rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
-  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> *refSub; /// 子协议
-  rm::device::VT03 tc;                                                      ///< 图传
+  rm::device::DR16 rc{globals_no_dtcm.dbus};                               ///< DT7
+  rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;          ///< 裁判系统
+  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> *refSub;  /// 子协议
+  rm::device::VT03 tc;                                                     ///< 图传
 
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
   rm::device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};

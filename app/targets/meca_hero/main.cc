@@ -16,9 +16,9 @@ using namespace rm::device;
 void h2dInteraction();
 void subRefereeInteraction();
 // void UIGroup1_func();
-static auto UIh2d = device::UITask(h2dInteraction, 10); // >>> 10hz
+static auto UIh2d = device::UITask(h2dInteraction, 10);  // >>> 10hz
 // static auto UIg1 = device::UITask(UIGroup1_func, 10); // >>> 10hz
-static auto schedule = device::UITaskScheduler(30); // >>> 30hz主调度器
+static auto schedule = device::UITaskScheduler(30);  // >>> 30hz主调度器
 u8 len;
 u8 Info_Arr[128];
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
@@ -249,10 +249,7 @@ void AppMain() {
 }
 }
 
-void subRefereeInteraction() {
-  schedule.schedule();
-}
-
+void subRefereeInteraction() { schedule.schedule(); }
 
 void h2dInteraction() {
   Hero2Drone h2d{globals->gimbal_hero->monitor_.euler_yaw_, globals->gimbal_hero->monitor_.euler_pitch_,
