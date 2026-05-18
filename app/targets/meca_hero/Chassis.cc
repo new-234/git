@@ -61,22 +61,22 @@ void ChassisHero::Remote() {
         Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
         Vw = V_d - V_a + globals->rc.left_x() * 7000 / 660;
       } else if (globals->rc_manager.all_device_ok()) {
-        if (globals->rc.key(DR16::Key::kW)) {
+        if (globals->rc.key(rm::device::DR16::Key::kW)) {
           V_w = 8500;
         } else {
           V_w = 0;
         }
-        if (globals->rc.key(DR16::Key::kS)) {
+        if (globals->rc.key(rm::device::DR16::Key::kS)) {
           V_s = 8500;
         } else {
           V_s = 0;
         }
-        if (globals->rc.key(DR16::Key::kD)) {
+        if (globals->rc.key(rm::device::DR16::Key::kD)) {
           V_d = 8500;
         } else {
           V_d = 0;
         }
-        if (globals->rc.key(DR16::Key::kA)) {
+        if (globals->rc.key(rm::device::DR16::Key::kA)) {
           V_a = 8500;
         } else {
           V_a = 0;
@@ -100,12 +100,12 @@ void ChassisHero::Remote() {
         }
         Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
       } else if (globals->rc_manager.all_device_ok()) {
-        if (globals->rc.key(DR16::Key::kW)) {
+        if (globals->rc.key(rm::device::DR16::Key::kW)) {
           V_w = 8500;
         } else {
           V_w = 0;
         }
-        if (globals->rc.key(DR16::Key::kS)) {
+        if (globals->rc.key(rm::device::DR16::Key::kS)) {
           V_s = 8500;
         } else {
           V_s = 0;

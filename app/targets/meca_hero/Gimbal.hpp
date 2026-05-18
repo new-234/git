@@ -24,7 +24,7 @@ class GimbalHero {
     float euler_yaw_{0};
     float euler_pitch_{0};
     float euler_roll_{0};
-  }temp_euler_angle_;
+  } temp_euler_angle_;
 
  private:
   // 调参变量
