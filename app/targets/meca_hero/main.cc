@@ -240,18 +240,7 @@ void AppMain() {
 }
 
 void subRefereeInteraction() {
-  // 0.5hz
-  static u8 loop_counter = 0;
-  loop_counter = (loop_counter + 1) % 60;
-  // 请一定注意分配时不能重叠！！！
-  if (loop_counter % 3 == 0)
-    h2dInteraction();  // 10hz
-  else if (loop_counter == 1)
-    ;
-  else if (loop_counter == 2)
-    ;  // 0.5hz
-  else {
-  }
+
 }
 
 void h2dInteraction() {
@@ -262,3 +251,79 @@ void h2dInteraction() {
                                     globals->ref.data().robot_status.robot_id + 5);
   UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
 }
+
+// 全局函数、变量，也可在globals中
+// void H2D_func();
+// void D2H_func();
+// void UIGroup1_func();
+// static auto UIh2d = device::UITask(H2D_func, 10); // >>> 10hz
+// static auto UId2h = device::UITask(D2H_func, 5); // >>> 5hz
+// static auto UIg1 = device::UITask(UIGroup1_func, 10); // >>> 10hz
+// static auto schedule = device::UITaskScheduler(30); // >>> 30hz主调度器
+
+
+// UI调度器，在init中注册即可
+// schedule.addTask(&UIh2d);
+// schedule.addTask(&UId2h);
+// schedule.addTask(&UIg1);
+//
+
+//
+// void H2D_func() {
+//   static struct rm::device::Hero2Drone h2d{0, 0, 0, 0, 0};
+//   const u16 size = rm::device::Referee0x301Prepare(globals->dataBox, 0, h2d, 0x001, 0x006);
+//   globals->refereeUart->Write(globals->dataBox, size);
+// }
+//
+// void D2H_func() {
+//   static struct rm::device::Drone2Hero d2h{0, 0, 0};
+//   const auto size = rm::device::Referee0x301Prepare(globals->dataBox, 0, d2h, 0x006, 0x001);
+//   globals->refereeUart->Write(globals->dataBox, size);
+// }
+//
+// void UIGroup1_func() {
+//   static device::UIFigure7 UIGroup1;
+//   static auto switch_l_last{device::DR16::SwitchPosition::kDown};
+//   if (switch_l_last != globals->rc->switch_l()) {
+//     UIGroup1.figure1.fillFloat(u8"amm", rm::device::UIFigure1::Operation::Add, 0,
+//                                rm::device::UIFigure1::Color::Magenta, 5, 960, 240, 30, d_yaw_target * 1000);
+//     UIGroup1.figure2.fillLine(u8"yaw", rm::device::UIFigure1::Operation::Add, 0,
+//                               rm::device::UIFigure1::Color::Pink, 2, 920, 240, 1000, 240);
+//     UIGroup1.figure3.fillIntegrate("int", rm::device::UIFigure1::Operation::Add, 0,
+//                                    device::UIFigure1::Color::Yellow, 6, 680, 680, 38, 280);
+//     UIGroup1.figure4.fillRec("rec", device::UIFigure1::Operation::Add, 3, device::UIFigure1::Color::Black, 200,
+//                              0, 0, 1920, 1080);
+//     UIGroup1.figure5.fillRound("cyc", device::UIFigure1::Operation::Add, 0, device::UIFigure1::Color::Black, 50,
+//                                960, 540, 100);
+//     UIGroup1.figure6.fillArc("Rfg", device::UIFigure1::Operation::Add, 0, device::UIFigure1::Color::Orange, 12,
+//                              960, 540, 330, 30, 180, 180);
+//     UIGroup1.figure7.fillEllipse("cy3", device::UIFigure1::Operation::Add, 1, device::UIFigure1::Color::White,
+//                                  200,
+//                                  960, 540, 960, 540);
+//
+//     const auto dataLen = rm::device::Referee0x301Prepare(globals->dataBox, 0, UIGroup1, 0x06,
+//                                                          0x06 + 256);
+//     globals->refereeUart->Write(globals->dataBox, dataLen);
+//   } else {
+//     static float angle1 = 0;
+//     static float angle2 = 0;
+//     angle1 += static_cast<float>(globals->rc->left_x()) * 0.01f;
+//     angle2 += static_cast<float>(globals->rc->left_y()) * 0.01f;
+//     device::UIFigure2 UITemp{};
+//     UITemp.figure1.fillRound("cyc", device::UIFigure1::Operation::Edit, 0, device::UIFigure1::Color::Black, 100,
+//                              static_cast<u16>(960 + angle1), static_cast<u16>(540 + angle2), 100);
+//     UITemp.figure2.fillFloat(u8"amm", rm::device::UIFigure1::Operation::Add, 0,
+//                              rm::device::UIFigure1::Color::Magenta, 5, 960, 240, 30, d_yaw_target * 1000);
+//     const auto dataLen = rm::device::Referee0x301Prepare(globals->dataBox, 0, UIGroup1, 0x06,
+//                                                          0x06 + 256);
+//     globals->refereeUart->Write(globals->dataBox, dataLen);
+//   }
+//   switch_l_last = globals->rc->switch_l();
+// }
+
+// 主任务中只需要更新调度器即可
+// void GlobalWarehouse::SubLoop10Hz() {
+//   if (globals->time_ % 34 == 0) {
+//     schedule.schedule();
+//   }
+// }

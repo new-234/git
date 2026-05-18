@@ -190,6 +190,13 @@ struct EnemyRobotBuff {
   SentryPosture sentry_posture;
 };
 
+struct AllRadarInfo {
+  struct EnemyRobotHP robotHP;
+  struct EnemyRobotProjectileAllowance projectileAllowance;
+  struct EnemyGoldCoinRFID goldCoinRFID;
+  struct EnemyRobotBuff buff;
+};
+
 struct Hero2Drone {
   f32 hero_yaw_angle;
   f32 hero_pitch_angle;
@@ -204,12 +211,13 @@ struct Drone2Hero {
   u8 cmd_shooting{0};
 };
 
-struct UI_Layer_Delete {
+struct UILayer {
   enum class Operation : u8 {
     None = 0,
     Delete = 1,
     DeleteAll = 2,
   } operation;
+
   u8 layer;
 };
 
@@ -255,14 +263,23 @@ struct UIFigure1 {
     u32 width : 10;
     u32 start_x : 11;
     u32 start_y : 11;
-    u32 details_c : 10;
-    u32 details_d : 11;
-    u32 details_e : 11;
+
+    union {
+      struct {
+        u32 details_c : 10;
+        u32 details_d : 11;
+        u32 details_e : 11;
+      };
+
+      f32 floatValue;
+      i32 intValue;
+    };
   };
 
   Figure figure;
-  void fillFigure(const u8 name_[3], Operation operate_type_, FigureType figure_type_, u8 layer_, Color color_, u16 width_,
-                  u16 start_x_, u16 start_y_, u16 a_, u16 b_, u16 c_, u16 d_, u16 e_) {
+
+  void fillFigure(const char *name_, Operation operate_type_, FigureType figure_type_, u8 layer_, Color color_,
+                  u16 width_, u16 start_x_, u16 start_y_, u16 a_, u16 b_, u16 c_, u16 d_, u16 e_) {
     memcpy(figure.figure_name, name_, 3);
     figure.operate_type = static_cast<u32>(operate_type_);
     figure.figure_type = static_cast<u32>(figure_type_);
@@ -277,45 +294,55 @@ struct UIFigure1 {
     figure.start_x = start_x_;
     figure.start_y = start_y_;
   };
-  void fillLine(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-                u16 end_x_, u16 end_y_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::StraightLine, layer_, color_, width_,
-               start_x_, start_y_, 0, 0, 0, end_x_, end_y_);
+
+  void fillLine(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                u16 start_y_, u16 end_x_, u16 end_y_) {
+    fillFigure(name_, operate_type_, FigureType::StraightLine, layer_, color_, width_, start_x_, start_y_, 0, 0, 0,
+               end_x_, end_y_);
   };
-  void fillRec(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-               u16 end_x_, u16 end_y_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Rectangle, layer_, color_, width_, start_x_,
-               start_y_, 0, 0, 0, end_x_, end_y_);
+
+  void fillRec(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+               u16 start_y_, u16 end_x_, u16 end_y_) {
+    fillFigure(name_, operate_type_, FigureType::Rectangle, layer_, color_, width_, start_x_, start_y_, 0, 0, 0, end_x_,
+               end_y_);
   }
-  void fillRound(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-                 u16 radius_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::PerfectCircle, layer_, color_, width_,
-               start_x_, start_y_, 0, 0, radius_, 0, 0);
+
+  void fillRound(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                 u16 start_y_, u16 radius_) {
+    fillFigure(name_, operate_type_, FigureType::PerfectCircle, layer_, color_, width_, start_x_, start_y_, 0, 0,
+               radius_, 0, 0);
   }
-  void fillEllipse(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-                   u16 x_half_length_, u16 y_half_length_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Ellipse, layer_, color_, width_, start_x_,
-               start_y_, 0, 0, 0, x_half_length_, y_half_length_);
+
+  void fillEllipse(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                   u16 start_y_, u16 x_half_length_, u16 y_half_length_) {
+    fillFigure(name_, operate_type_, FigureType::Ellipse, layer_, color_, width_, start_x_, start_y_, 0, 0, 0,
+               x_half_length_, y_half_length_);
   }
-  void fillArc(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-               u16 start_angle_, u16 end_angle_, u16 x_half_length_, u16 y_half_length_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Arc, layer_, color_, width_, start_x_,
-               start_y_, start_angle_, end_angle_, 0, x_half_length_, y_half_length_);
+
+  void fillArc(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+               u16 start_y_, u16 start_angle_, u16 end_angle_, u16 x_half_length_, u16 y_half_length_) {
+    fillFigure(name_, operate_type_, FigureType::Arc, layer_, color_, width_, start_x_, start_y_, start_angle_,
+               end_angle_, 0, x_half_length_, y_half_length_);
   }
-  void fillFloat(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
-                 u16 font_size_, i32 value) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::FloatingNumber, layer_, color_, width_,
-               start_x_, start_y_, font_size_, 0, value >> 22, (value >> 10) & 0xFF, value & 0xFF);
+
+  void fillFloat(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                 u16 start_y_, u16 font_size_, f32 value) {
+    fillFigure(name_, operate_type_, FigureType::FloatingNumber, layer_, color_, width_, start_x_, start_y_, font_size_,
+               0, 0, 0, 0);
+    figure.intValue = static_cast<i32>(value);
   }
-  void fillIntegrate(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+
+  void fillIntegrate(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
                      u16 start_y_, u16 font_size_, i32 value) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Integer, layer_, color_, width_, start_x_,
-               start_y_, font_size_, 0, value >> 22, (value >> 10) & 0xFF, value & 0xFF);
+    fillFigure(name_, operate_type_, FigureType::Integer, layer_, color_, width_, start_x_, start_y_, font_size_, 0, 0,
+               0, 0);
+    figure.intValue = value;
   }
-  void fillCharacter(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+
+  void fillCharacter(const char *name_, Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
                      u16 start_y_, u16 font_size_, u16 length_) {
-    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Character, layer_, color_, width_, start_x_,
-               start_y_, font_size_, length_, 0, 0, 0);
+    fillFigure(name_, operate_type_, FigureType::Character, layer_, color_, width_, start_x_, start_y_, font_size_,
+               length_, 0, 0, 0);
   }
 };
 
@@ -396,29 +423,56 @@ struct MapRobotPosition {
   uint16_t ally_sentry_position_y;
 };
 #pragma pack(pop)
+
+// --------------------------------------------- 自动类型推导 ---------------------------------------------
 // 绑定类型和命令码，利用自动类型推导
 template <typename T>
 struct TypeToCmd;
 
+#define DEFINE_TYPE_TO_CMD(TypeName, CmdName)                 \
+  template <>                                                 \
+  struct TypeToCmd<TypeName> {                                \
+    static constexpr u16 value = RefereeSubCmdId::k##CmdName; \
+  };
+
+// 批量定义所有子命令
+DEFINE_TYPE_TO_CMD(AllyRobotPosition, AllyRobotPosition)
+
+DEFINE_TYPE_TO_CMD(EnemyRobotPosition, EnemyRobotPosition)
+
+DEFINE_TYPE_TO_CMD(EnemyRobotHP, EnemyRobotHP)
+
+DEFINE_TYPE_TO_CMD(EnemyRobotProjectileAllowance, EnemyRobotProjectileAllowance)
+
+DEFINE_TYPE_TO_CMD(EnemyGoldCoinRFID, EnemyGoldCoinRFID)
+
+DEFINE_TYPE_TO_CMD(EnemyRobotBuff, EnemyRobotBuff)
+
+DEFINE_TYPE_TO_CMD(AllRadarInfo, AllRadarInfo)
+
+DEFINE_TYPE_TO_CMD(Hero2Drone, Hero2Drone)
+
+DEFINE_TYPE_TO_CMD(Drone2Hero, Drone2Hero)
+
+DEFINE_TYPE_TO_CMD(UILayer, UILayer)
+
+DEFINE_TYPE_TO_CMD(UIFigure1, UIFigure1)
+
+DEFINE_TYPE_TO_CMD(UIFigure2, UIFigure2)
+
+DEFINE_TYPE_TO_CMD(UIFigure5, UIFigure5)
+
+DEFINE_TYPE_TO_CMD(UIFigure7, UIFigure7)
+
+DEFINE_TYPE_TO_CMD(UICharacter, UICharacter)
+
+// 单独处理 MapRobotPosition（值不同）
 template <>
 struct TypeToCmd<MapRobotPosition> {
-  static constexpr u16 value = 0x305;
+  static constexpr u16 value = 0x0305;
 };
 
-template <>
-struct TypeToCmd<AllyRobotPosition> {
-  static constexpr u16 value = RefereeSubCmdId::kAllyRobotPosition;
-};
-
-template <>
-struct TypeToCmd<Drone2Hero> {
-  static constexpr u16 value = RefereeSubCmdId::kDrone2Hero;
-};
-
-template <>
-struct TypeToCmd<Hero2Drone> {
-  static constexpr u16 value = RefereeSubCmdId::kHero2Drone;
-};
+#undef DEFINE_TYPE_TO_CMD
 
 template <typename T>
 constexpr int getCmd(const T &obj) {
