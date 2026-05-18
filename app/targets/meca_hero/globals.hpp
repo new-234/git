@@ -90,8 +90,8 @@ struct Globals {
   // 输出电流
   rm::f32 output_currents[4];
   // 底盘随动
-  modules::PID pid_chassis_follow_pos{400, 0, 3.3, 1500, 0};
-  modules::PID pid_chassis_follow_vel{34, 0, 0.22, 16000, 0};
+  modules::PID pid_chassis_follow_pos{500, 0, 4, 1500, 0};
+  modules::PID pid_chassis_follow_vel{34, 0, 0.1, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
