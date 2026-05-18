@@ -21,12 +21,12 @@
 */
 
 /**
- * @file  librm/device/referee/protocol_user.hpp
+ * @file  protocol_user.hpp
  * @brief 裁判系统串口协议0x301用户自定义子协议(2026-05-14)
  */
 
-#ifndef LIBRM_DEVICE_REFEREE_PROTOCOL_USER_HPP
-#define LIBRM_DEVICE_REFEREE_PROTOCOL_USER_HPP
+#ifndef PROTOCOL_USER_HPP
+#define PROTOCOL_USER_HPP
 
 #include <librm.hpp>
 
@@ -204,6 +204,149 @@ struct Drone2Hero {
   u8 cmd_shooting{0};
 };
 
+struct UI_Layer_Delete {
+  enum class Operation : u8 {
+    None = 0,
+    Delete = 1,
+    DeleteAll = 2,
+  } operation;
+  u8 layer;
+};
+
+struct UIFigure1 {
+  enum class Operation : u8 {
+    None = 0,    // 空操作
+    Add = 1,     // 增加
+    Edit = 2,    // 修改
+    Delete = 3,  // 删除
+  };
+
+  enum class FigureType : u8 {
+    StraightLine = 0,    // 直线
+    Rectangle = 1,       // 矩形
+    PerfectCircle = 2,   // 正圆
+    Ellipse = 3,         // 椭圆
+    Arc = 4,             // 弧线
+    FloatingNumber = 5,  // 浮点数
+    Integer = 6,         // 整数
+    Character = 7        // 字符
+  };
+
+  enum class Color : u8 {
+    RedBlue = 0,  // Red/Blue (Own Side color)
+    Yellow = 1,   // 黄色
+    Green = 2,    // 绿色
+    Orange = 3,   // 橙色
+    Magenta = 4,  // 品红色
+    Pink = 5,     // 粉红色
+    Cyan = 6,     // 青色
+    Black = 7,    // 黑色
+    White = 8     // 白色
+  };
+
+  struct Figure {
+    u8 figure_name[3];
+    u32 operate_type : 3;
+    u32 figure_type : 3;
+    u32 layer : 4;
+    u32 color : 4;
+    u32 details_a : 9;
+    u32 details_b : 9;
+    u32 width : 10;
+    u32 start_x : 11;
+    u32 start_y : 11;
+    u32 details_c : 10;
+    u32 details_d : 11;
+    u32 details_e : 11;
+  };
+
+  Figure figure;
+  void fillFigure(const u8 name_[3], Operation operate_type_, FigureType figure_type_, u8 layer_, Color color_, u16 width_,
+                  u16 start_x_, u16 start_y_, u16 a_, u16 b_, u16 c_, u16 d_, u16 e_) {
+    memcpy(figure.figure_name, name_, 3);
+    figure.operate_type = static_cast<u32>(operate_type_);
+    figure.figure_type = static_cast<u32>(figure_type_);
+    figure.layer = layer_;
+    figure.color = static_cast<u32>(color_);
+    figure.details_a = a_;
+    figure.details_b = b_;
+    figure.details_c = c_;
+    figure.details_d = d_;
+    figure.details_e = e_;
+    figure.width = width_;
+    figure.start_x = start_x_;
+    figure.start_y = start_y_;
+  };
+  void fillLine(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+                u16 end_x_, u16 end_y_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::StraightLine, layer_, color_, width_,
+               start_x_, start_y_, 0, 0, 0, end_x_, end_y_);
+  };
+  void fillRec(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+               u16 end_x_, u16 end_y_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Rectangle, layer_, color_, width_, start_x_,
+               start_y_, 0, 0, 0, end_x_, end_y_);
+  }
+  void fillRound(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+                 u16 radius_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::PerfectCircle, layer_, color_, width_,
+               start_x_, start_y_, 0, 0, radius_, 0, 0);
+  }
+  void fillEllipse(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+                   u16 x_half_length_, u16 y_half_length_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Ellipse, layer_, color_, width_, start_x_,
+               start_y_, 0, 0, 0, x_half_length_, y_half_length_);
+  }
+  void fillArc(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+               u16 start_angle_, u16 end_angle_, u16 x_half_length_, u16 y_half_length_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Arc, layer_, color_, width_, start_x_,
+               start_y_, start_angle_, end_angle_, 0, x_half_length_, y_half_length_);
+  }
+  void fillFloat(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_, u16 start_y_,
+                 u16 font_size_, i32 value) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::FloatingNumber, layer_, color_, width_,
+               start_x_, start_y_, font_size_, 0, value >> 22, (value >> 10) & 0xFF, value & 0xFF);
+  }
+  void fillIntegrate(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                     u16 start_y_, u16 font_size_, i32 value) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Integer, layer_, color_, width_, start_x_,
+               start_y_, font_size_, 0, value >> 22, (value >> 10) & 0xFF, value & 0xFF);
+  }
+  void fillCharacter(const u8 name_[3], Operation operate_type_, u8 layer_, Color color_, u8 width_, u16 start_x_,
+                     u16 start_y_, u16 font_size_, u16 length_) {
+    fillFigure(reinterpret_cast<u8 *>(&name_), operate_type_, FigureType::Character, layer_, color_, width_, start_x_,
+               start_y_, font_size_, length_, 0, 0, 0);
+  }
+};
+
+struct UIFigure2 {
+  UIFigure1 figure1;
+  UIFigure1 figure2;
+};
+
+struct UIFigure5 {
+  UIFigure1 figure1;
+  UIFigure1 figure2;
+  UIFigure1 figure3;
+  UIFigure1 figure4;
+  UIFigure1 figure5;
+};
+
+struct UIFigure7 {
+  UIFigure1 figure1;
+  UIFigure1 figure2;
+  UIFigure1 figure3;
+  UIFigure1 figure4;
+  UIFigure1 figure5;
+  UIFigure1 figure6;
+  UIFigure1 figure7;
+};
+
+struct UICharacter {
+  UIFigure1 character;
+  u8 data[30];
+};
+
 struct RefereeSubCmdId {
   // 对应0x20B，哨兵机器人接收位置信息
   constexpr static u16 kAllyRobotPosition = 0x0200;
@@ -217,10 +360,50 @@ struct RefereeSubCmdId {
   // 云台手大吊射
   constexpr static u16 kHero2Drone = 0x0207;
   constexpr static u16 kDrone2Hero = 0x0208;
+  // UI
+  constexpr static u16 kUILayer = 0x0100;
+  constexpr static u16 kUIFigure1 = 0x0101;
+  constexpr static u16 kUIFigure2 = 0x0102;
+  constexpr static u16 kUIFigure5 = 0x0103;
+  constexpr static u16 kUIFigure7 = 0x0104;
+  constexpr static u16 kUICharacter = 0x0110;
+};
+
+struct MapRobotPosition {
+  uint16_t opponent_hero_position_x;
+  uint16_t opponent_hero_position_y;
+  uint16_t opponent_engineer_position_x;
+  uint16_t opponent_engineer_position_y;
+  uint16_t opponent_infantry_3_position_x;
+  uint16_t opponent_infantry_3_position_y;
+  uint16_t opponent_infantry_4_position_x;
+  uint16_t opponent_infantry_4_position_y;
+  uint16_t opponent_aerial_position_x;
+  uint16_t opponent_aerial_position_y;
+  uint16_t opponent_sentry_position_x;
+  uint16_t opponent_sentry_position_y;
+  uint16_t ally_hero_position_x;
+  uint16_t ally_hero_position_y;
+  uint16_t ally_engineer_position_x;
+  uint16_t ally_engineer_position_y;
+  uint16_t ally_infantry_3_position_x;
+  uint16_t ally_infantry_3_position_y;
+  uint16_t ally_infantry_4_position_x;
+  uint16_t ally_infantry_4_position_y;
+  uint16_t ally_aerial_position_x;
+  uint16_t ally_aerial_position_y;
+  uint16_t ally_sentry_position_x;
+  uint16_t ally_sentry_position_y;
 };
 #pragma pack(pop)
+// 绑定类型和命令码，利用自动类型推导
 template <typename T>
 struct TypeToCmd;
+
+template <>
+struct TypeToCmd<MapRobotPosition> {
+  static constexpr u16 value = 0x305;
+};
 
 template <>
 struct TypeToCmd<AllyRobotPosition> {
@@ -280,5 +463,4 @@ struct RefereeSubProtocolMemoryMap {
        {RefereeSubCmdId::kDrone2Hero, sizeof(RefereeSubProtocol::drone_2_hero)}});
 };
 }  // namespace rm::device
-
-#endif  // LIBRM_DEVICE_REFEREE_PROTOCOL_USER_HPP
+#endif  // PROTOCOL_USER_HPP

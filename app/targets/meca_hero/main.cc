@@ -247,7 +247,7 @@ void subRefereeInteraction() {
   if (loop_counter % 3 == 0)
     h2dInteraction();  // 10hz
   else if (loop_counter == 1)
-    ;  // 0.5hz
+    ;
   else if (loop_counter == 2)
     ;  // 0.5hz
   else {
@@ -258,7 +258,7 @@ void h2dInteraction() {
   Hero2Drone h2d{globals->HipnucImu.yaw(), globals->HipnucImu.pitch(),
                  globals->ref.data().projectile_allowance.projectile_allowance_42mm,
                  globals->ref.data().shoot_data.initial_speed, globals->ammo_hero->shooter_m};
-  len = device::RefereeSendPrepare(Info_Arr, 0, h2d, globals->ref.data().robot_status.robot_id,
-                                   globals->ref.data().robot_status.robot_id + 5);
+  len = device::Referee0x301Prepare(Info_Arr, 0, h2d, globals->ref.data().robot_status.robot_id,
+                                    globals->ref.data().robot_status.robot_id + 5);
   UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
 }

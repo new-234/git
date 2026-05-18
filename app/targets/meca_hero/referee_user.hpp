@@ -32,7 +32,6 @@
 #include <librm.hpp>
 
 #include <cstring>
-#include <functional>
 
 #include "librm/device/device.hpp"
 
@@ -72,39 +71,8 @@ class RefereeUser final : public Device {
 }  // namespace rm::device
 
 namespace rm::device {
-struct MapRobotPosition {
-  uint16_t opponent_hero_position_x;
-  uint16_t opponent_hero_position_y;
-  uint16_t opponent_engineer_position_x;
-  uint16_t opponent_engineer_position_y;
-  uint16_t opponent_infantry_3_position_x;
-  uint16_t opponent_infantry_3_position_y;
-  uint16_t opponent_infantry_4_position_x;
-  uint16_t opponent_infantry_4_position_y;
-  uint16_t opponent_aerial_position_x;
-  uint16_t opponent_aerial_position_y;
-  uint16_t opponent_sentry_position_x;
-  uint16_t opponent_sentry_position_y;
-  uint16_t ally_hero_position_x;
-  uint16_t ally_hero_position_y;
-  uint16_t ally_engineer_position_x;
-  uint16_t ally_engineer_position_y;
-  uint16_t ally_infantry_3_position_x;
-  uint16_t ally_infantry_3_position_y;
-  uint16_t ally_infantry_4_position_x;
-  uint16_t ally_infantry_4_position_y;
-  uint16_t ally_aerial_position_x;
-  uint16_t ally_aerial_position_y;
-  uint16_t ally_sentry_position_x;
-  uint16_t ally_sentry_position_y;
-};
-
-template <>
-struct TypeToCmd<MapRobotPosition> {
-  static constexpr u16 value = 0x305;
-};
 template <typename T>
-inline u8 RefereeSendPrepare(u8 *data, const u16 start_index, T &info, const u8 sender, const u8 receiver) {
+inline u8 Referee0x301Prepare(u8 *data, const u16 start_index, T &info, const u16 sender, const u16 receiver) {
   static u8 seq_ = 0;
   u16 index_ = start_index;
   data[index_++] = kRefProtocolHeaderSof;
@@ -129,7 +97,7 @@ inline u8 RefereeSendPrepare(u8 *data, const u16 start_index, T &info, const u8 
   return index_ - start_index;
 };
 
-inline u8 RefereeSend(u8 *data, const u16 start_index, const struct MapRobotPosition &structInfo) {
+inline u8 RefereePrepare(u8 *data, const u16 start_index, const struct MapRobotPosition &structInfo) {
   static u8 seq_ = 0;
   u16 index_ = start_index;
   data[index_++] = kRefProtocolHeaderSof;

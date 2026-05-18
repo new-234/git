@@ -289,7 +289,7 @@ inline int ammo_power_state{0};
 // 超电
 inline float cap_energy{0};
 inline float cap_power{0};
-inline char cap_error{0};
+inline unsigned char cap_error{0};
 inline bool cap_online{false};
 inline int cap_error_count{0};
 
