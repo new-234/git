@@ -239,9 +239,7 @@ void AppMain() {
 }
 }
 
-void subRefereeInteraction() {
-
-}
+void subRefereeInteraction() {}
 
 void h2dInteraction() {
   Hero2Drone h2d{globals->HipnucImu.yaw(), globals->HipnucImu.pitch(),
@@ -260,7 +258,6 @@ void h2dInteraction() {
 // static auto UId2h = device::UITask(D2H_func, 5); // >>> 5hz
 // static auto UIg1 = device::UITask(UIGroup1_func, 10); // >>> 10hz
 // static auto schedule = device::UITaskScheduler(30); // >>> 30hz主调度器
-
 
 // UI调度器，在init中注册即可
 // schedule.addTask(&UIh2d);
