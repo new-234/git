@@ -9,7 +9,7 @@ class AmmoHero {
 
   void AmmoUpdate();
 
-  rm::i16 limit{-3000};
+  rm::i16 limit{-2300};
   int16_t shooter_m{0};
 
   // 12m/s
@@ -25,4 +25,5 @@ class AmmoHero {
   void AmmoControl();
   void ShooterControl();
   void MagzineControl();
+  void BulletSpeedControl();
 };

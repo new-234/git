@@ -74,7 +74,13 @@ void GimbalHero::AhrsUpdate() {
   accel_z = globals->HipnucImu.acc_z();
 }
 
-void GimbalHero::AimbotControl() {
+void GimbalHero::DroneAimControl() {
+  if (globals->refsub_manager.all_device_ok()) {
+    target_yaw_ = -globals->refSub->data().drone_2_hero.cmd_yaw_angle;
+  }
+}
+
+void GimbalHero::RadarAimbotControl() {
   static int count{0};
   if (count < 100) {
     count++;
@@ -152,9 +158,9 @@ void GimbalHero::RemoterControl() {
           break;
 
         case StateMachine::GimbalState::kRadarAimbot:
-          AimbotControl();
+          RadarAimbotControl();
           break;
-
+        case StateMachine::GimbalState::kDroneAim:
         case StateMachine::GimbalState::kNormal:
           NormalRemoter();
           break;
@@ -169,7 +175,11 @@ void GimbalHero::RemoterControl() {
           break;
 
         case StateMachine::GimbalState::kRadarAimbot:
-          AimbotControl();
+          RadarAimbotControl();
+          break;
+
+        case StateMachine::GimbalState::kDroneAim:
+          DroneAimControl();
           break;
 
         case StateMachine::GimbalState::kNormal:
@@ -183,8 +193,8 @@ void GimbalHero::RemoterControl() {
   // pitch限位
   if (target_pitch_ < 0.0) {
     target_pitch_ = 0.0;
-  } else if (target_pitch_ > 0.84) {
-    target_pitch_ = 0.84;
+  } else if (target_pitch_ > 0.82) {
+    target_pitch_ = 0.82;
   }
 }
 
@@ -332,6 +342,8 @@ bool GimbalHero::EnableJudgement() {
       // Unabling();
       Enabling();
       return false;
+    case StateMachine::GimbalState::kDroneAim:
+      return true;
     case StateMachine::GimbalState::kNormal:
       return true;
     case StateMachine::GimbalState::kAimbot:

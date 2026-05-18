@@ -42,6 +42,7 @@ class StateMachine {
     kNormal,
     kAimbot,
     kRadarAimbot,
+    kDroneAim,
   };
 
   // enum class GimbalSubState {

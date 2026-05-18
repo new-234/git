@@ -69,13 +69,11 @@ void StateMachine::AmmoSubStateUpdate() {
       // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kEnable);
 
     case StateMachine::AmmoSubState::kReady:
-      if ((globals->rc.dial() >= 500 || globals->rc.dial() < -500 || globals->rc.mouse_button_left() ||
-               globals->tc.data().mouse_button_left /*|| globals->custom_client->mouse_left()*/ /*||
-               (globals->aimbot_can_communicator->aimbot_state() == 0x03 &&
-                 globals->tc->data().keyboard_key & static_cast<int16_t>(VT03::KeyboardKey::kCtrl))*/)/* &&
-              (globals->ref.data().robot_status.shooter_barrel_heat_limit >=
-               globals->ref.data().power_heat_data.shooter_42mm_barrel_heat + 100)*/ &&
-              (globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800)) {
+      if ((abs(globals->rc.dial()) >= 500 || globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left ||
+           key_once_tc(rm::device::VT03::kF) ||
+           (current_sub_state_ == SubState::kSnipe && current_gimbal_state_ == GimbalState::kDroneAim &&
+            globals->refSub->data().drone_2_hero.cmd_shooting == 1)) &&
+          (globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800)) {
         now_angle = next_angle;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
       }
@@ -212,12 +210,19 @@ void StateMachine::GameState() {
           break;
 
         case (1):
-          if (radar_aimbot) {
-            last_gimbal_state_ = current_gimbal_state_;
+          if (globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kV) {
+            current_gimbal_state_ = GimbalState::kDroneAim;
+          } else if (globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kB) {
             current_gimbal_state_ = GimbalState::kRadarAimbot;
           } else {
             current_gimbal_state_ = GimbalState::kNormal;
           }
+          // if (radar_aimbot) {
+          //   last_gimbal_state_ = current_gimbal_state_;
+          //   current_gimbal_state_ = GimbalState::kRadarAimbot;
+          // } else {
+          //   current_gimbal_state_ = GimbalState::kNormal;
+          // }
           // if (pitchlock) {
           //   last_gimbal_sub_state_ = current_gimbal_sub_state_;
           //   current_gimbal_sub_state_ = GimbalSubState::kPitchlock;
@@ -410,12 +415,13 @@ void StateMachine::StateUpdate() {
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
+
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
 
   fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
          globals->rc.key(rm::device::DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
-  if (key_once_tc(rm::device::VT03::kV)) {
+  if (key_once_tc(rm::device::VT03::kZ)) {
     scope_state++;
     scope_state %= 4;  // 循环切换状态（0→1→2→3→0）
     scope_count = 0;

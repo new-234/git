@@ -66,13 +66,22 @@ bool AmmoHero::EnableJudgement() {
   }
 }
 
-void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
+void AmmoHero::BulletSpeedControl() {
   if (key_once_tc(rm::device::VT03::KeyboardKey::kE)) {
     shooter_m -= 10;
   }
   if (key_once_tc(rm::device::VT03::KeyboardKey::kQ)) {
     shooter_m += 10;
   }
+  if (globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe &&
+      globals->state_machine.getGimbalState_() == StateMachine::GimbalState::kDroneAim &&
+      globals->refsub_manager.all_device_ok()) {
+    shooter_m = globals->refSub->data().drone_2_hero.cmd_ammo_adjust;
+  }
+}
+
+void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
+
   // 目标速度PID
   switch (globals->state_machine.getSubState_()) {
     default:
@@ -147,6 +156,7 @@ void AmmoHero::MagzineControl() {
 }
 
 void AmmoHero::AmmoControl() {
+  BulletSpeedControl();
   ShooterControl();
   MagzineControl();
 }

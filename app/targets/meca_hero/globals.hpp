@@ -12,6 +12,9 @@
 #include "State.hpp"
 #include "referee_user.hpp"
 #include "common/radar_comm_can.hpp"
+#include "protocol_user.hpp"
+#include "referee_user.hpp"
+#include "TaskScheduler.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -87,8 +90,8 @@ struct Globals {
   // 输出电流
   float output_currents[4];
   // 底盘随动
-  rm::modules::PID pid_chassis_follow_pos{400, 0, 3.3, 1500, 0};
-  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.22, 16000, 0};
+  rm::modules::PID pid_chassis_follow_pos{500, 0, 4, 1500, 0};
+  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.1, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
@@ -131,8 +134,7 @@ struct Globals {
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                       ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;  ///< 裁判系统
-  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> refSub =
-      rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>(ref);  /// 子协议
+  rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> *refSub; /// 子协议
   rm::device::VT03 tc;                                                      ///< 图传
 
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
@@ -154,6 +156,7 @@ struct Globals {
   rm::device::DeviceManager<4> chassis_manager;
   rm::device::DeviceManager<7> ammo_manager;
   rm::device::DeviceManager<1> ref_manager;
+  rm::device::DeviceManager<1> refsub_manager;
   rm::device::DeviceManager<1> tc_manager;
   rm::device::DeviceManager<1> rc_manager;
   rm::device::DeviceManager<1> cms_manager;
@@ -191,12 +194,15 @@ struct Globals {
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);
 
+    refSub = new rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>(ref);
+
     ref.AttachCallback(std::bind(&rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>::AttachCallback,
                                  refSub, std::placeholders::_1, std::placeholders::_2));
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
     ref_manager << &ref;
+    refsub_manager << refSub;
     tc_manager << &tc;
     rc_manager << &rc;
     chassis_manager << &chassis_motor[0] << &chassis_motor[1] << &chassis_motor[2] << &chassis_motor[3];
@@ -289,7 +295,7 @@ inline int ammo_power_state{0};
 // 超电
 inline float cap_energy{0};
 inline float cap_power{0};
-inline unsigned char cap_error{0};
+inline uint8_t cap_error{0};
 inline bool cap_online{false};
 inline int cap_error_count{0};
 
@@ -300,6 +306,10 @@ inline float radar_pitch{0};
 
 // Imu
 inline bool Imu_online{false};
+
+// DroneAim
+inline float drone_yaw{0};
+inline uint8_t drone_fire{0};
 
 extern Globals *globals;
 

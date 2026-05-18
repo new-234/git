@@ -13,12 +13,15 @@ volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 using namespace rm;
 using namespace rm::device;
 
-u8 len;
-u8 Info_Arr[128];
-
-void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
 void h2dInteraction();
 void subRefereeInteraction();
+// void UIGroup1_func();
+static auto UIh2d = device::UITask(h2dInteraction, 10); // >>> 10hz
+// static auto UIg1 = device::UITask(UIGroup1_func, 10); // >>> 10hz
+static auto schedule = device::UITaskScheduler(30); // >>> 30hz主调度器
+u8 len;
+u8 Info_Arr[128];
+void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
 
 void Monitor() {
   // // PID 调参命令处理
@@ -69,6 +72,9 @@ void Monitor() {
   radar_pitch = globals->radar_can_communicator.pitch_mard();
 
   Imu_online = globals->Imu_manager.all_device_ok();
+
+  drone_yaw = globals->refSub->data().drone_2_hero.cmd_yaw_angle;
+  drone_fire = globals->refSub->data().drone_2_hero.cmd_shooting;
 }
 
 void Init() {
@@ -105,6 +111,9 @@ void Init() {
   globals->ammo_hero = new AmmoHero();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+
+  schedule.addTask(&UIh2d);
+  // schedule.addTask(&UIg1);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
 void SubLoop10hz() {}
@@ -159,6 +168,7 @@ void SubLoop500hz() {
   globals->gimbal_manager.Update();
   globals->chassis_manager.Update();
   globals->ref_manager.Update();
+  globals->refsub_manager.Update();
   globals->tc_manager.Update();
   globals->rc_manager.Update();
   globals->ammo_manager.Update();
@@ -239,10 +249,13 @@ void AppMain() {
 }
 }
 
-void subRefereeInteraction() {}
+void subRefereeInteraction() {
+  schedule.schedule();
+}
+
 
 void h2dInteraction() {
-  Hero2Drone h2d{globals->HipnucImu.yaw(), globals->HipnucImu.pitch(),
+  Hero2Drone h2d{globals->gimbal_hero->monitor_.euler_yaw_, globals->gimbal_hero->monitor_.euler_pitch_,
                  globals->ref.data().projectile_allowance.projectile_allowance_42mm,
                  globals->ref.data().shoot_data.initial_speed, globals->ammo_hero->shooter_m};
   len = device::Referee0x301Prepare(Info_Arr, 0, h2d, globals->ref.data().robot_status.robot_id,
@@ -250,22 +263,6 @@ void h2dInteraction() {
   UI_send(&globals_no_dtcm.usart1_ref, Info_Arr, len);
 }
 
-// 全局函数、变量，也可在globals中
-// void H2D_func();
-// void D2H_func();
-// void UIGroup1_func();
-// static auto UIh2d = device::UITask(H2D_func, 10); // >>> 10hz
-// static auto UId2h = device::UITask(D2H_func, 5); // >>> 5hz
-// static auto UIg1 = device::UITask(UIGroup1_func, 10); // >>> 10hz
-// static auto schedule = device::UITaskScheduler(30); // >>> 30hz主调度器
-
-// UI调度器，在init中注册即可
-// schedule.addTask(&UIh2d);
-// schedule.addTask(&UId2h);
-// schedule.addTask(&UIg1);
-//
-
-//
 // void H2D_func() {
 //   static struct rm::device::Hero2Drone h2d{0, 0, 0, 0, 0};
 //   const u16 size = rm::device::Referee0x301Prepare(globals->dataBox, 0, h2d, 0x001, 0x006);
@@ -277,7 +274,7 @@ void h2dInteraction() {
 //   const auto size = rm::device::Referee0x301Prepare(globals->dataBox, 0, d2h, 0x006, 0x001);
 //   globals->refereeUart->Write(globals->dataBox, size);
 // }
-//
+// //
 // void UIGroup1_func() {
 //   static device::UIFigure7 UIGroup1;
 //   static auto switch_l_last{device::DR16::SwitchPosition::kDown};
@@ -317,8 +314,8 @@ void h2dInteraction() {
 //   }
 //   switch_l_last = globals->rc->switch_l();
 // }
-
-// 主任务中只需要更新调度器即可
+//
+// // 主任务中只需要更新调度器即可
 // void GlobalWarehouse::SubLoop10Hz() {
 //   if (globals->time_ % 34 == 0) {
 //     schedule.schedule();

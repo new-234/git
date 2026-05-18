@@ -47,7 +47,8 @@ class GimbalHero {
   void Enabling();
   void AhrsUpdate();
   void GimbalControl();
-  void AimbotControl();
+  void RadarAimbotControl();
+  void DroneAimControl();
   void RemoterControl();
   void NormalRemoter();
   void SnipeRemoter();
