@@ -180,7 +180,7 @@ void ChassisHero::IfOverPower() {
     power_limit = 200;
     if (abs(globals->HipnucImu.pitch()) >= 0.5 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
-      power_limit = 500;
+      power_limit = 600;
       overpower_count--;
       OverOverPower = true;
     }
@@ -189,7 +189,7 @@ void ChassisHero::IfOverPower() {
     power_limit = globals->ref.data().robot_status.chassis_power_limit == 0
                       ? 50
                       : static_cast<float>(globals->ref.data().robot_status.chassis_power_limit);
-    overpower_count = 90;
+    overpower_count = 120;
   }
 }
 
