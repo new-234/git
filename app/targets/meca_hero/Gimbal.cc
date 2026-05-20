@@ -82,7 +82,7 @@ void GimbalHero::DroneAimControl() {
 
 void GimbalHero::RadarAimbotControl() {
   static int count{0};
-  if (count < 100) {
+  if (count < 1000) {
     count++;
   } else {
     if (globals->radar_can_communicator.vaild() && globals->radar_can_communicator.fresh() &&

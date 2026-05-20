@@ -65,6 +65,17 @@ struct Globals {
   rm::device::GkSupercap cms{can3};                          ///< 超电
   rm::device::GkSupercap::TxData cap_tx_data;
   rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
+  //
+  // struct {
+  //   rm::u16 enemy_hp{0};
+  //   rm::u8 snipe{0};
+  // }custom_data;
+  //
+  // void r0x301(unsigned short int cmd_id, unsigned char seq){
+  //   if (cmd_id = 0x0311) {
+  //     memcpy(&custom_data,&ref.data().custom_robot_data,sizeof(custom_data));
+  //   }
+  // }
 
   // modules::KeyboardHandler<> keyboard_handler(device::DR16::Key);
 
@@ -91,7 +102,7 @@ struct Globals {
   float output_currents[4];
   // 底盘随动
   rm::modules::PID pid_chassis_follow_pos{500, 0, 4, 1500, 0};
-  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.1, 16000, 0};
+  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.05, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
