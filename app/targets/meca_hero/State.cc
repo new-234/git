@@ -8,6 +8,7 @@ bool overpower{false};     ///< 爬坡-自动触发
 bool follow{true};         ///< 随动标志位
 bool radar_aimbot{false};  ///< 部署模式下的雷达自瞄
 bool fire = {false};       ///< 允许自瞄开火标志位
+bool low_hp{false};
 // bool pitchlock{false};     ///< pitch锁定标志位
 
 using namespace rm;
@@ -69,11 +70,8 @@ void StateMachine::AmmoSubStateUpdate() {
       // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kEnable);
 
     case StateMachine::AmmoSubState::kReady:
-      if ((abs(globals->rc.dial()) >= 500 || globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left ||
-           key_once_tc(rm::device::VT03::kF) ||
-           (current_sub_state_ == SubState::kSnipe && current_gimbal_state_ == GimbalState::kDroneAim &&
-            globals->refSub->data().drone_2_hero.cmd_shooting == 1)) &&
-          (globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800)) {
+      if ((fire && globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800 && !low_hp) ||
+          globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
         now_angle = next_angle;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
       }
@@ -81,7 +79,7 @@ void StateMachine::AmmoSubStateUpdate() {
 
     case StateMachine::AmmoSubState::kFire:
       // 堵转检测
-      if (globals->state_machine.Waiting(waiting_count_, ammo_sub_tick_)) {
+      if (globals->state_machine.Waiting(waiting_count_ / 5, ammo_sub_tick_)) {
         if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
           magz_stucked_ = true;
           now_angle = globals->magazine_motor.pos() + 3.141593 / 9;
@@ -98,13 +96,14 @@ void StateMachine::AmmoSubStateUpdate() {
       break;
 
     case StateMachine::AmmoSubState::kCooling:
-      if (globals->ref.data().robot_status.shooter_barrel_heat_limit -
-                  globals->ref.data().power_heat_data.shooter_42mm_barrel_heat >=
-              100 ||
-          globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
-        current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
+      if (globals->state_machine.Waiting(waiting_count_ , ammo_sub_tick_)) {
+        if (globals->ref.data().robot_status.shooter_barrel_heat_limit -
+                globals->ref.data().power_heat_data.shooter_42mm_barrel_heat >=
+            100) {
+          current_ammo_sub_state_ = StateMachine::AmmoSubState::kReady;
+        }
+        fired = false;
       }
-      fired = false;
   }
 }
 
@@ -415,16 +414,28 @@ void StateMachine::StateUpdate() {
   // static bool follow{true};  ///< 随动标志位
   if (key_once_tc(rm::device::VT03::KeyboardKey::kC)) follow = !follow;
 
-
   radar_aimbot = globals->tc.data().mouse_button_right || globals->rc.mouse_button_right();  ///< 部署模式下的雷达自瞄
   // bool aimbot = globals->tc.data().right_button;        ///< 常态模式下的装甲板自瞄
 
-  fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
-         globals->rc.key(rm::device::DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
+  if (((abs(globals->rc.dial()) >= 500 || globals->rc.mouse_button_left() || globals->tc.data().mouse_button_left ||
+        key_once_tc(rm::device::VT03::kF) ||
+        (current_sub_state_ == SubState::kSnipe && current_gimbal_state_ == GimbalState::kDroneAim &&
+         globals->refSub->data().drone_2_hero.cmd_shooting == 1)))) {
+    fire = true;
+  } else {
+    fire = false;
+  }
+  // fire = globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kCtrl) ||
+  //        globals->rc.key(rm::device::DR16::Key::kCtrl);  ///< 允许自瞄开火标志位
   if (key_once_tc(rm::device::VT03::kZ)) {
     scope_state++;
     scope_state %= 4;  // 循环切换状态（0→1→2→3→0）
     scope_count = 0;
+  }
+  if (globals->ref.data().robot_status.current_HP < 100) {
+    low_hp = true;
+  } else {
+    low_hp = false;
   }
   // if (key_once_tc(rm::device::VT03::KeyboardKey::kF)) pitchlock = !pitchlock;
 

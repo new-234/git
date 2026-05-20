@@ -16,6 +16,7 @@ void ChassisHero::IfFollow() {
       break;
 
     case (StateMachine::ChassisState::kNormal):
+      Vw = 0;
       break;
 
     case StateMachine::ChassisState::kFollow:
@@ -24,8 +25,8 @@ void ChassisHero::IfFollow() {
                                              0.002);  // 逆时针旋转为增大
       globals->pid_chassis_follow_vel.Update(globals->pid_chassis_follow_pos.out(), globals->gimbal_motor_yaw.vel(),
                                              0.002);
-      Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out()) *
-           (1 + globals->HipnucImu.pitch() / 0.8 * 0.4);  ///< 理应pitch越大，输出越小，注意pitch的正负号
+      Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out())/* *
+           (1 + globals->HipnucImu.pitch() / 0.8 * 0.4)*/;  ///< 理应pitch越大，输出越小，注意pitch的正负号
       break;
   }
 }
@@ -35,7 +36,7 @@ void ChassisHero::Remote() {
     default:
       Unabling();
       break;
-
+    case StateMachine::ChassisState::kFollow:
     case StateMachine::ChassisState::kNormal:
       if (globals->tc_manager.all_device_ok()) {
         if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
@@ -59,7 +60,7 @@ void ChassisHero::Remote() {
           V_a = 0;
         }
         Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-        Vw = V_d - V_a + globals->rc.left_x() * 7000 / 660;
+        Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
       } else if (globals->rc_manager.all_device_ok()) {
         if (globals->rc.key(rm::device::DR16::Key::kW)) {
           V_w = 8500;
@@ -82,102 +83,55 @@ void ChassisHero::Remote() {
           V_a = 0;
         }
         Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-        Vw = V_d - V_a + globals->rc.left_x() * 7000 / 660;
+        Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
       }
       break;
 
-    case StateMachine::ChassisState::kFollow:
-      if (globals->tc_manager.all_device_ok()) {
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
-          V_w = 8500;
-        } else {
-          V_w = 0;
-        }
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
-          V_s = 8500;
-        } else {
-          V_s = 0;
-        }
-        Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-      } else if (globals->rc_manager.all_device_ok()) {
-        if (globals->rc.key(rm::device::DR16::Key::kW)) {
-          V_w = 8500;
-        } else {
-          V_w = 0;
-        }
-        if (globals->rc.key(rm::device::DR16::Key::kS)) {
-          V_s = 8500;
-        } else {
-          V_s = 0;
-        }
-        Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-      }
-      break;
+      // case StateMachine::ChassisState::kFollow:
+      //   if (globals->tc_manager.all_device_ok()) {
+      //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
+      //       V_w = 8500;
+      //     } else {
+      //       V_w = 0;
+      //     }
+      //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
+      //       V_s = 8500;
+      //     } else {
+      //       V_s = 0;
+      //     }
+      //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+      //   } else if (globals->rc_manager.all_device_ok()) {
+      //     if (globals->rc.key(rm::device::DR16::Key::kW)) {
+      //       V_w = 8500;
+      //     } else {
+      //       V_w = 0;
+      //     }
+      //     if (globals->rc.key(rm::device::DR16::Key::kS)) {
+      //       V_s = 8500;
+      //     } else {
+      //       V_s = 0;
+      //     }
+      //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+      //   }
+      //   break;
   }
 
-  // 获取各轴目标速度
-  // if (globals->state_machine.getMainState_() == StateMachine::MainState::kGame) {
-  //   if ((globals->rc.key(rm::device::DR16::Key::kW) && globals->rc_manager.all_device_ok())||
-  //         (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW) &&
-  //          globals->tc_manager.all_device_ok()) /*||
-  //         globals->custom_client->key(rm::device::DR16::Key::kW)*/) {
-  //     Vy += 30;
-  //     if (Vy >= 8400) {
-  //       Vy = 8500;
-  //     }
-  //   } else if ((globals->rc.key(rm::device::DR16::Key::kS) && globals->rc_manager.all_device_ok())||
-  //                               (globals->tc.data().keyboard_key &
-  //                               static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS) &&
-  //                                globals->tc_manager.all_device_ok()) /*||
-  //                               globals->custom_client->key(rm::device::DR16::Key::kS)*/) {
-  //     Vy -= 30;
-  //     if (Vy <= -8400) {
-  //       Vy = -8500;
-  //     }
-  //   } else {
-  //     Vy = 0;
-  //   }
-  //   if ((globals->rc.key(rm::device::DR16::Key::kD) && globals->rc_manager.all_device_ok())||
-  //         (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD) &&
-  //          globals->tc_manager.all_device_ok()&& globals->state_machine.getChassisState_() !=
-  //          StateMachine::ChassisState::kFollow) /*||
-  //         globals->custom_client->key(rm::device::DR16::Key::kD)*/) {
-  //     Vw += 30;
-  //     if (Vw >= 8400) {
-  //       Vw = 7000;
-  //     }
-  //   } else if (((globals->rc.key(rm::device::DR16::Key::kA) && globals->rc_manager.all_device_ok())||
-  //                               (globals->tc.data().keyboard_key &
-  //                               static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA) &&
-  //                                globals->tc_manager.all_device_ok()))&& globals->state_machine.getChassisState_() !=
-  //                                StateMachine::ChassisState::kFollow /*||
-  //                               globals->custom_client->key(rm::device::DR16::Key::kA)*/) {
-  //     Vw -= 30;
-  //     if (Vw <= -8400) {
-  //       Vw = -7000;
-  //     }
-  //   } else {
-  //     Vw = 0;
-  //   }
-  // } else {
-  //   if (globals->state_machine.getChassisState_() != StateMachine::ChassisState::kFollow) {
-  //     Vw = globals->rc.left_x() * 7000 / 660;
-  //   }
-  //   Vy = globals->rc.left_y() * 8500 / 660;
-  // }
-
   // 解算每个轮子的速度
-  V_wheel[0] = -Vy /*+ 1.5 * Vx */ + 1.2 * Vw;
-  V_wheel[1] = Vy /*+ 1.5 * Vx*/ + 1.2 * Vw;
-  V_wheel[2] = Vy /*- 1.5 * Vx */ + 1.5 * Vw;
-  V_wheel[3] = -Vy /*- 1.5 * Vx*/ + 1.5 * Vw;
+  // V_wheel[0] = -Vy /*+ 1.5 * Vx */ + 0.8 * Vw;
+  // V_wheel[1] = Vy /*+ 1.5 * Vx*/ + 0.8 * Vw;
+  // V_wheel[2] = Vy /*- 1.5 * Vx */ + 1.5 * Vw;
+  // V_wheel[3] = -Vy /*- 1.5 * Vx*/ + 1.5 * Vw;
+  V_wheel[0] = -Vy + 1 * Vx + 1 * Vw;
+  V_wheel[1] = Vy + 1 * Vx + 1 * Vw;
+  V_wheel[2] = Vy - 1 * Vx + 1 * Vw;
+  V_wheel[3] = -Vy - 1 * Vx + 1 * Vw;
 }
 
 void ChassisHero::IfOverPower() {
   // 超功率判断
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
     // 超功率
-    power_limit = 200;
+    power_limit = 2000;
     if (abs(globals->HipnucImu.pitch()) >= 0.5 &&
         overpower_count > 0) {  // 超功率模式下，倾角大于一定值时，自动使输出电流变大
       power_limit = 600;
