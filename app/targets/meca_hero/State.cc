@@ -96,7 +96,7 @@ void StateMachine::AmmoSubStateUpdate() {
       break;
 
     case StateMachine::AmmoSubState::kCooling:
-      if (globals->state_machine.Waiting(waiting_count_ , ammo_sub_tick_)) {
+      if (globals->state_machine.Waiting(waiting_count_, ammo_sub_tick_)) {
         if (globals->ref.data().robot_status.shooter_barrel_heat_limit -
                 globals->ref.data().power_heat_data.shooter_42mm_barrel_heat >=
             100) {
