@@ -83,6 +83,14 @@ void Monitor() {
 
   drone_yaw = globals->refSub->data().drone_2_hero.cmd_yaw_angle;
   drone_fire = globals->refSub->data().drone_2_hero.cmd_shooting;
+
+  enemy_hp_1 = globals->custom_data.enemy_hp_1;
+  enemy_hp_2 = globals->custom_data.enemy_hp_2;
+  enemy_hp_3 = globals->custom_data.enemy_hp_3;
+  enemy_hp_4 = globals->custom_data.enemy_hp_4;
+  enemy_hp_5 = globals->custom_data.enemy_hp_5;
+  enemy_hp_7 = globals->custom_data.enemy_hp_7;
+  snipe_state = globals->custom_data.snipe_state;
 }
 
 void Init() {
@@ -337,6 +345,8 @@ void UIrefrenceline() {
                                                        globals->ref.data().robot_status.robot_id + 256);
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
 }
+
+
 
 //
 // // 主任务中只需要更新调度器即可

@@ -5,6 +5,9 @@ void GimbalHero::Enabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
   globals->gimbal_motor_pitch.SetCurrent(0);
+  if (!(globals->rc.switch_r() == rm::device::DR16::SwitchPosition::kUp ||
+        globals->tc.data().switch_position == rm::device::VT03::SwitchPosition::N))
+    target_yaw_ = -(monitor_.euler_yaw_ - globals->gimbal_motor_yaw.pos() - 0.288);
 }
 
 void GimbalHero::Unabling() {

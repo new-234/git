@@ -65,18 +65,6 @@ struct Globals {
   rm::device::GkSupercap cms{can3};                          ///< 超电
   rm::device::GkSupercap::TxData cap_tx_data;
   rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
-  //
-  // struct {
-  //   rm::u16 enemy_hp{0};
-  //   rm::u8 snipe{0};
-  // }custom_data;
-  //
-  // void r0x301(unsigned short int cmd_id, unsigned char seq){
-  //   if (cmd_id = 0x0311) {
-  //     memcpy(&custom_data,&ref.data().custom_robot_data,sizeof(custom_data));
-  //   }
-  // }
-
   // modules::KeyboardHandler<> keyboard_handler(device::DR16::Key);
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
@@ -101,7 +89,7 @@ struct Globals {
   // 输出电流
   float output_currents[4];
   // 底盘随动
-  rm::modules::PID pid_chassis_follow_pos{500, 0, 4, 1500, 0};
+  rm::modules::PID pid_chassis_follow_pos{400, 0, 4, 1500, 0};
   rm::modules::PID pid_chassis_follow_vel{34, 0, 0.05, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
@@ -146,7 +134,7 @@ struct Globals {
   rm::device::DR16 rc{globals_no_dtcm.dbus};                               ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;          ///< 裁判系统
   rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> *refSub;  /// 子协议
-  rm::device::VT03 tc;                                                     ///< 图传
+  rm::device::VT03 tc;  ///< 图传
 
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
   rm::device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
@@ -180,6 +168,19 @@ struct Globals {
   float gyro_z;
   bool ui_send_choice{false};
 
+  // 自定义客户端数据
+#pragma pack(push, 1)
+  struct {
+    uint16_t enemy_hp_1{0};
+    uint16_t enemy_hp_2{0};
+    uint16_t enemy_hp_3{0};
+    uint16_t enemy_hp_4{0};
+    uint16_t enemy_hp_5{0};
+    uint16_t enemy_hp_7{0};
+    rm::u8 snipe_state{0};
+  } custom_data;
+#pragma pack(pop)
+
   void Init() {
     // CAN初始化
     can1.SetFilter(0, 0);
@@ -196,6 +197,7 @@ struct Globals {
       }
     };
     globals_no_dtcm.usart1_ref.AttachRxCallback(ref_rx_callback);
+    globals_no_dtcm.uart10_tc.AttachRxCallback(ref_rx_callback);
 
     // 图传串口接收
     rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
@@ -209,6 +211,13 @@ struct Globals {
 
     ref.AttachCallback(std::bind(&rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120>::AttachCallback,
                                  refSub, std::placeholders::_1, std::placeholders::_2));
+
+    // 0x0311 客户端自定义数据 → custom_data
+    ref.AttachCallback([&](rm::u16 cmd_id, rm::u8 seq) {
+      if (cmd_id == 0x0311) {
+        std::memcpy(&custom_data, ref.data().robot_custom_data_3.data, sizeof(custom_data));
+      }
+    });
 
     // 设备管理器
     gimbal_manager << &gimbal_motor_yaw << &gimbal_motor_pitch;
@@ -321,6 +330,15 @@ inline bool Imu_online{false};
 // DroneAim
 inline float drone_yaw{0};
 inline uint8_t drone_fire{0};
+
+// Custom_data
+inline uint16_t enemy_hp_1{0};
+inline uint16_t enemy_hp_2{0};
+inline uint16_t enemy_hp_3{0};
+inline uint16_t enemy_hp_4{0};
+inline uint16_t enemy_hp_5{0};
+inline uint16_t enemy_hp_7{0};
+inline uint8_t snipe_state{0};
 
 extern Globals *globals;
 
