@@ -15,6 +15,7 @@
 #include "protocol_user.hpp"
 #include "referee_user.hpp"
 #include "TaskScheduler.hpp"
+#include "common/aimbot_comm_can.hpp"
 
 class ChassisHero;
 class GimbalHero;
@@ -65,7 +66,8 @@ struct Globals {
   rm::device::GkSupercap cms{can3};                          ///< 超电
   rm::device::GkSupercap::TxData cap_tx_data;
   rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
-  // modules::KeyboardHandler<> keyboard_handler(device::DR16::Key);
+  rm::device::AimbotCanCommunicator aimbot_can_communicator{can3}; ///< 视觉自瞄
+  rm::modules::KeyboardHandler<> keyboard_handler(rm::device::DR16::Key);
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
    */
@@ -99,8 +101,8 @@ struct Globals {
   rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
   rm::device::M2006 gimbal_telescope{can3, 1, false};
   // PID
-  rm::modules::PID pid_yaw_position{25, 0, 0.0, 15, 0};
-  rm::modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
+  rm::modules::PID pid_yaw_position{28, 0, 0.001, 15, 0};
+  rm::modules::PID pid_yaw_velocity{9, 0, 0.00001, 9, 0};
   rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   rm::modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
@@ -160,7 +162,8 @@ struct Globals {
   rm::device::DeviceManager<1> rc_manager;
   rm::device::DeviceManager<1> cms_manager;
   rm::device::DeviceManager<1> radar_manager;
-  rm::device::DeviceManager<1> Imu_manager;
+  rm::device::DeviceManager<1> imu_manager;
+  rm::device::DeviceManager<1> aimbot_manager;
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
   /*---------------------------------------------------全局变量---------------------------------------------------*/
@@ -230,7 +233,8 @@ struct Globals {
                  << &shooter_motor_6;
     cms_manager << &cms;
     radar_manager << &radar_can_communicator;
-    Imu_manager << &HipnucImu;
+    imu_manager << &HipnucImu;
+    aimbot_manager << &aimbot_can_communicator;
 
     buzzer.Init();
     led_controller.SetPattern<rm::modules::led_pattern::RgbFlow>();
@@ -362,3 +366,4 @@ inline void ChangePID(rm::modules::PID &pid, float kp, float ki, float kd) {
   pid.SetKi(ki);
   pid.SetKd(kd);
 }
+

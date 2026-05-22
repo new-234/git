@@ -6,7 +6,7 @@ void GimbalHero::Enabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
   globals->gimbal_motor_pitch.SetCurrent(0);
   if (!(globals->rc.switch_r() == rm::device::DR16::SwitchPosition::kUp ||
-        globals->tc.data().switch_position == rm::device::VT03::SwitchPosition::N))
+        globals->tc.data().switch_position == rm::device::VT03::SwitchPosition::S))
     target_yaw_ = -(monitor_.euler_yaw_ - globals->gimbal_motor_yaw.pos() - 0.288);
 }
 
@@ -80,6 +80,13 @@ void GimbalHero::AhrsUpdate() {
 void GimbalHero::DroneAimControl() {
   if (globals->refsub_manager.all_device_ok()) {
     target_yaw_ = -globals->refSub->data().drone_2_hero.cmd_yaw_angle;
+  }
+}
+
+void GimbalHero::AimbotControl() {
+  if (globals->aimbot_manager.all_device_ok() && globals->aimbot_can_communicator.aimbot_target() != 0) {
+    target_yaw_ = -globals->aimbot_can_communicator.yaw();
+    target_pitch_ = -globals->aimbot_can_communicator.pitch();
   }
 }
 
@@ -163,6 +170,9 @@ void GimbalHero::RemoterControl() {
         case StateMachine::GimbalState::kRadarAimbot:
           RadarAimbotControl();
           break;
+        case StateMachine::GimbalState::kAimbot:
+          AimbotControl();
+          break;
         case StateMachine::GimbalState::kDroneAim:
         case StateMachine::GimbalState::kNormal:
           NormalRemoter();
@@ -233,12 +243,12 @@ void GimbalHero::MotorUpdate() {
         static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
 
   } else if (target_pitch_ - last_target_pitch_ < 0) {
-    ChangePID(globals->pid_pitch_position, 20, 0.01, 0.0);
-    ChangePID(globals->pid_pitch_velocity, 4500, 20, 50);
+    ChangePID(globals->pid_pitch_position, 20, 0.01, 0.00001);
+    ChangePID(globals->pid_pitch_velocity, 3000, 20, 30);
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    negaive_ff_ = -800;
+    negaive_ff_ = -1800;
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(
@@ -256,8 +266,21 @@ void GimbalHero::ServoMotorUpdate() {
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1410);
       break;
     case (StateMachine::SubState::kSnipe):
-      servo_angle_ = 1730 /*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, servo_angle_);
+      // servo_angle_ = 1730 /*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
+      if (globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift &&
+          globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kQ) {
+        servo_angle_ += 0.1;
+      }
+      if (globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift &&
+          globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kE) {
+        servo_angle_ -= 0.1;
+      }
+      if (servo_angle_ > 1800) {
+        servo_angle_ = 1800;
+      } else if (servo_angle_ < 1440) {
+        servo_angle_ = 1440;
+      }
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, static_cast<int>(servo_angle_));
       break;
   }
 }

@@ -35,7 +35,7 @@ class GimbalHero {
   // 遥控值
   float target_yaw_;
   float target_pitch_;
-  int servo_angle_{1410};  // 1410--1730
+  float servo_angle_{1410};  // 1410--1730
 
   float last_pitch_{0};
   float last_target_pitch_{0};
@@ -47,6 +47,7 @@ class GimbalHero {
   void Enabling();
   void AhrsUpdate();
   void GimbalControl();
+  void AimbotControl();
   void RadarAimbotControl();
   void DroneAimControl();
   void RemoterControl();

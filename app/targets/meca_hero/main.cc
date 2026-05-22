@@ -79,7 +79,7 @@ void Monitor() {
   radar_yaw = globals->radar_can_communicator.yaw_mard();
   radar_pitch = globals->radar_can_communicator.pitch_mard();
 
-  Imu_online = globals->Imu_manager.all_device_ok();
+  Imu_online = globals->imu_manager.all_device_ok();
 
   drone_yaw = globals->refSub->data().drone_2_hero.cmd_yaw_angle;
   drone_fire = globals->refSub->data().drone_2_hero.cmd_shooting;
@@ -190,7 +190,8 @@ void SubLoop500hz() {
   globals->ammo_manager.Update();
   globals->cms_manager.Update();
   globals->radar_manager.Update();
-  globals->Imu_manager.Update();
+  globals->imu_manager.Update();
+  globals->aimbot_manager.Update();
 
   // 发射机构更新
   globals->ammo_hero->AmmoUpdate();

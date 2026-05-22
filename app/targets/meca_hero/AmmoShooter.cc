@@ -67,10 +67,12 @@ bool AmmoHero::EnableJudgement() {
 }
 
 void AmmoHero::BulletSpeedControl() {
-  if (key_once_tc(rm::device::VT03::KeyboardKey::kE)) {
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kE) &&
+      !(globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift)) {
     shooter_m -= 10;
   }
-  if (key_once_tc(rm::device::VT03::KeyboardKey::kQ)) {
+  if (key_once_tc(rm::device::VT03::KeyboardKey::kQ) &&
+      !(globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift)) {
     shooter_m += 10;
   }
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe &&
@@ -98,9 +100,9 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_1.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_1.rpm());
         globals->pid_shooter_3.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_3.rpm());
         globals->pid_shooter_5.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_5.rpm());
-        globals->pid_shooter_2.Update(V_shooter_2 + shooter_m , globals->shooter_motor_2.rpm());
-        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m , globals->shooter_motor_4.rpm());
-        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m , globals->shooter_motor_6.rpm());
+        globals->pid_shooter_2.Update(V_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       }
       break;
 
