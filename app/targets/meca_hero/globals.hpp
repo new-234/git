@@ -65,8 +65,8 @@ struct Globals {
   rm::hal::Can can1{hfdcan1}, can2{hfdcan2}, can3{hfdcan3};  ///< CAN 总线接口
   rm::device::GkSupercap cms{can3};                          ///< 超电
   rm::device::GkSupercap::TxData cap_tx_data;
-  rm::device::RadarCanCommunicator radar_can_communicator{can3};  ///< 雷达自瞄
-  rm::device::AimbotCanCommunicator aimbot_can_communicator{can3}; ///< 视觉自瞄
+  rm::device::RadarCanCommunicator radar_can_communicator{can3};    ///< 雷达自瞄
+  rm::device::AimbotCanCommunicator aimbot_can_communicator{can3};  ///< 视觉自瞄
   rm::modules::KeyboardHandler<> keyboard_handler(rm::device::DR16::Key);
 
   /* ------------------------------------------------底盘电机---------------------------------------------------------
@@ -136,7 +136,7 @@ struct Globals {
   rm::device::DR16 rc{globals_no_dtcm.dbus};                               ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;          ///< 裁判系统
   rm::device::RefereeUser<rm::device::RefereeRevision::kNewV120> *refSub;  /// 子协议
-  rm::device::VT03 tc;  ///< 图传
+  rm::device::VT03 tc;                                                     ///< 图传
 
   rm::modules::MahonyAhrs ahrs{1000.0f};  ///< mahony 姿态解算器，频率 1000Hz
   rm::device::HipnucImu HipnucImu{globals_no_dtcm.uart7_debug};
@@ -366,4 +366,3 @@ inline void ChangePID(rm::modules::PID &pid, float kp, float ki, float kd) {
   pid.SetKi(ki);
   pid.SetKd(kd);
 }
-

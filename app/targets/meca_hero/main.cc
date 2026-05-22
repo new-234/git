@@ -347,8 +347,6 @@ void UIrefrenceline() {
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
 }
 
-
-
 //
 // // 主任务中只需要更新调度器即可
 // void GlobalWarehouse::SubLoop10Hz() {
