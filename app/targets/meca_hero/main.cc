@@ -17,13 +17,15 @@ void subRefereeInteraction();
 
 void h2dInteraction();
 void UIGroup1_add();
+void UICharacter2_add();
 void UIGroup1_edit();
 void UIrefrenceline();
 
 static auto UIh2d = device::UITask(h2dInteraction, 10);  // >>> 10hz
-static auto UIA1 = device::UITask(UIGroup1_add, 1);      // >>> 10hz
+static auto UIA1 = device::UITask(UIGroup1_add, 1);
+static auto UICA2 = device::UITask(UICharacter2_add, 1);
 static auto UILine = UITask(UIrefrenceline, 1);
-static auto UIE1 = device::UITask(UIGroup1_edit, 10);
+static auto UIE1 = device::UITask(UIGroup1_edit, 10);  // >>> 10hz
 
 static auto schedule = device::UITaskScheduler(30);  // >>> 30hz主调度器
 
@@ -270,6 +272,7 @@ void subRefereeInteraction() {
   static auto last_switch_l = rm::device::DR16::SwitchPosition::kUnknown;
   if (globals->rc.switch_l() != last_switch_l) {
     schedule.addTaskStatic(&UIA1);
+    schedule.addTaskStatic(&UICA2);
   }
   last_switch_l = globals->rc.switch_l();
   schedule.schedule();
@@ -311,9 +314,20 @@ void UIGroup1_add() {
   UIGroup7.figure5.fillLine(u8"cap", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 50, 37, 260, 37,
                             static_cast<int16_t>((globals->cms.rx_data_.cap_energy / 252.0) * (750 - 260) + 260));
   UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
-
+  UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 5, 359, 728, 578, 821);
   const auto dataLen = rm::device::Referee0x301Prepare(Info_Arr, 0, UIGroup7, globals->ref.data().robot_status.robot_id,
                                                        globals->ref.data().robot_status.robot_id + 256);
+  globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
+}
+
+void UICharacter2_add() {
+  device::UICharacter ui_character;
+  ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 50, 372, 801, 50,
+                                       7);
+  std::memcpy(ui_character.data, "stucked", 7);
+  const auto dataLen =
+      rm::device::Referee0x301Prepare(Info_Arr, 0, ui_character, globals->ref.data().robot_status.robot_id,
+                                      globals->ref.data().robot_status.robot_id + 256);
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
 }
 
@@ -332,7 +346,12 @@ void UIGroup1_edit() {
   UIGroup7.figure5.fillLine(u8"cap", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 37,
                             static_cast<int16_t>((globals->cms.rx_data_.cap_energy / 252.0) * (750 - 260) + 260));
   UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
+  if (globals->state_machine.magz_stucked_) {
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 5, 359, 728, 578, 821);
 
+  } else {
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Green, 5, 359, 728, 578, 821);
+  }
   const auto dataLen = rm::device::Referee0x301Prepare(Info_Arr, 0, UIGroup7, globals->ref.data().robot_status.robot_id,
                                                        globals->ref.data().robot_status.robot_id + 256);
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
@@ -346,8 +365,6 @@ void UIrefrenceline() {
                                                        globals->ref.data().robot_status.robot_id + 256);
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
 }
-
-
 
 //
 // // 主任务中只需要更新调度器即可
