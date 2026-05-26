@@ -356,7 +356,6 @@ void UIGroup1_edit() {
   UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
   if (globals->state_machine.magz_stucked_) {
     UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 5, 359, 728, 578, 821);
-
   } else {
     UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Green, 5, 359, 728, 578, 821);
   }

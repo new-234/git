@@ -101,8 +101,8 @@ struct Globals {
   rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
   rm::device::M2006 gimbal_telescope{can3, 1, false};
   // PID
-  rm::modules::PID pid_yaw_position{28, 0, 0.01, 15, 0};
-  rm::modules::PID pid_yaw_velocity{9, 0, 0.00001, 9, 0};
+  rm::modules::PID pid_yaw_position{28, 0, 0.001, 15, 0};
+  rm::modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
   rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   rm::modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
@@ -126,12 +126,12 @@ struct Globals {
   rm::device::M3508 shooter_motor_5{can2, 5, false};
   rm::device::M3508 shooter_motor_6{can2, 6, false};
   // PID
-  rm::modules::PID pid_shooter_1{30, 0.0000007, 0, 10000, 1600};  // 20
-  rm::modules::PID pid_shooter_2{30, 0.0000007, 0, 10000, 1600};  // 20
-  rm::modules::PID pid_shooter_3{30, 0.0000007, 0, 10000, 1600};
-  rm::modules::PID pid_shooter_4{30, 0.0000007, 0, 10000, 1600};
-  rm::modules::PID pid_shooter_5{30, 0.0000007, 0, 10000, 1600};
-  rm::modules::PID pid_shooter_6{30, 0.0000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_1{24, 0.0000007, 0, 8000, 800};  // 20
+  rm::modules::PID pid_shooter_2{24, 0.0000007, 0, 8000, 800};  // 20
+  rm::modules::PID pid_shooter_3{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_4{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_5{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_6{24, 0.0000007, 0, 8000, 800};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                               ///< DT7
   rm::device::Referee<rm::device::RefereeRevision::kNewV120> ref;          ///< 裁判系统

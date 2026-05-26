@@ -27,94 +27,102 @@ void ChassisHero::IfFollow() {
                                              0.002);
       Vw = static_cast<rm::i16>(globals->pid_chassis_follow_vel.out()) /* *
             (1 + globals->HipnucImu.pitch() / 0.8 * 0.4)*/
-          ;  ///< 理应pitch越大，输出越小，注意pitch的正负号
+          ;                                                            ///< 理应pitch越大，输出越小，注意pitch的正负号
       break;
   }
 }
 
 void ChassisHero::Remote() {
-  switch (globals->state_machine.getChassisState_()) {
+  switch (globals->state_machine.getSubState_()) {
     default:
-      Unabling();
-      break;
-    case StateMachine::ChassisState::kFollow:
-    case StateMachine::ChassisState::kNormal:
-      if (globals->tc_manager.all_device_ok()) {
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
-          V_w = 8500;
-        } else {
-          V_w = 0;
-        }
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
-          V_s = 8500;
-        } else {
-          V_s = 0;
-        }
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD)) {
-          V_d = 8500;
-        } else {
-          V_d = 0;
-        }
-        if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA)) {
-          V_a = 8500;
-        } else {
-          V_a = 0;
-        }
-        Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-        Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
-      } else if (globals->rc_manager.all_device_ok()) {
-        if (globals->rc.key(rm::device::DR16::Key::kW)) {
-          V_w = 8500;
-        } else {
-          V_w = 0;
-        }
-        if (globals->rc.key(rm::device::DR16::Key::kS)) {
-          V_s = 8500;
-        } else {
-          V_s = 0;
-        }
-        if (globals->rc.key(rm::device::DR16::Key::kD)) {
-          V_d = 8500;
-        } else {
-          V_d = 0;
-        }
-        if (globals->rc.key(rm::device::DR16::Key::kA)) {
-          V_a = 8500;
-        } else {
-          V_a = 0;
-        }
-        Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-        Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
+      switch (globals->state_machine.getChassisState_()) {
+        default:
+          Unabling();
+          break;
+        case StateMachine::ChassisState::kFollow:
+        case StateMachine::ChassisState::kNormal:
+          if (globals->tc_manager.all_device_ok()) {
+            if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
+              V_w = 8500;
+            } else {
+              V_w = 0;
+            }
+            if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
+              V_s = 8500;
+            } else {
+              V_s = 0;
+            }
+            if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD)) {
+              V_d = 8500;
+            } else {
+              V_d = 0;
+            }
+            if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA)) {
+              V_a = 8500;
+            } else {
+              V_a = 0;
+            }
+            Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+            Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
+          } else if (globals->rc_manager.all_device_ok()) {
+            if (globals->rc.key(rm::device::DR16::Key::kW)) {
+              V_w = 8500;
+            } else {
+              V_w = 0;
+            }
+            if (globals->rc.key(rm::device::DR16::Key::kS)) {
+              V_s = 8500;
+            } else {
+              V_s = 0;
+            }
+            if (globals->rc.key(rm::device::DR16::Key::kD)) {
+              V_d = 8500;
+            } else {
+              V_d = 0;
+            }
+            if (globals->rc.key(rm::device::DR16::Key::kA)) {
+              V_a = 8500;
+            } else {
+              V_a = 0;
+            }
+            Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+            Vx = V_d - V_a + globals->rc.left_x() * 8500 / 660;
+          }
+          break;
+
+          // case StateMachine::ChassisState::kFollow:
+          //   if (globals->tc_manager.all_device_ok()) {
+          //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
+          //       V_w = 8500;
+          //     } else {
+          //       V_w = 0;
+          //     }
+          //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
+          //       V_s = 8500;
+          //     } else {
+          //       V_s = 0;
+          //     }
+          //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+          //   } else if (globals->rc_manager.all_device_ok()) {
+          //     if (globals->rc.key(rm::device::DR16::Key::kW)) {
+          //       V_w = 8500;
+          //     } else {
+          //       V_w = 0;
+          //     }
+          //     if (globals->rc.key(rm::device::DR16::Key::kS)) {
+          //       V_s = 8500;
+          //     } else {
+          //       V_s = 0;
+          //     }
+          //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
+          //   }
+          //   break;
       }
       break;
-
-      // case StateMachine::ChassisState::kFollow:
-      //   if (globals->tc_manager.all_device_ok()) {
-      //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
-      //       V_w = 8500;
-      //     } else {
-      //       V_w = 0;
-      //     }
-      //     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
-      //       V_s = 8500;
-      //     } else {
-      //       V_s = 0;
-      //     }
-      //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-      //   } else if (globals->rc_manager.all_device_ok()) {
-      //     if (globals->rc.key(rm::device::DR16::Key::kW)) {
-      //       V_w = 8500;
-      //     } else {
-      //       V_w = 0;
-      //     }
-      //     if (globals->rc.key(rm::device::DR16::Key::kS)) {
-      //       V_s = 8500;
-      //     } else {
-      //       V_s = 0;
-      //     }
-      //     Vy = V_w - V_s + globals->rc.left_y() * 8500 / 660;
-      //   }
-      //   break;
+    case StateMachine::SubState::kSnipe:
+      Vy = 0;
+      Vx = 0;
+      Vw = 0;
   }
 
   // 解算每个轮子的速度
@@ -192,17 +200,17 @@ void ChassisHero::MotorUpdate() {
  * @brief 底盘控制
  */
 void ChassisHero::ChassisControl() {
-  Remote();
   IfFollow();
   IfOverPower();
+  Remote();
   MotorUpdate();
 }
 
 bool ChassisHero::EnableJudgement() {
   // 主状态检测
   if (globals->state_machine.getMainState_() == StateMachine::MainState::kOffline ||
-      globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting ||
-      globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe) {
+      globals->state_machine.getMainState_() == StateMachine::MainState::kEnableWaiting /*||
+      globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe*/) {
     Unabling();
     return false;
   }

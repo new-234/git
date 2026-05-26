@@ -107,17 +107,17 @@ void GimbalHero::RadarAimbotControl() {
 void GimbalHero::NormalRemoter() {
   // tc->rc->cc
   last_target_pitch_ = target_pitch_;
-  if ((globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && globals->tc_manager.all_device_ok()) {
+  if (/*(globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && */globals->tc_manager.all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
     target_pitch_ += static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
-  } else if ((globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && globals->rc_manager.all_device_ok()) {
+  } else if (/*(globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && */globals->rc_manager.all_device_ok()) {
     target_yaw_ +=
         static_cast<float>(globals->rc.right_x()) * 0.000005 + static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;
     target_pitch_ +=
         static_cast<float>(globals->rc.right_y()) * 0.0000005 + static_cast<float>(globals->rc.mouse_y() / 32768.0 * 3);
   } else {
-    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.000005;
-    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.0000005;
+    target_yaw_ += 0;
+    target_pitch_ += 0;
   }
 }
 
@@ -153,8 +153,8 @@ void GimbalHero::SnipeRemoter() {
       target_yaw_ -= 0.000005;
     }
   } else {
-    target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
-    target_pitch_ += static_cast<float>(globals->rc.right_y()) * 0.00000025;
+    target_yaw_ += 0;
+    target_pitch_ += 0;
   }
 }
 
@@ -204,10 +204,10 @@ void GimbalHero::RemoterControl() {
   }
 
   // pitch限位
-  if (target_pitch_ < 0.0) {
-    target_pitch_ = 0.0;
-  } else if (target_pitch_ > 0.82) {
-    target_pitch_ = 0.82;
+  if (target_pitch_ < 0.02) {
+    target_pitch_ = 0.02;
+  } else if (target_pitch_ > 0.8) {
+    target_pitch_ = 0.8;
   }
 }
 
@@ -228,7 +228,7 @@ void GimbalHero::MotorUpdate() {
 
   // 发送CAN
   globals->gimbal_motor_yaw.SetMitCommand(
-      0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.25);
+      0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.35);
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
@@ -254,7 +254,7 @@ void GimbalHero::MotorUpdate() {
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    negaive_ff_ = -1800;
+    negaive_ff_ = -1600;
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(
