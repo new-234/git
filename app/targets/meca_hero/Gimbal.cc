@@ -107,10 +107,11 @@ void GimbalHero::RadarAimbotControl() {
 void GimbalHero::NormalRemoter() {
   // tc->rc->cc
   last_target_pitch_ = target_pitch_;
-  if (/*(globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && */globals->tc_manager.all_device_ok()) {
+  if (/*(globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && */ globals->tc_manager
+          .all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
     target_pitch_ += static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
-  } else if (/*(globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && */globals->rc_manager.all_device_ok()) {
+  } else if (/*(globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && */ globals->rc_manager.all_device_ok()) {
     target_yaw_ +=
         static_cast<float>(globals->rc.right_x()) * 0.000005 + static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;
     target_pitch_ +=

@@ -118,7 +118,6 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_4.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
         globals->pid_shooter_6.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       } else {
-
         globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
         globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
         globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());

@@ -140,9 +140,7 @@ void Init() {
   schedule.addTask(&UIE1);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
-void SubLoop10hz() {
-  globals->radar_can_communicator.UpdateInfo(globals->ref.data().robot_status.robot_id);
-}
+void SubLoop10hz() { globals->radar_can_communicator.UpdateInfo(globals->ref.data().robot_status.robot_id); }
 
 /*---------------------------------------------------50HZ---------------------------------------------------*/
 void SubLoop50hz() {}
