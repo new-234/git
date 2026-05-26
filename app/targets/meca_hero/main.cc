@@ -1,6 +1,7 @@
 #include "AmmoShooter.hpp"
 #include "Chassis.hpp"
 #include "Gimbal.hpp"
+#include "VOFA.hpp"
 #include "common/bsp/timer_task.hpp"
 #include "adc.h"
 #include "globals.hpp"
@@ -51,8 +52,8 @@ void Monitor() {
   ammo_power_state = globals->ref.data().robot_status.power_management_shooter_output;
 
   // 摩擦轮目标速度监测
-  V1 = globals->ammo_hero->V_shooter_1;
-  V2 = globals->ammo_hero->V_shooter_2;
+  V1 = globals->ammo_hero->v16_shooter_1;
+  V2 = globals->ammo_hero->v16_shooter_2;
   limit = globals->ammo_hero->limit;
   shooter_1 = globals->shooter_motor_1.rpm();
   shooter_2 = globals->shooter_motor_2.rpm();
@@ -86,6 +87,8 @@ void Monitor() {
   drone_yaw = globals->refSub->data().drone_2_hero.cmd_yaw_angle;
   drone_fire = globals->refSub->data().drone_2_hero.cmd_shooting;
 
+  yaw_vel_error = *globals->pid_yaw_velocity.error();
+
   enemy_hp_1 = globals->custom_data.enemy_hp_1;
   enemy_hp_2 = globals->custom_data.enemy_hp_2;
   enemy_hp_3 = globals->custom_data.enemy_hp_3;
@@ -93,6 +96,9 @@ void Monitor() {
   enemy_hp_5 = globals->custom_data.enemy_hp_5;
   enemy_hp_7 = globals->custom_data.enemy_hp_7;
   snipe_state = globals->custom_data.snipe_state;
+
+  magz_pos = globals->magazine_motor.pos();
+  magz_vel = globals->magazine_motor.vel();
 }
 
 void Init() {
@@ -219,6 +225,7 @@ void MainLoop2khz() {
   globals->state_machine.StateUpdate();
 
   Monitor();
+  // VOFASend();
 
   if (loop_divisor % 200 == 0) {
     SubLoop10hz();
@@ -324,6 +331,7 @@ void UICharacter2_add() {
   device::UICharacter ui_character;
   ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 50, 372, 801, 50,
                                        7);
+
   std::memcpy(ui_character.data, "stucked", 7);
   const auto dataLen =
       rm::device::Referee0x301Prepare(Info_Arr, 0, ui_character, globals->ref.data().robot_status.robot_id,

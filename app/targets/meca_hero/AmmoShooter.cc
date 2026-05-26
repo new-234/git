@@ -97,33 +97,34 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_5.Update(limit, globals->shooter_motor_5.rpm());
         globals->pid_shooter_6.Update(limit, globals->shooter_motor_6.rpm());
       } else {
-        globals->pid_shooter_1.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_1.rpm());
-        globals->pid_shooter_3.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_3.rpm());
-        globals->pid_shooter_5.Update(V_shooter_1 + 1.5 * shooter_m - 500, globals->shooter_motor_5.rpm());
-        globals->pid_shooter_2.Update(V_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
-        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
-        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
+        globals->pid_shooter_1.Update(v12_shooter_1, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v12_shooter_1, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v12_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_2.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_4.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_6.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       }
       break;
 
     case StateMachine::SubState::kSnipe:
       if (globals->shooter_motor_6.rpm() > limit ||
-          (globals->ref.data().robot_status.power_management_chassis_output == 1 &&
+          ((globals->ref.data().robot_status.power_management_chassis_output == 1 ||
+            !globals->custom_data.snipe_state) &&
            globals->state_machine.getMainState_() != StateMachine::MainState::kTest)) {
-        globals->pid_shooter_1.Update(limit, globals->shooter_motor_1.rpm());
-        globals->pid_shooter_2.Update(limit, globals->shooter_motor_2.rpm());
-        globals->pid_shooter_3.Update(limit, globals->shooter_motor_3.rpm());
-        globals->pid_shooter_4.Update(limit, globals->shooter_motor_4.rpm());
-        globals->pid_shooter_5.Update(limit, globals->shooter_motor_5.rpm());
-        globals->pid_shooter_6.Update(limit, globals->shooter_motor_6.rpm());
+        globals->pid_shooter_1.Update(v12_shooter_1, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v12_shooter_1, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v12_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_2.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_4.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_6.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       } else {
         // 1:6675 2:5150
-        globals->pid_shooter_1.Update(V_shooter_1 + 1.5 * shooter_m - 2400, globals->shooter_motor_1.rpm());
-        globals->pid_shooter_3.Update(V_shooter_1 + 1.5 * shooter_m - 2400, globals->shooter_motor_3.rpm());
-        globals->pid_shooter_5.Update(V_shooter_1 + 1.5 * shooter_m - 2400, globals->shooter_motor_5.rpm());
-        globals->pid_shooter_2.Update(V_shooter_2 + shooter_m - 1130, globals->shooter_motor_2.rpm());
-        globals->pid_shooter_4.Update(V_shooter_2 + shooter_m - 1130, globals->shooter_motor_4.rpm());
-        globals->pid_shooter_6.Update(V_shooter_2 + shooter_m - 1130, globals->shooter_motor_6.rpm());
+        globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_2.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_4.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_6.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       }
       break;
   }

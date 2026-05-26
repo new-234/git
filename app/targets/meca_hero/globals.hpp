@@ -91,8 +91,8 @@ struct Globals {
   // 输出电流
   float output_currents[4];
   // 底盘随动
-  rm::modules::PID pid_chassis_follow_pos{400, 0, 4, 1500, 0};
-  rm::modules::PID pid_chassis_follow_vel{34, 0, 0.05, 16000, 0};
+  rm::modules::PID pid_chassis_follow_pos{450, 0, 0.5, 1500, 0};
+  rm::modules::PID pid_chassis_follow_vel{26, 0, 0.0001, 16000, 0};
 
   /* ------------------------------------------------云台电机---------------------------------------------------------*/
   GimbalHero *gimbal_hero{nullptr};
@@ -101,7 +101,7 @@ struct Globals {
   rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
   rm::device::M2006 gimbal_telescope{can3, 1, false};
   // PID
-  rm::modules::PID pid_yaw_position{28, 0, 0.001, 15, 0};
+  rm::modules::PID pid_yaw_position{28, 0, 0.01, 15, 0};
   rm::modules::PID pid_yaw_velocity{9, 0, 0.00001, 9, 0};
   rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
@@ -263,6 +263,7 @@ inline float yaw_vel{0};
 inline float yaw_pos_pid_out{0};
 inline float yaw_vel_pid_out{0};
 inline float target_yaw{0};
+inline float yaw_vel_error{0};
 
 // pitch轴电机
 inline float pitch_pos{0};
@@ -343,6 +344,10 @@ inline uint16_t enemy_hp_4{0};
 inline uint16_t enemy_hp_5{0};
 inline uint16_t enemy_hp_7{0};
 inline uint8_t snipe_state{0};
+
+// magz
+inline float magz_pos{0};
+inline float magz_vel{0};
 
 extern Globals *globals;
 

@@ -35,7 +35,7 @@ class GimbalHero {
   // 遥控值
   float target_yaw_;
   float target_pitch_;
-  float servo_angle_{1410};  // 1410--1730
+  float servo_angle_{1500};  // 1500--1730
 
   float last_pitch_{0};
   float last_target_pitch_{0};

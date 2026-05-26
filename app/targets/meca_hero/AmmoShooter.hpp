@@ -9,12 +9,14 @@ class AmmoHero {
 
   void AmmoUpdate();
 
-  rm::i16 limit{-2300};
+  rm::i16 limit{-1800};
   int16_t shooter_m{0};
 
-  // 12m/s
-  rm::i16 V_shooter_1 = -4805;
-  rm::i16 V_shooter_2 = -3770;
+  //
+  rm::i16 v12_shooter_1 = -4200;
+  rm::i16 v12_shooter_2 = -3600;
+  rm::i16 v16_shooter_1 = -5600;
+  rm::i16 v16_shooter_2 = -4920;
   // rm::i16 V_shooter_1 = -0;
   // rm::i16 V_shooter_2 = -0;
 

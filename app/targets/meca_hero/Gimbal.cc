@@ -5,9 +5,9 @@ void GimbalHero::Enabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kClearError);
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kEnable);
   globals->gimbal_motor_pitch.SetCurrent(0);
-  if (!(globals->rc.switch_r() == rm::device::DR16::SwitchPosition::kUp ||
-        globals->tc.data().switch_position == rm::device::VT03::SwitchPosition::S))
-    target_yaw_ = -(monitor_.euler_yaw_ - globals->gimbal_motor_yaw.pos() - 0.288);
+  // if (!(globals->rc.switch_r() == rm::device::DR16::SwitchPosition::kUp ||
+  //       globals->tc.data().switch_position == rm::device::VT03::SwitchPosition::S))
+  //   target_yaw_ = -(monitor_.euler_yaw_ - globals->gimbal_motor_yaw.pos() - 0.288);
 }
 
 void GimbalHero::Unabling() {
@@ -16,7 +16,7 @@ void GimbalHero::Unabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
   target_yaw_ = -monitor_.euler_yaw_;
   target_pitch_ = -monitor_.euler_pitch_;
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1600);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1690);
 }
 
 /**
@@ -214,7 +214,13 @@ void GimbalHero::RemoterControl() {
 void GimbalHero::MotorUpdate() {
   // yawPID计算（双环）
   globals->pid_yaw_position.SetCircular(true).SetCircularCycle(3.141593 * 2);
-
+  // if (globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe) {
+  //   ChangePID(globals->pid_yaw_position, 28.5, 0, 0.01);
+  //   ChangePID(globals->pid_yaw_velocity, 9, 0, 0.00001);
+  // } else {
+  //   ChangePID(globals->pid_yaw_position, 28, 0, 0.01);
+  //   ChangePID(globals->pid_yaw_velocity, 9, 0, 0.00001);
+  // }
   // yawPID计算
   globals->pid_yaw_position.Update(target_yaw_, -monitor_.euler_yaw_, 0.001);
   globals->pid_yaw_velocity.Update(globals->pid_yaw_position.out(),
@@ -263,7 +269,7 @@ void GimbalHero::MotorUpdate() {
 void GimbalHero::ServoMotorUpdate() {
   switch (globals->state_machine.getSubState_()) {
     default:
-      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1410);
+      __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1500);
       break;
     case (StateMachine::SubState::kSnipe):
       // servo_angle_ = 1730 /*(1730 - 1440) * (-globals->ahrs.euler_angle().pitch / 0.8) + 1440*/;
