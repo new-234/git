@@ -15,8 +15,8 @@ class AmmoHero {
   //
   rm::i16 v12_shooter_1 = -4200;
   rm::i16 v12_shooter_2 = -3600;
-  rm::i16 v16_shooter_1 = -5600;
-  rm::i16 v16_shooter_2 = -4920;
+  rm::i16 v16_shooter_1 = -5720;
+  rm::i16 v16_shooter_2 = -4910;
   // rm::i16 V_shooter_1 = -0;
   // rm::i16 V_shooter_2 = -0;
 

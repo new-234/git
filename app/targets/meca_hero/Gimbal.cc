@@ -228,7 +228,7 @@ void GimbalHero::MotorUpdate() {
 
   // 发送CAN
   globals->gimbal_motor_yaw.SetMitCommand(
-      0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.35);
+      0, 0, /*(1 - 0.1 * globals->ahrs.euler_angle().pitch / 0.8) **/ globals->pid_yaw_velocity.out(), 0, 1.15);
   // globals->gimbal_motor_yaw.SetMitCommand(0, 0, 0, 0, 0);
 
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kOverPower) {
@@ -283,8 +283,8 @@ void GimbalHero::ServoMotorUpdate() {
       }
       if (servo_angle_ > 1800) {
         servo_angle_ = 1800;
-      } else if (servo_angle_ < 1440) {
-        servo_angle_ = 1440;
+      } else if (servo_angle_ < 1500) {
+        servo_angle_ = 1500;
       }
       __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, static_cast<int>(servo_angle_));
       break;

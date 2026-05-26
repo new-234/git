@@ -101,8 +101,8 @@ struct Globals {
   rm::device::M3508 gimbal_motor_pitch{can2, 7, true};
   rm::device::M2006 gimbal_telescope{can3, 1, false};
   // PID
-  rm::modules::PID pid_yaw_position{28, 0, 0.001, 15, 0};
-  rm::modules::PID pid_yaw_velocity{9, 0, 0.0, 9, 0};
+  rm::modules::PID pid_yaw_position{29, 0, 0.001, 15, 0};
+  rm::modules::PID pid_yaw_velocity{9, 0, 0.001, 9, 0};
   rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
   rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
   rm::modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};

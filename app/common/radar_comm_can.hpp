@@ -19,6 +19,7 @@ class RadarCanCommunicator final : public CanDevice {
   [[nodiscard]] u8 counter() const { return counter_; };
 
   void RxCallback(const hal::CanFrame *msg) override;
+  void UpdateInfo(const u8 robot_team);
 
  private:
   // 收nuc
@@ -30,6 +31,6 @@ class RadarCanCommunicator final : public CanDevice {
   bool fresh_{};
   u8 counter_{};
   // 缓冲区
-  // u8 tx_buf_[8]{};
+  u8 tx_buf_[8]{};
 };
 }  // namespace rm::device

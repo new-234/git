@@ -20,4 +20,16 @@ void RadarCanCommunicator::RxCallback(const hal::CanFrame *msg) {
   }
 }
 
+void RadarCanCommunicator::UpdateInfo(const u8 robot_team) {
+  if (robot_team > 100) {
+    tx_buf_[0] = 0x01;
+  } else {
+    tx_buf_[0] = 0;
+  }
+  for (int i = 1; i < 8; i++) {
+    tx_buf_[i] = 0;
+  }
+  this->can_->Write(0x302, tx_buf_, 8);
+}
+
 }  // namespace rm::device
