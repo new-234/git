@@ -69,11 +69,11 @@ bool AmmoHero::EnableJudgement() {
 void AmmoHero::BulletSpeedControl() {
   if (key_once_tc(rm::device::VT03::KeyboardKey::kE) &&
       !(globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift)) {
-    shooter_m -= 10;
+    shooter_m -= 5;
   }
   if (key_once_tc(rm::device::VT03::KeyboardKey::kQ) &&
       !(globals->tc.data().keyboard_key & rm::device::VT03::KeyboardKey::kShift)) {
-    shooter_m += 10;
+    shooter_m += 5;
   }
   if (globals->state_machine.getSubState_() == StateMachine::SubState::kSnipe &&
       globals->state_machine.getGimbalState_() == StateMachine::GimbalState::kDroneAim &&

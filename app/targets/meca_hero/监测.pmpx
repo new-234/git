@@ -2845,54 +2845,54 @@
 			<member name="item3" type="CObject_ptr">ObjId0008</member>
 			<member name="item4" type="CObject_ptr">ObjId0007</member>
 			<member name="item5" type="CObject_ptr">ObjId0259</member>
-			<member name="item6" type="CObject_ptr">ObjId0042</member>
-			<member name="item7" type="CObject_ptr">ObjId0043</member>
-			<member name="item8" type="CObject_ptr">ObjId0044</member>
-			<member name="item9" type="CObject_ptr">ObjId0045</member>
-			<member name="item10" type="CObject_ptr">ObjId0046</member>
-			<member name="item11" type="CObject_ptr">ObjId0047</member>
-			<member name="item12" type="CObject_ptr">ObjId0048</member>
-			<member name="item13" type="CObject_ptr">ObjId0049</member>
-			<member name="item14" type="CObject_ptr">ObjId0050</member>
-			<member name="item15" type="CObject_ptr">ObjId0099</member>
-			<member name="item16" type="CObject_ptr">ObjId0100</member>
-			<member name="item17" type="CObject_ptr">ObjId0123</member>
-			<member name="item18" type="CObject_ptr">ObjId0124</member>
-			<member name="item19" type="CObject_ptr">ObjId0125</member>
-			<member name="item20" type="CObject_ptr">ObjId0126</member>
-			<member name="item21" type="CObject_ptr">ObjId0127</member>
-			<member name="item22" type="CObject_ptr">ObjId0128</member>
-			<member name="item23" type="CObject_ptr">ObjId0144</member>
-			<member name="item24" type="CObject_ptr">ObjId0145</member>
-			<member name="item25" type="CObject_ptr">ObjId0168</member>
-			<member name="item26" type="CObject_ptr">ObjId0169</member>
-			<member name="item27" type="CObject_ptr">ObjId0170</member>
-			<member name="item28" type="CObject_ptr">ObjId0171</member>
-			<member name="item29" type="CObject_ptr">ObjId0190</member>
-			<member name="item30" type="CObject_ptr">ObjId0191</member>
-			<member name="item31" type="CObject_ptr">ObjId0192</member>
-			<member name="item32" type="CObject_ptr">ObjId0193</member>
-			<member name="item33" type="CObject_ptr">ObjId0213</member>
-			<member name="item34" type="CObject_ptr">ObjId0214</member>
-			<member name="item35" type="CObject_ptr">ObjId0215</member>
-			<member name="item36" type="CObject_ptr">ObjId0216</member>
-			<member name="item37" type="CObject_ptr">ObjId0217</member>
-			<member name="item38" type="CObject_ptr">ObjId0218</member>
-			<member name="item39" type="CObject_ptr">ObjId0219</member>
-			<member name="item40" type="CObject_ptr">ObjId0220</member>
-			<member name="item41" type="CObject_ptr">ObjId0260</member>
-			<member name="item42" type="CObject_ptr">ObjId0268</member>
-			<member name="item43" type="CObject_ptr">ObjId0270</member>
-			<member name="item44" type="CObject_ptr">ObjId0276</member>
-			<member name="item45" type="CObject_ptr">ObjId0280</member>
-			<member name="item46" type="CObject_ptr">ObjId0283</member>
-			<member name="item47" type="CObject_ptr">ObjId0284</member>
-			<member name="item48" type="CObject_ptr">ObjId0298</member>
-			<member name="item49" type="CObject_ptr">ObjId0302</member>
-			<member name="item50" type="CObject_ptr">ObjId0303</member>
-			<member name="item51" type="CObject_ptr">ObjId0308</member>
-			<member name="item52" type="CObject_ptr">ObjId0309</member>
-			<member name="item53" type="CObject_ptr">ObjId0314</member>
+			<member name="item6" type="CObject_ptr">ObjId0044</member>
+			<member name="item7" type="CObject_ptr">ObjId0042</member>
+			<member name="item8" type="CObject_ptr">ObjId0314</member>
+			<member name="item9" type="CObject_ptr">ObjId0043</member>
+			<member name="item10" type="CObject_ptr">ObjId0045</member>
+			<member name="item11" type="CObject_ptr">ObjId0046</member>
+			<member name="item12" type="CObject_ptr">ObjId0047</member>
+			<member name="item13" type="CObject_ptr">ObjId0048</member>
+			<member name="item14" type="CObject_ptr">ObjId0049</member>
+			<member name="item15" type="CObject_ptr">ObjId0050</member>
+			<member name="item16" type="CObject_ptr">ObjId0099</member>
+			<member name="item17" type="CObject_ptr">ObjId0100</member>
+			<member name="item18" type="CObject_ptr">ObjId0123</member>
+			<member name="item19" type="CObject_ptr">ObjId0124</member>
+			<member name="item20" type="CObject_ptr">ObjId0125</member>
+			<member name="item21" type="CObject_ptr">ObjId0126</member>
+			<member name="item22" type="CObject_ptr">ObjId0127</member>
+			<member name="item23" type="CObject_ptr">ObjId0128</member>
+			<member name="item24" type="CObject_ptr">ObjId0144</member>
+			<member name="item25" type="CObject_ptr">ObjId0145</member>
+			<member name="item26" type="CObject_ptr">ObjId0168</member>
+			<member name="item27" type="CObject_ptr">ObjId0169</member>
+			<member name="item28" type="CObject_ptr">ObjId0170</member>
+			<member name="item29" type="CObject_ptr">ObjId0171</member>
+			<member name="item30" type="CObject_ptr">ObjId0190</member>
+			<member name="item31" type="CObject_ptr">ObjId0191</member>
+			<member name="item32" type="CObject_ptr">ObjId0192</member>
+			<member name="item33" type="CObject_ptr">ObjId0193</member>
+			<member name="item34" type="CObject_ptr">ObjId0213</member>
+			<member name="item35" type="CObject_ptr">ObjId0214</member>
+			<member name="item36" type="CObject_ptr">ObjId0215</member>
+			<member name="item37" type="CObject_ptr">ObjId0216</member>
+			<member name="item38" type="CObject_ptr">ObjId0217</member>
+			<member name="item39" type="CObject_ptr">ObjId0218</member>
+			<member name="item40" type="CObject_ptr">ObjId0219</member>
+			<member name="item41" type="CObject_ptr">ObjId0220</member>
+			<member name="item42" type="CObject_ptr">ObjId0260</member>
+			<member name="item43" type="CObject_ptr">ObjId0268</member>
+			<member name="item44" type="CObject_ptr">ObjId0270</member>
+			<member name="item45" type="CObject_ptr">ObjId0276</member>
+			<member name="item46" type="CObject_ptr">ObjId0280</member>
+			<member name="item47" type="CObject_ptr">ObjId0283</member>
+			<member name="item48" type="CObject_ptr">ObjId0284</member>
+			<member name="item49" type="CObject_ptr">ObjId0298</member>
+			<member name="item50" type="CObject_ptr">ObjId0302</member>
+			<member name="item51" type="CObject_ptr">ObjId0303</member>
+			<member name="item52" type="CObject_ptr">ObjId0308</member>
+			<member name="item53" type="CObject_ptr">ObjId0309</member>
 		</object>
 		<object name="ObjId0020" type="CObList"/>
 		<object name="ObjId0021" type="CObList">
@@ -2907,6 +2907,7 @@
 			<member name="item8" type="CObject_ptr">ObjId0221</member>
 			<member name="item9" type="CObject_ptr">ObjId0234</member>
 			<member name="item10" type="CObject_ptr">ObjId0285</member>
+			<member name="item11" type="CObject_ptr">ObjId0315</member>
 		</object>
 		<object name="ObjId0110" type="CPrjItemScope">
 			<member name="parent_item" type="CObject_ptr">ObjId0018</member>
@@ -4683,6 +4684,161 @@
 			<member name="raxis_max_auto" type="sint32">1</member>
 			<member name="raxis_subsets" type="sint32">0</member>
 		</object>
+		<object name="ObjId0315" type="CPrjItemScope">
+			<member name="parent_item" type="CObject_ptr">ObjId0018</member>
+			<member name="tree_expand" type="sint32">1</member>
+			<member name="data_capture_mode" type="sint32">0</member>
+			<member name="data_capture_onaction" type="sint32">0</member>
+			<member name="data_capture_file_type" type="sint32">0</member>
+			<member name="data_capture_dir" type="string">C:\Data</member>
+			<member name="data_absolute_time" type="sint32">0</member>
+			<member name="name" type="string">snipe</member>
+			<member name="href" type="string"/>
+			<member name="graph_buffer" type="sint32">10000</member>
+			<member name="graph_type" type="sint32">0</member>
+			<member name="graph_x_units" type="sint32">2</member>
+			<member name="graph_x_label" type="string">Time</member>
+			<member name="graph_x_addunits" type="sint32">1</member>
+			<member name="graph_legend_loc" type="sint32">0</member>
+			<member name="graph_legen_vis" type="sint32">1</member>
+			<member name="graph_legend_inside" type="sint32">1</member>
+			<member name="graph_grid_horz" type="sint32">1</member>
+			<member name="graph_grid_vert" type="sint32">1</member>
+			<member name="graph_x_min" type="real64">0.00000000000000000000e+00</member>
+			<member name="graph_x_max" type="real64">1.00000000000000000000e+02</member>
+			<member name="graph_x_min_auto" type="sint32">1</member>
+			<member name="graph_x_max_auto" type="sint32">1</member>
+			<member name="graph_break_line" type="sint32">0</member>
+			<member name="graph_var_count" type="sint32">3</member>
+			<member name="var_count" type="sint32">3</member>
+			<member name="var0_info" type="CPrjItemRS_VarInfo">ObjId0316</member>
+			<member name="var1_info" type="CPrjItemRS_VarInfo">ObjId0317</member>
+			<member name="var2_info" type="CPrjItemRS_VarInfo">ObjId0318</member>
+			<member name="yblock0_info" type="CPrjItemRS_YBlockInfo">ObjId0319</member>
+			<member name="yblock1_info" type="CPrjItemRS_YBlockInfo">ObjId0320</member>
+			<member name="yblock2_info" type="CPrjItemRS_YBlockInfo">ObjId0321</member>
+			<member name="yblock3_info" type="CPrjItemRS_YBlockInfo">ObjId0322</member>
+			<member name="yblock4_info" type="CPrjItemRS_YBlockInfo">ObjId0323</member>
+			<member name="yblock5_info" type="CPrjItemRS_YBlockInfo">ObjId0324</member>
+			<member name="scope_period" type="real64">0.00000000000000000000e+00</member>
+			<member name="scope_x_autoscale" type="sint32">1</member>
+			<member name="scope_x_width" type="real64">1.00000000000000000000e+01</member>
+			<member name="scope_ignore_duplicity" type="sint32">0</member>
+		</object>
+		<object name="ObjId0316" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0044</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">0</member>
+			<member name="color" type="uint32">0x2E2DED</member>
+		</object>
+		<object name="ObjId0317" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0042</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">1</member>
+			<member name="color" type="uint32">0x478C00</member>
+		</object>
+		<object name="ObjId0318" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0314</member>
+			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">2</member>
+			<member name="color" type="uint32">0xA95918</member>
+		</object>
+		<object name="ObjId0319" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">0</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
+		<object name="ObjId0320" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">1</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
+		<object name="ObjId0321" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">2</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
+		<object name="ObjId0322" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">3</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
+		<object name="ObjId0323" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">4</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
+		<object name="ObjId0324" type="CPrjItemRS_YBlockInfo">
+			<member name="join_class" type="sint32">5</member>
+			<member name="laxis_label" type="string">lAxis</member>
+			<member name="laxis_style" type="sint32">0</member>
+			<member name="laxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="laxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="laxis_min_auto" type="sint32">1</member>
+			<member name="laxis_max_auto" type="sint32">1</member>
+			<member name="raxis_label" type="string">rAxis</member>
+			<member name="raxis_style" type="sint32">0</member>
+			<member name="raxis_min" type="real64">-1.00000000000000000000e+01</member>
+			<member name="raxis_max" type="real64">1.00000000000000000000e+01</member>
+			<member name="raxis_min_auto" type="sint32">1</member>
+			<member name="raxis_max_auto" type="sint32">1</member>
+			<member name="raxis_subsets" type="sint32">0</member>
+		</object>
 		<object name="ObjId0022" type="CPrjItemBlock_CellFormat">
 			<member name="font_name" type="string">Tahoma</member>
 			<member name="font_set" type="uint8">0x0</member>
@@ -4839,6 +4995,8 @@
 			<member name="value51" type="CObject_ptr">ObjId0310</member>
 			<member name="key52" type="CObject_ptr">ObjId0309</member>
 			<member name="value52" type="CObject_ptr">ObjId0312</member>
+			<member name="key53" type="CObject_ptr">ObjId0314</member>
+			<member name="value53" type="CObject_ptr">ObjId0325</member>
 		</object>
 		<object name="ObjId0031" type="CPrjItemBlock_VarInfo">
 			<member name="row_height" type="sint32">15</member>
@@ -5105,6 +5263,11 @@
 			<member name="row_cell_formats" type="CObArrayEx">ObjId0313</member>
 		</object>
 		<object name="ObjId0313" type="CObArray" length="0"/>
+		<object name="ObjId0325" type="CPrjItemBlock_VarInfo">
+			<member name="row_height" type="sint32">15</member>
+			<member name="row_cell_formats" type="CObArrayEx">ObjId0326</member>
+		</object>
+		<object name="ObjId0326" type="CObArray" length="0"/>
 		<object name="ObjId0041" type="CFlashProgDlg">
 			<member name="is_default" type="sint32">1</member>
 			<member name="csw_addr" type="string">fprgCSW</member>

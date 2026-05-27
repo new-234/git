@@ -3,7 +3,7 @@
 #include "Gimbal.hpp"
 #include "VOFA.hpp"
 #include "common/bsp/timer_task.hpp"
-#include "adc.h"
+#include "UIuser1.hpp"
 #include "globals.hpp"
 
 __attribute__((section(".sram4"))) GlobalsNoDtcm globals_no_dtcm;
@@ -14,18 +14,37 @@ volatile long long mainloop_time_us = 0;  ///< 主循环运行时间
 using namespace rm;
 using namespace rm::device;
 
+extern u16 robotID;
+
 void subRefereeInteraction();
 
 void h2dInteraction();
 void UIGroup1_add();
 void UICharacter2_add();
 void UIGroup1_edit();
-void UIrefrenceline();
+
+static auto UIRobotHeaderBlueADD = device::UITask(UITextHeaderRobotBlue_add);
+
+static auto UIhpBlueADD = device::UITask(UITextHeaderHPBlue_add);
+static auto UIhpBlueEDIT = device::UITask(UITextHeaderHPBlue_edit, 2);
+
+static auto UIalBlueADD = device::UITask(UITextHeaderAllowBlue_add);
+static auto UIalBlueEDIT = device::UITask(UITextHeaderAllowBlue_edit, 2);
+
+static auto UIRobotHeaderRedADD = device::UITask(UITextHeaderRobotRed_add);
+
+static auto UIhpRedADD = device::UITask(UITextHeaderHPRed_add);
+static auto UIhpRedEDIT = device::UITask(UITextHeaderHPRed_edit, 2);
+
+static auto UIalRedADD = device::UITask(UITextHeaderAllowRed_add);
+static auto UIalRedEDIT = device::UITask(UITextHeaderAllowRed_edit, 2);
+
+
 
 static auto UIh2d = device::UITask(h2dInteraction, 10);  // >>> 10hz
-static auto UIA1 = device::UITask(UIGroup1_add, 1);
-static auto UICA2 = device::UITask(UICharacter2_add, 1);
-static auto UILine = UITask(UIrefrenceline, 1);
+
+static auto UIA1 = device::UITask(UIGroup1_add);
+static auto UICA2 = device::UITask(UICharacter2_add);
 static auto UIE1 = device::UITask(UIGroup1_edit, 10);  // >>> 10hz
 
 static auto schedule = device::UITaskScheduler(30);  // >>> 30hz主调度器
@@ -135,9 +154,6 @@ void Init() {
   globals->ammo_hero = new AmmoHero();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-
-  schedule.addTask(&UIh2d);
-  schedule.addTask(&UIE1);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
 void SubLoop10hz() {
@@ -280,8 +296,33 @@ void AppMain() {
 void subRefereeInteraction() {
   static auto last_switch_l = rm::device::DR16::SwitchPosition::kUnknown;
   if (globals->rc.switch_l() != last_switch_l) {
+    robotID = globals->ref.data().robot_status.robot_id;
     schedule.addTaskStatic(&UIA1);
     schedule.addTaskStatic(&UICA2);
+    schedule.addTask(&UIE1);
+    schedule.addTask(&UIh2d);
+
+    if (robotID >= 100) {
+      schedule.addTaskStatic(&UIRobotHeaderBlueADD);
+      schedule.addTaskStatic(&UIalBlueADD);
+      schedule.addTaskStatic(&UIhpBlueADD);
+
+      schedule.addTask(&UIhpBlueEDIT);
+      schedule.addTask(&UIalBlueEDIT);
+      schedule.delTask(&UIalRedEDIT);
+      schedule.delTask(&UIhpRedEDIT);
+    }
+    else {
+      schedule.addTaskStatic(&UIRobotHeaderRedADD);
+      schedule.addTaskStatic(&UIalRedADD);
+      schedule.addTaskStatic(&UIhpRedADD);
+
+      schedule.addTask(&UIhpRedEDIT);
+      schedule.addTask(&UIalRedEDIT);
+      schedule.delTask(&UIalBlueEDIT);
+      schedule.delTask(&UIhpBlueEDIT);
+    }
+
   }
   last_switch_l = globals->rc.switch_l();
   schedule.schedule();
@@ -331,7 +372,7 @@ void UIGroup1_add() {
 
 void UICharacter2_add() {
   device::UICharacter ui_character;
-  ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 50, 372, 801, 50,
+  ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 4, 372, 801, 25,
                                        7);
 
   std::memcpy(ui_character.data, "stucked", 7);
@@ -357,9 +398,9 @@ void UIGroup1_edit() {
                             static_cast<int16_t>((globals->cms.rx_data_.cap_energy / 252.0) * (750 - 260) + 260));
   UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
   if (globals->state_machine.magz_stucked_) {
-    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 5, 359, 728, 578, 821);
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Magenta, 5, 359, 728, 578, 821);
   } else {
-    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::Green, 5, 359, 728, 578, 821);
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Green, 5, 359, 728, 578, 821);
   }
   const auto dataLen = rm::device::Referee0x301Prepare(Info_Arr, 0, UIGroup7, globals->ref.data().robot_status.robot_id,
                                                        globals->ref.data().robot_status.robot_id + 256);

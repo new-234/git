@@ -126,11 +126,11 @@ struct Globals {
   rm::device::M3508 shooter_motor_5{can2, 5, false};
   rm::device::M3508 shooter_motor_6{can2, 6, false};
   // PID
-  rm::modules::PID pid_shooter_1{24, 0.0000007, 0, 8000, 800};  // 20
-  rm::modules::PID pid_shooter_2{24, 0.0000007, 0, 8000, 800};  // 20
-  rm::modules::PID pid_shooter_3{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_1{30, 0.000007, 0, 10000, 1600};
+  rm::modules::PID pid_shooter_2{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_3{30, 0.000007, 0, 10000, 1600};
   rm::modules::PID pid_shooter_4{24, 0.0000007, 0, 8000, 800};
-  rm::modules::PID pid_shooter_5{24, 0.0000007, 0, 8000, 800};
+  rm::modules::PID pid_shooter_5{30, 0.000007, 0, 10000, 1600};
   rm::modules::PID pid_shooter_6{24, 0.0000007, 0, 8000, 800};
 
   rm::device::DR16 rc{globals_no_dtcm.dbus};                               ///< DT7
@@ -206,6 +206,7 @@ struct Globals {
     rm::hal::SerialRxCallbackFunction tc_rx_callback = [&](const etl::span<const uint8_t> &data) {
       for (const auto byte : data) {
         tc << byte;
+        ref << byte;
       }
     };
     globals_no_dtcm.uart10_tc.AttachRxCallback(tc_rx_callback);

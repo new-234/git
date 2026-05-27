@@ -9,41 +9,41 @@
 namespace rm::device {
 class UITask {
   void (*func_)();
-  float acc_;
   float freq_;
-  bool is_scheduled_ = false;
+  float acc_{0.0f};
+  bool is_scheduled_{false};
 
- public:
+public:
   UITask() = delete;
 
-  UITask(void (*func)(), const float freq) : func_(func), acc_(0.0f), freq_(freq), is_scheduled_(false) {};
+  explicit UITask(void (*func)(), const float freq = 0.0f): func_(func), freq_(freq) {
+  };
   friend class UITaskScheduler;
 };
 
 // warning : 作为UI而言，freq必须小于等于30hz，注意只有30个任务。
 class UITaskScheduler {
-  float freq_{0};  // 严格与这个管理器调用频率一致
+  float freq_{0}; // 严格与这个管理器调用频率一致
   etl::vector<UITask *, 30> tasks_;
   etl::vector<UITask *, 30> tasks_static_;
 
- public:
+public:
   UITaskScheduler() = delete;
 
-  explicit UITaskScheduler(const float freq) : freq_(freq) {};
+  explicit UITaskScheduler(const float freq): freq_(freq) {
+  };
 
   bool addTask(UITask *task) {
-    if (task->is_scheduled_ == true) {
-      return false;
-    }
+    if (task->is_scheduled_ == true || task->freq_ <= 0) { return false; }
+    if (tasks_.available() <= 0) { return false; }
     tasks_.push_back(task);
     task->is_scheduled_ = true;
     return true;
   }
 
   bool addTaskStatic(UITask *task) {
-    if (task->is_scheduled_ == true) {
-      return false;
-    }
+    if (task->is_scheduled_ == true || task->freq_ > 0) { return false; }
+    if (tasks_static_.available() <= 0) { return false; }
     tasks_static_.push_back(task);
     task->is_scheduled_ = true;
     return true;
@@ -75,13 +75,12 @@ class UITaskScheduler {
 
   void schedule() {
     if (tasks_.empty() && tasks_static_.empty()) return;
-
-    if (tasks_static_.end() != tasks_static_.begin()) {
+    if (!tasks_static_.empty()) {
       tasks_static_.back()->func_();
-      delTaskStatic(tasks_static_.back());
-      // return;
+      tasks_static_.back()->is_scheduled_ = false;
+      tasks_static_.pop_back();
+      return;
     }
-
     UITask *selected = nullptr;
     float max_acc = 0;
 
@@ -102,6 +101,6 @@ class UITaskScheduler {
     }
   }
 };
-}  // namespace rm::device
+}
 
-#endif  // TASKSCHEDULER_HPP
+#endif //TASKSCHEDULER_HPP
