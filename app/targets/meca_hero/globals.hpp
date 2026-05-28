@@ -104,7 +104,7 @@ struct Globals {
   rm::modules::PID pid_yaw_position{29, 0, 0.001, 15, 0};
   rm::modules::PID pid_yaw_velocity{9, 0, 0.001, 9, 0};
   rm::modules::PID pid_pitch_position{70, 0.01, 0.01, 1, 0.7};
-  rm::modules::PID pid_pitch_velocity{5500, 20, 100, 16000, 4000};
+  rm::modules::PID pid_pitch_velocity{5600, 20, 100, 16000, 4000};
   rm::modules::PID pid_scope_velocity{5.0, 0.0, 0.0, 3600, 0};
   // pid_snipe_yaw_position = new modules::PID{300, 0, 0.0, 15, 0};
   // pid_snipe_yaw_velocity = new modules::PID{0.5, 0, 0.0, 9, 0};
@@ -178,7 +178,7 @@ struct Globals {
     uint16_t enemy_hp_2{0};
     uint16_t enemy_hp_3{0};
     uint16_t enemy_hp_4{0};
-    uint16_t enemy_hp_5{0};
+    // uint16_t enemy_hp_5{0};
     uint16_t enemy_hp_7{0};
     rm::u8 snipe_state{0};
   } custom_data;

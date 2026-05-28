@@ -112,7 +112,7 @@ void Monitor() {
   enemy_hp_2 = globals->custom_data.enemy_hp_2;
   enemy_hp_3 = globals->custom_data.enemy_hp_3;
   enemy_hp_4 = globals->custom_data.enemy_hp_4;
-  enemy_hp_5 = globals->custom_data.enemy_hp_5;
+  // enemy_hp_5 = globals->custom_data.enemy_hp_5;
   enemy_hp_7 = globals->custom_data.enemy_hp_7;
   snipe_state = globals->custom_data.snipe_state;
 

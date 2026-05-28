@@ -254,7 +254,7 @@ void GimbalHero::MotorUpdate() {
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    negaive_ff_ = -1600;
+    negaive_ff_ = -1700;
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(
