@@ -107,6 +107,18 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
       break;
 
     case StateMachine::SubState::kSnipe:
+      static bool force_highspeed_bullet{false};
+      if (key_once_tc(rm::device::VT03::kX)) force_highspeed_bullet = !force_highspeed_bullet;
+      if (force_highspeed_bullet) {
+        // Unabling();
+        globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_2.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
+        globals->pid_shooter_4.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
+        globals->pid_shooter_6.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
+        break;
+      }
       if (globals->shooter_motor_6.rpm() > limit ||
           ((globals->ref.data().robot_status.power_management_chassis_output == 1 ||
             !globals->custom_data.snipe_state) &&
@@ -118,7 +130,6 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_4.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
         globals->pid_shooter_6.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       } else {
-
         globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
         globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
         globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());

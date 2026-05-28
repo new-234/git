@@ -79,7 +79,7 @@ void StateMachine::AmmoSubStateUpdate() {
 
     case StateMachine::AmmoSubState::kFire:
       // 堵转检测
-      if (globals->state_machine.Waiting(waiting_count_ / 5, ammo_sub_tick_)) {
+      if (globals->state_machine.Waiting(waiting_count_ / 4, ammo_sub_tick_)) {
         if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
           magz_stucked_ = true;
           now_angle = globals->magazine_motor.pos() + 3.141593 / 9;

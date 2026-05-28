@@ -269,26 +269,46 @@ void UITextHeaderAllowBlue_add() {
 
 void UITextHeaderAllowBlue_edit() {
   static UIFigure5 UITextHeaderAllow;
+  // UITextHeaderAllow.figure1.fillIntegrate("AL1", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
+  //                                         4, 55, 810, 16,
+  //                                         globals->refSub->data().enemy_robot_projectile_allowance.
+  //                                                  hero_1_projectile_allowance);
+  // UITextHeaderAllow.figure2.fillIntegrate("AL2", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
+  //                                         4, 175, 810, 16,
+  //                                         globals->refSub->data().enemy_robot_projectile_allowance.
+  //                                                  standard_3_projectile_allowance);
+  // UITextHeaderAllow.figure3.fillIntegrate("AL3", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
+  //                                         4, 295, 810, 16,
+  //                                         globals->refSub->data().enemy_robot_projectile_allowance.
+  //                                                  standard_4_projectile_allowance);
+  // UITextHeaderAllow.figure4.fillIntegrate("AL4", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
+  //                                         4, 415, 810, 16,
+  //                                         globals->refSub->data().enemy_robot_projectile_allowance.
+  //                                                  drone_6_projectile_allowance);
+  // UITextHeaderAllow.figure5.fillIntegrate("AL5", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
+  //                                         4, 655, 810, 16,
+  //                                         globals->refSub->data().enemy_robot_projectile_allowance.
+  //                                                  sentry_7_projectile_allowance);
   UITextHeaderAllow.figure1.fillIntegrate("AL1", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
-                                          4, 55, 810, 16,
-                                          globals->refSub->data().enemy_robot_projectile_allowance.
-                                                   hero_1_projectile_allowance);
+                                         4, 55, 810, 16,
+                                         globals->refSub->data().enemy_robot_projectile_allowance.
+                                                    sentry_7_projectile_allowance);
   UITextHeaderAllow.figure2.fillIntegrate("AL2", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
                                           4, 175, 810, 16,
                                           globals->refSub->data().enemy_robot_projectile_allowance.
-                                                   standard_3_projectile_allowance);
+                                                   drone_6_projectile_allowance);
   UITextHeaderAllow.figure3.fillIntegrate("AL3", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
                                           4, 295, 810, 16,
                                           globals->refSub->data().enemy_robot_projectile_allowance.
-                                                   standard_4_projectile_allowance);
+                                                  standard_4_projectile_allowance);
   UITextHeaderAllow.figure4.fillIntegrate("AL4", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
                                           4, 415, 810, 16,
                                           globals->refSub->data().enemy_robot_projectile_allowance.
-                                                   drone_6_projectile_allowance);
+                                                   standard_3_projectile_allowance);
   UITextHeaderAllow.figure5.fillIntegrate("AL5", UIFigure::Operation::Edit, 0, UIFigure::Color::White,
                                           4, 655, 810, 16,
                                           globals->refSub->data().enemy_robot_projectile_allowance.
-                                                   sentry_7_projectile_allowance);
+                                                    hero_1_projectile_allowance);
   const auto dataLen = Referee0x301Prepare(dataBox, 0, UITextHeaderAllow, robotID,
                                            robotID + 256);
   globals_no_dtcm.usart1_ref.Write(dataBox, dataLen,20);

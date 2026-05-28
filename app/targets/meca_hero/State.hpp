@@ -127,7 +127,7 @@ class StateMachine {
   void setAmmoSubState(AmmoSubState state) { current_ammo_sub_state_ = state; }
 
   rm::f32 now_angle{0};        ///< 拨盘真实位置
-  rm::f32 next_angle{-1.711};  ///< 拨盘初始位/应该在的位置
+  rm::f32 next_angle{-0.4892695};  ///< 拨盘初始位/应该在的位置  1.711}  0.4892695 .314736
 
   bool magz_stucked_{false};  ///< 卡弹标志位
 
