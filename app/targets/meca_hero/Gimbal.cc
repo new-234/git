@@ -16,7 +16,7 @@ void GimbalHero::Unabling() {
   globals->gimbal_motor_yaw.SendInstruction(rm::device::DmMotorInstructions::kDisable);
   target_yaw_ = -monitor_.euler_yaw_;
   target_pitch_ = -monitor_.euler_pitch_;
-  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1690);
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, servo_angle_);
 }
 
 /**
@@ -206,8 +206,8 @@ void GimbalHero::RemoterControl() {
   // pitch限位
   if (target_pitch_ < 0.02) {
     target_pitch_ = 0.02;
-  } else if (target_pitch_ > 0.8) {
-    target_pitch_ = 0.8;
+  } else if (target_pitch_ > 0.79) {
+    target_pitch_ = 0.79;
   }
 }
 
@@ -249,12 +249,12 @@ void GimbalHero::MotorUpdate() {
         static_cast<int16_t>(globals->pid_pitch_velocity.out() + positive_ff_ + negaive_ff_));
 
   } else if (target_pitch_ - last_target_pitch_ < 0) {
-    ChangePID(globals->pid_pitch_position, 20, 0.01, 0.00001);
-    ChangePID(globals->pid_pitch_velocity, 3000, 20, 30);
+    ChangePID(globals->pid_pitch_position, 50, 0.1, 0.00001);
+    ChangePID(globals->pid_pitch_velocity, 4000, 20, 30);
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    negaive_ff_ = -1700;
+    negaive_ff_ = -2000;
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(

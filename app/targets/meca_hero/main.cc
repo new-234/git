@@ -21,6 +21,7 @@ void subRefereeInteraction();
 void h2dInteraction();
 void UIGroup1_add();
 void UICharacter2_add();
+// void UICharacter3_add();
 void UIGroup1_edit();
 
 static auto UIRobotHeaderBlueADD = device::UITask(UITextHeaderRobotBlue_add);
@@ -39,12 +40,11 @@ static auto UIhpRedEDIT = device::UITask(UITextHeaderHPRed_edit, 2);
 static auto UIalRedADD = device::UITask(UITextHeaderAllowRed_add);
 static auto UIalRedEDIT = device::UITask(UITextHeaderAllowRed_edit, 2);
 
-
-
 static auto UIh2d = device::UITask(h2dInteraction, 10);  // >>> 10hz
 
 static auto UIA1 = device::UITask(UIGroup1_add);
 static auto UICA2 = device::UITask(UICharacter2_add);
+// static auto UICA3 = device::UITask(UICharacter3_add);
 static auto UIE1 = device::UITask(UIGroup1_edit, 10);  // >>> 10hz
 
 static auto schedule = device::UITaskScheduler(30);  // >>> 30hz主调度器
@@ -156,9 +156,7 @@ void Init() {
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 }
 /*---------------------------------------------------10HZ---------------------------------------------------*/
-void SubLoop10hz() {
-  globals->radar_can_communicator.UpdateInfo(globals->ref.data().robot_status.robot_id);
-}
+void SubLoop10hz() { globals->radar_can_communicator.UpdateInfo(globals->ref.data().robot_status.robot_id); }
 
 /*---------------------------------------------------50HZ---------------------------------------------------*/
 void SubLoop50hz() {}
@@ -311,8 +309,7 @@ void subRefereeInteraction() {
       schedule.addTask(&UIalBlueEDIT);
       schedule.delTask(&UIalRedEDIT);
       schedule.delTask(&UIhpRedEDIT);
-    }
-    else {
+    } else {
       schedule.addTaskStatic(&UIRobotHeaderRedADD);
       schedule.addTaskStatic(&UIalRedADD);
       schedule.addTaskStatic(&UIhpRedADD);
@@ -322,7 +319,6 @@ void subRefereeInteraction() {
       schedule.delTask(&UIalBlueEDIT);
       schedule.delTask(&UIhpBlueEDIT);
     }
-
   }
   last_switch_l = globals->rc.switch_l();
   schedule.schedule();
@@ -382,14 +378,27 @@ void UICharacter2_add() {
   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
 }
 
+// void UICharacter3_add() {
+//   device::UICharacter ui_character;
+//   ui_character.character.fillCharacter(u8"rad", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 4, 372, 801,
+//   50,
+//                                        5);
+//
+//   std::memcpy(ui_character.data, "radar", 5);
+//   const auto dataLen =
+//       rm::device::Referee0x301Prepare(Info_Arr, 0, ui_character, globals->ref.data().robot_status.robot_id,
+//                                       globals->ref.data().robot_status.robot_id + 256);
+//   globals_no_dtcm.usart1_ref.Write(Info_Arr, dataLen, 20);
+// }
+
 void UIGroup1_edit() {
   device::UIFigure7 UIGroup7;
   UIGroup7.figure1.fillIntegrate(u8"amm", rm::device::UIFigure::Operation::Edit, 0,
                                  rm::device::UIFigure::Color::Magenta, 5, 1250, 570, 30, globals->ammo_hero->shooter_m);
   UIGroup7.figure2.fillFloat(u8"yaw", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 880, 150, 40,
-                             -globals->gimbal_hero->monitor_.euler_yaw_ * 1000);
+                             -globals->gimbal_hero->monitor_.euler_yaw_ * 57.3 * 1000);
   UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 1200, 510, 40,
-                             -globals->gimbal_hero->monitor_.euler_pitch_ * 1000);
+                             -globals->gimbal_hero->monitor_.euler_pitch_ * 57.3 * 1000);
   UIGroup7.figure4.fillArc(
       u8"flo", UIFigure::Operation::Edit, 0, UIFigure::Color::Cyan, 10, 960, 542,
       static_cast<uint16_t>(rm::modules::Wrap((globals->gimbal_motor_yaw.pos() - (-0.288)) * 57.3 - 20, 0, 360)),

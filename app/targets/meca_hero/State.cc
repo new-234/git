@@ -70,7 +70,7 @@ void StateMachine::AmmoSubStateUpdate() {
       // globals->magazine_motor.SendInstruction(rm::device::DmMotorInstructions::kEnable);
 
     case StateMachine::AmmoSubState::kReady:
-      if ((fire && globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800 && !low_hp) ||
+      if ((fire && globals->shooter_motor_1.rpm() < -2800 && globals->shooter_motor_4.rpm() < -2800 && !low_hp_) ||
           globals->tc.data().mouse_button_middle) {  // 鼠标中键强制打弹
         now_angle = next_angle;
         current_ammo_sub_state_ = StateMachine::AmmoSubState::kFire;
@@ -80,7 +80,7 @@ void StateMachine::AmmoSubStateUpdate() {
     case StateMachine::AmmoSubState::kFire:
       // 堵转检测
       if (globals->state_machine.Waiting(waiting_count_ / 4, ammo_sub_tick_)) {
-        if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 18) {
+        if (rm::modules::Wrap(now_angle - globals->magazine_motor.pos(), -3.141593, 3.141593) < -3.141593 / 36) {
           magz_stucked_ = true;
           now_angle = globals->magazine_motor.pos() + 3.141593 / 9;
         } else {
@@ -454,9 +454,9 @@ void StateMachine::StateUpdate() {
     scope_count = 0;
   }
   if (globals->ref.data().robot_status.current_HP < 100) {
-    low_hp = true;
+    low_hp_ = true;
   } else {
-    low_hp = false;
+    low_hp_ = false;
   }
   // if (key_once_tc(rm::device::VT03::KeyboardKey::kF)) pitchlock = !pitchlock;
 
