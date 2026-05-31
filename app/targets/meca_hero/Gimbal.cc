@@ -67,7 +67,7 @@ void GimbalHero::AhrsUpdate() {
 
   // 监测
   eulerangle_yaw = -monitor_.euler_yaw_;
-  eulerangle_pitch = -monitor_.euler_pitch_;
+  eulerangle_pitch = -monitor_.euler_pitch_ * 57.3;
   eulerangle_roll = monitor_.euler_roll_;
   gyro_x = globals->HipnucImu.gyro_x();
   gyro_y = globals->HipnucImu.gyro_y();
@@ -107,10 +107,11 @@ void GimbalHero::RadarAimbotControl() {
 void GimbalHero::NormalRemoter() {
   // tc->rc->cc
   last_target_pitch_ = target_pitch_;
-  if (/*(globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && */globals->tc_manager.all_device_ok()) {
+  if (/*(globals->tc.data().mouse_x != 0 || globals->tc.data().mouse_y != 0) && */ globals->tc_manager
+          .all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->tc.data().mouse_x) / 32768 * 0.8;
     target_pitch_ += static_cast<float>(globals->tc.data().mouse_y) / 32768 * 0.5;
-  } else if (/*(globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && */globals->rc_manager.all_device_ok()) {
+  } else if (/*(globals->rc.mouse_x() != 0 || globals->rc.mouse_y() != 0) && */ globals->rc_manager.all_device_ok()) {
     target_yaw_ +=
         static_cast<float>(globals->rc.right_x()) * 0.000005 + static_cast<float>(globals->rc.mouse_x()) / 32768.0 * 3;
     target_pitch_ +=
@@ -241,7 +242,7 @@ void GimbalHero::MotorUpdate() {
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    positive_ff_ = 3000;
+    positive_ff_ = 0;
 
     negaive_ff_ = 0;
 
@@ -250,11 +251,11 @@ void GimbalHero::MotorUpdate() {
 
   } else if (target_pitch_ - last_target_pitch_ < 0) {
     ChangePID(globals->pid_pitch_position, 50, 0.1, 0.00001);
-    ChangePID(globals->pid_pitch_velocity, 4000, 20, 30);
+    ChangePID(globals->pid_pitch_velocity, 5000, 20, 30);
     globals->pid_pitch_position.Update(target_pitch_, -monitor_.euler_pitch_, 0.001);
     globals->pid_pitch_velocity.Update(globals->pid_pitch_position.out(), -monitor_.gyro_x_, 0.001);
 
-    negaive_ff_ = -2000;
+    negaive_ff_ = -0;
 
     positive_ff_ = 0;
     globals->gimbal_motor_pitch.SetCurrent(
