@@ -52,7 +52,7 @@ static auto schedule = device::UITaskScheduler(30);  // >>> 30hz主调度器
 u8 len;
 u8 Info_Arr[128];
 void UI_send(rm::hal::Serial<128> *msg, u8 *data, u8 data_len) { msg->Write(data, data_len, 50); }
-
+inline int magz_status{0};
 void Monitor() {
   // // PID 调参命令处理
   // PidTuner::Process();
@@ -118,6 +118,7 @@ void Monitor() {
 
   magz_pos = globals->magazine_motor.pos();
   magz_vel = globals->magazine_motor.vel();
+  magz_status = globals->magazine_motor.status();
 }
 
 void Init() {
@@ -351,15 +352,16 @@ void UIGroup1_add() {
   UIGroup7.figure1.fillIntegrate(u8"amm", rm::device::UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Magenta,
                                  5, 1200, 590, 30, globals->ammo_hero->shooter_m);
   UIGroup7.figure2.fillFloat(u8"yaw", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 880, 150, 40,
-                             globals->gimbal_hero->monitor_.euler_yaw_);
-  UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 1200, 510, 40,
-                             globals->gimbal_hero->monitor_.euler_yaw_);
+                             globals->gimbal_hero->monitor_.euler_yaw_*57.3);
+  UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 1100, 510, 40,
+                             globals->gimbal_hero->monitor_.euler_pitch_*57.3);
   UIGroup7.figure4.fillArc(u8"flo", UIFigure::Operation::Add, 0, UIFigure::Color::Cyan, 10, 960, 542,
                            globals->gimbal_motor_yaw.pos() - (-0.288) - 15,
                            globals->gimbal_motor_yaw.pos() - (-0.288) + 15, 100, 100);
-  UIGroup7.figure5.fillLine(u8"cap", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 50, 37, 260, 37,
-                            static_cast<int16_t>((globals->cms.rx_data_.cap_energy / 252.0) * (750 - 260) + 260));
-  UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
+  UIGroup7.figure5.fillFloat(u8"sh1", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 220, 610, 20,
+                             (shooter_1 + shooter_3 + shooter_5) / 3.0);
+  UIGroup7.figure6.fillFloat(u8"sh2", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 220, 410, 20,
+                             (shooter_2 + shooter_4 + shooter_6) / 3.0);
   UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Add, 0, UIFigure::Color::RedBlue, 5, 359, 728, 578, 821);
   const auto dataLen = rm::device::Referee0x301Prepare(Info_Arr, 0, UIGroup7, globals->ref.data().robot_status.robot_id,
                                                        globals->ref.data().robot_status.robot_id + 256);
@@ -368,7 +370,7 @@ void UIGroup1_add() {
 
 void UICharacter2_add() {
   device::UICharacter ui_character;
-  ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 4, 372, 801, 25,
+  ui_character.character.fillCharacter(u8"mst", UIFigure::Operation::Add, 0, UIFigure::Color::Magenta, 4, 172, 681, 25,
                                        7);
 
   std::memcpy(ui_character.data, "stucked", 7);
@@ -396,20 +398,21 @@ void UIGroup1_edit() {
   UIGroup7.figure1.fillIntegrate(u8"amm", rm::device::UIFigure::Operation::Edit, 0,
                                  rm::device::UIFigure::Color::Magenta, 5, 1250, 570, 30, globals->ammo_hero->shooter_m);
   UIGroup7.figure2.fillFloat(u8"yaw", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 880, 150, 40,
-                             -globals->gimbal_hero->monitor_.euler_yaw_ * 57.3 * 1000);
-  UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 1200, 510, 40,
-                             -globals->gimbal_hero->monitor_.euler_pitch_ * 57.3 * 1000);
+                              globals->gimbal_hero->monitor_.euler_yaw_*57.3*1000);
+  UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 1100, 510, 40,
+                             globals->gimbal_hero->monitor_.euler_pitch_*57.3*1000);
   UIGroup7.figure4.fillArc(
       u8"flo", UIFigure::Operation::Edit, 0, UIFigure::Color::Cyan, 10, 960, 542,
       static_cast<uint16_t>(rm::modules::Wrap((globals->gimbal_motor_yaw.pos() - (-0.288)) * 57.3 - 20, 0, 360)),
       static_cast<uint16_t>(modules::Wrap((globals->gimbal_motor_yaw.pos() - (-0.288)) * 57.3 + 20, 0, 360)), 100, 100);
-  UIGroup7.figure5.fillLine(u8"cap", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 37,
-                            static_cast<int16_t>((globals->cms.rx_data_.cap_energy / 252.0) * (750 - 260) + 260));
-  UIGroup7.figure6.fillRec(u8"ca1", UIFigure::Operation::Edit, 0, UIFigure::Color::RedBlue, 50, 37, 260, 87, 750);
+  UIGroup7.figure5.fillFloat(u8"sh1", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 450, 650, 20,
+                             (shooter_1 + shooter_3 + shooter_5) / 3.0*1000);
+  UIGroup7.figure6.fillFloat(u8"sh2", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 450, 410, 20,
+                             (shooter_2 + shooter_4 + shooter_6) / 3.0*1000);
   if (globals->state_machine.magz_stucked_) {
-    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Magenta, 5, 359, 728, 578, 821);
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Magenta, 5, 159, 628, 378, 721);
   } else {
-    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Green, 5, 359, 728, 578, 821);
+    UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Green, 5, 159, 628, 378, 721);
   }
   const auto dataLen = rm::device::Referee0x301Prepare(Info_Arr, 0, UIGroup7, globals->ref.data().robot_status.robot_id,
                                                        globals->ref.data().robot_status.robot_id + 256);

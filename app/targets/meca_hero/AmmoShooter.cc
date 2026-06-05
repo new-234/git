@@ -60,8 +60,14 @@ bool AmmoHero::EnableJudgement() {
       Enabling();
       return false;
     case StateMachine::AmmoState::kNormal:
+      // if (globals->magazine_motor.status() != 1) {
+      //   Enabling();
+      // }
       return true;
     case StateMachine::AmmoState::kSnipe:
+      // if (globals->magazine_motor.status() != 1) {
+      //   Enabling();
+      // }
       return true;
   }
 }
@@ -110,9 +116,9 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
       static bool force_highspeed_bullet{false};
       if (key_once_tc(rm::device::VT03::kX)) force_highspeed_bullet = !force_highspeed_bullet;
       if (force_highspeed_bullet) {
-        globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
-        globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
-        globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_1.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_5.rpm());
         globals->pid_shooter_2.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
         globals->pid_shooter_4.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
         globals->pid_shooter_6.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
@@ -127,9 +133,9 @@ void AmmoHero::ShooterControl() {  // 摩擦轮逻辑
         globals->pid_shooter_4.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
         globals->pid_shooter_6.Update(v12_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());
       } else {
-        globals->pid_shooter_1.Update(v16_shooter_1, globals->shooter_motor_1.rpm());
-        globals->pid_shooter_3.Update(v16_shooter_1, globals->shooter_motor_3.rpm());
-        globals->pid_shooter_5.Update(v16_shooter_1, globals->shooter_motor_5.rpm());
+        globals->pid_shooter_1.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_1.rpm());
+        globals->pid_shooter_3.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_3.rpm());
+        globals->pid_shooter_5.Update(v16_shooter_1 + 4.35 * shooter_m, globals->shooter_motor_5.rpm());
         globals->pid_shooter_2.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_2.rpm());
         globals->pid_shooter_4.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_4.rpm());
         globals->pid_shooter_6.Update(v16_shooter_2 + shooter_m, globals->shooter_motor_6.rpm());

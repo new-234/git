@@ -127,16 +127,16 @@ void GimbalHero::SnipeRemoter() {
   last_target_pitch_ = target_pitch_;
   if (globals->tc_manager.all_device_ok()) {
     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kW)) {
-      target_pitch_ += 0.000005;
+      target_pitch_ += 0.000007;
     }
     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kS)) {
-      target_pitch_ -= 0.000005;
+      target_pitch_ -= 0.000007;
     }
     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kD)) {
-      target_yaw_ += 0.000005;
+      target_yaw_ += 0.00001;
     }
     if (globals->tc.data().keyboard_key & static_cast<int16_t>(rm::device::VT03::KeyboardKey::kA)) {
-      target_yaw_ -= 0.000005;
+      target_yaw_ -= 0.00001;
     }
   } else if (globals->rc_manager.all_device_ok()) {
     target_yaw_ += static_cast<float>(globals->rc.right_x()) * 0.0000005;
@@ -207,8 +207,8 @@ void GimbalHero::RemoterControl() {
   // pitch限位
   if (target_pitch_ < 0.02) {
     target_pitch_ = 0.02;
-  } else if (target_pitch_ > 0.79) {
-    target_pitch_ = 0.79;
+  } else if (target_pitch_ > 0.81) {
+    target_pitch_ = 0.81;
   }
 }
 
