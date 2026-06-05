@@ -352,9 +352,9 @@ void UIGroup1_add() {
   UIGroup7.figure1.fillIntegrate(u8"amm", rm::device::UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Magenta,
                                  5, 1200, 590, 30, globals->ammo_hero->shooter_m);
   UIGroup7.figure2.fillFloat(u8"yaw", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 880, 150, 40,
-                             globals->gimbal_hero->monitor_.euler_yaw_*57.3);
+                             globals->gimbal_hero->monitor_.euler_yaw_ * 57.3);
   UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Add, 0, rm::device::UIFigure::Color::Pink, 5, 1100, 510, 40,
-                             globals->gimbal_hero->monitor_.euler_pitch_*57.3);
+                             globals->gimbal_hero->monitor_.euler_pitch_ * 57.3);
   UIGroup7.figure4.fillArc(u8"flo", UIFigure::Operation::Add, 0, UIFigure::Color::Cyan, 10, 960, 542,
                            globals->gimbal_motor_yaw.pos() - (-0.288) - 15,
                            globals->gimbal_motor_yaw.pos() - (-0.288) + 15, 100, 100);
@@ -398,17 +398,17 @@ void UIGroup1_edit() {
   UIGroup7.figure1.fillIntegrate(u8"amm", rm::device::UIFigure::Operation::Edit, 0,
                                  rm::device::UIFigure::Color::Magenta, 5, 1250, 570, 30, globals->ammo_hero->shooter_m);
   UIGroup7.figure2.fillFloat(u8"yaw", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 880, 150, 40,
-                              globals->gimbal_hero->monitor_.euler_yaw_*57.3*1000);
+                             globals->gimbal_hero->monitor_.euler_yaw_ * 57.3 * 1000);
   UIGroup7.figure3.fillFloat(u8"pit", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 1100, 510, 40,
-                             globals->gimbal_hero->monitor_.euler_pitch_*57.3*1000);
+                             globals->gimbal_hero->monitor_.euler_pitch_ * 57.3 * 1000);
   UIGroup7.figure4.fillArc(
       u8"flo", UIFigure::Operation::Edit, 0, UIFigure::Color::Cyan, 10, 960, 542,
       static_cast<uint16_t>(rm::modules::Wrap((globals->gimbal_motor_yaw.pos() - (-0.288)) * 57.3 - 20, 0, 360)),
       static_cast<uint16_t>(modules::Wrap((globals->gimbal_motor_yaw.pos() - (-0.288)) * 57.3 + 20, 0, 360)), 100, 100);
   UIGroup7.figure5.fillFloat(u8"sh1", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 450, 650, 20,
-                             (shooter_1 + shooter_3 + shooter_5) / 3.0*1000);
+                             (shooter_1 + shooter_3 + shooter_5) / 3.0 * 1000);
   UIGroup7.figure6.fillFloat(u8"sh2", UIFigure::Operation::Edit, 0, rm::device::UIFigure::Color::Pink, 5, 450, 410, 20,
-                             (shooter_2 + shooter_4 + shooter_6) / 3.0*1000);
+                             (shooter_2 + shooter_4 + shooter_6) / 3.0 * 1000);
   if (globals->state_machine.magz_stucked_) {
     UIGroup7.figure7.fillRec(u8"ms2", UIFigure::Operation::Edit, 0, UIFigure::Color::Magenta, 5, 159, 628, 378, 721);
   } else {
