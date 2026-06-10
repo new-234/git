@@ -12,3 +12,6 @@ add_exe_target(test_target "${TEST_TARGET_SOURCES};${COMMON_SOURCES}")
 ## add targets here...
 file(GLOB_RECURSE MECA_HERO_SOURCES ${CMAKE_CURRENT_LIST_DIR}/targets/meca_hero/*.cc)
 add_exe_target(meca_hero "${MECA_HERO_SOURCES};${COMMON_SOURCES}")
+
+file(GLOB_RECURSE SENTRY_SOURCES ${CMAKE_CURRENT_LIST_DIR}/targets/sentry/*.cc)
+add_exe_target(sentry "${SENTRY_SOURCES};${COMMON_SOURCES}")
