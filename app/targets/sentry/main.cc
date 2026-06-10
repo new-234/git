@@ -57,9 +57,9 @@ extern "C" [[noreturn]] void AppMain(void) {
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
   HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&globals_no_dtcm.adc_val), 1);
 
-  for (auto ch : {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4}) {
-    HAL_TIM_PWM_Start(&htim1, ch);
-  }
+  // for (auto ch : {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4}) {
+  //   HAL_TIM_PWM_Start(&htim1, ch);
+  // }
 
   TimerTask mainloop{
       &htim13,
@@ -82,13 +82,13 @@ void GlobalWarehouse::Init() {
 
   // H7 串口使用 DMA，Serial 对象本体必须放到非 DTCM 区域。
   ident_uart = ConstructInDma(globals_no_dtcm.ident_uart, huart1, false, true);
-  dbus = ConstructInDma(globals_no_dtcm.dbus, huart3, false, true);
-  referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart6, false, true);
+  dbus = ConstructInDma(globals_no_dtcm.dbus, huart5, false, true);
+  referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart1, false, true);
 
   referee_data = new rm::device::Referee<rm::device::RefereeRevision::kNewV120>;
   rx_referee = new rm::device::RxReferee{*referee_uart, *referee_data};
 
-  imu = new rm::device::BMI088{hspi1, CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, CS1_GYRO_GPIO_Port, CS1_GYRO_Pin};
+  imu = new rm::device::BMI088{hspi1, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
   hipnuc_imu = new rm::device::HipnucImuCan{*can2, 8};
 
   wfly_et16s = new WflyET16s{*dbus};
