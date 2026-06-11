@@ -152,12 +152,16 @@ struct DmaObjectStorage {
   }
 };
 
+struct alignas(32) DmaAdcSample {
+  uint16_t value{0};
+};
+
 /**
  * STM32H7 的 DTCM 只能 CPU 访问，DMA 无法访问。
  * 所以 ADC DMA 采样值、串口 DMA 相关 Serial 对象本体放到 .sram4。
  */
 struct alignas(32) GlobalsNoDtcm {
-  uint16_t adc_val;  ///< 输入电压 ADC DMA 采样值
+  DmaAdcSample adc;  ///< 输入电压 ADC DMA 采样值
 
   DmaObjectStorage<rm::hal::Serial<128>> ident_uart;
   DmaObjectStorage<rm::hal::Serial<25>> dbus;

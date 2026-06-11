@@ -30,6 +30,17 @@ T *ConstructInDma(DmaObjectStorage<T> &storage, Args &&...args) {
   return new (storage.get()) T{std::forward<Args>(args)...};
 }
 
+void InvalidateDCacheLineIfEnabled(const void *addr, size_t size) {
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+  if ((SCB->CCR & SCB_CCR_DC_Msk) != 0U) {
+    SCB_InvalidateDCache_by_Addr(const_cast<uint32_t *>(reinterpret_cast<const uint32_t *>(addr)), size);
+  }
+#else
+  (void)addr;
+  (void)size;
+#endif
+}
+
 }  // namespace
 
 void MainLoop2kHz() {
@@ -53,9 +64,9 @@ extern "C" [[noreturn]] void AppMain(void) {
 
   globals->Init();
 
-  globals_no_dtcm.adc_val = 0;
+  globals_no_dtcm.adc.value = 0;
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-  HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&globals_no_dtcm.adc_val), 1);
+  HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&globals_no_dtcm.adc.value), 1);
 
   // for (auto ch : {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4}) {
   //   HAL_TIM_PWM_Start(&htim1, ch);
@@ -81,9 +92,9 @@ void GlobalWarehouse::Init() {
   navigate_communicator = new rm::device::NavigateCanCommunicator(*can2);
 
   // H7 串口使用 DMA，Serial 对象本体必须放到非 DTCM 区域。
-  ident_uart = ConstructInDma(globals_no_dtcm.ident_uart, huart1, false, true);
+  ident_uart = ConstructInDma(globals_no_dtcm.ident_uart, huart7, false, false);
   dbus = ConstructInDma(globals_no_dtcm.dbus, huart5, false, true);
-  referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart1, false, true);
+  referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart1, true, true);
 
   referee_data = new rm::device::Referee<rm::device::RefereeRevision::kNewV120>;
   rx_referee = new rm::device::RxReferee{*referee_uart, *referee_data};
@@ -292,11 +303,9 @@ void GlobalWarehouse::Music() {
 }
 
 void GlobalWarehouse::SubLoop500Hz() {
-#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-  SCB_InvalidateDCache_by_Addr(reinterpret_cast<uint32_t *>(&globals_no_dtcm), sizeof(globals_no_dtcm));
-#endif
+  InvalidateDCacheLineIfEnabled(&globals_no_dtcm.adc, sizeof(globals_no_dtcm.adc));
 
-  vbus = (globals_no_dtcm.adc_val * 3.3f / 65535.0f) * 11.0f;
+  vbus = (globals_no_dtcm.adc.value * 3.3f / 65535.0f) * 11.0f;
 
   imu->Update();
 

@@ -251,12 +251,14 @@ SECTIONS
     libgcc.a:* ( * )
   }
 
-  /* for DMA access */
+  /* DMA1 cannot access DTCM. Keep application DMA buffers in D2 SRAM.
+     The section name is kept for compatibility with existing code. */
   .sram4 (NOLOAD) :
   {
     . = ALIGN(32);
     *(.sram4)
+    *(.sram4*)
     . = ALIGN(32);
-  } >RAM_D1
+  } >RAM_D2
 
 }
