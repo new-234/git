@@ -99,7 +99,7 @@ void GlobalWarehouse::Init() {
   referee_data = new rm::device::Referee<rm::device::RefereeRevision::kNewV120>;
   rx_referee = new rm::device::RxReferee{*referee_uart, *referee_data};
 
-  imu = new rm::device::BMI088{hspi1, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
+  imu = new rm::device::BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
   hipnuc_imu = new rm::device::HipnucImuCan{*can2, 8};
 
   wfly_et16s = new WflyET16s{*dbus};
