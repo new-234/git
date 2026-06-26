@@ -328,21 +328,15 @@ void GlobalWarehouse::SubLoop500Hz() {
 
   f32 shoot_initial_speed = 0.0f;
 
-  if (referee_data->data().shoot_data.initial_speed >= 18.f &&
-      referee_data->data().shoot_data.initial_speed <= 26.f) {
+  if (referee_data->data().shoot_data.initial_speed >= 18.f && referee_data->data().shoot_data.initial_speed <= 26.f) {
     shoot_initial_speed = referee_data->data().shoot_data.initial_speed;
   } else {
     shoot_initial_speed = 22.5f;
   }
 
-  aimbot_communicator->UpdateControl(
-      hipnuc_imu->yaw(),
-      hipnuc_imu->pitch(),
-      -hipnuc_imu->roll(),
-      referee_data->data().robot_status.robot_id,
-      aim_mode,
-      imu_count,
-      shoot_initial_speed);
+  aimbot_communicator->UpdateControl(hipnuc_imu->yaw(), hipnuc_imu->pitch(), -hipnuc_imu->roll(),
+                                     referee_data->data().robot_status.robot_id, aim_mode, imu_count,
+                                     shoot_initial_speed);
 
   down_yaw_motor->SetMitCommand(0, 0, -gimbal_controller.output().down_yaw, 0, 0);
   pitch_motor->SetMitCommand(0, 0, -gimbal->pitch_torque_, 0, 3.4f);
@@ -376,6 +370,4 @@ void GlobalWarehouse::SubLoop50Hz() {
   buzzer.SetFrequency(buzzer_controller.Update().frequency);
 }
 
-void GlobalWarehouse::SubLoop10Hz() {
-  time = 0;
-}
+void GlobalWarehouse::SubLoop10Hz() { time = 0; }

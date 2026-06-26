@@ -143,13 +143,9 @@ template <typename T>
 struct DmaObjectStorage {
   alignas(32) alignas(T) uint8_t bytes[(sizeof(T) + 31u) & ~31u]{};
 
-  T *get() {
-    return reinterpret_cast<T *>(bytes);
-  }
+  T *get() { return reinterpret_cast<T *>(bytes); }
 
-  const T *get() const {
-    return reinterpret_cast<const T *>(bytes);
-  }
+  const T *get() const { return reinterpret_cast<const T *>(bytes); }
 };
 
 struct alignas(32) DmaAdcSample {
