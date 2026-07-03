@@ -41,6 +41,20 @@ void InvalidateDCacheLineIfEnabled(const void *addr, size_t size) {
 #endif
 }
 
+void ClearUartRxErrorState(UART_HandleTypeDef &huart) {
+  HAL_UART_AbortReceive(&huart);
+  __HAL_UART_CLEAR_PEFLAG(&huart);
+  __HAL_UART_CLEAR_FEFLAG(&huart);
+  __HAL_UART_CLEAR_NEFLAG(&huart);
+  __HAL_UART_CLEAR_OREFLAG(&huart);
+  __HAL_UART_CLEAR_IDLEFLAG(&huart);
+  huart.ErrorCode = HAL_UART_ERROR_NONE;
+}
+
+float WrapDegree(float value) {
+  return rm::modules::Wrap(value, -180.0f, 180.0f);
+}
+
 }  // namespace
 
 void MainLoop2kHz() {
@@ -95,16 +109,17 @@ void GlobalWarehouse::Init() {
   ident_uart = ConstructInDma(globals_no_dtcm.ident_uart, huart7, false, false);
   dbus = ConstructInDma(globals_no_dtcm.dbus, huart5, false, true);
   referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart1, true, true);
+  hipnuc_uart = ConstructInDma(globals_no_dtcm.hipnuc_uart, huart10, false, true);
 
   referee_data = new rm::device::Referee<rm::device::RefereeRevision::kNewV120>;
   rx_referee = new rm::device::RxReferee{*referee_uart, *referee_data};
 
   imu = new rm::device::BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
-  hipnuc_imu = new rm::device::HipnucImuCan{*can2, 8};
+  hipnuc_imu = new rm::device::HipnucImu{*hipnuc_uart};
 
   wfly_et16s = new WflyET16s{*dbus};
 
-  up_yaw_motor = new rm::device::GM6020{*can2, 1};
+  up_yaw_motor = new rm::device::GM6020{*can2, 5};
 
   down_yaw_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can1,
@@ -116,14 +131,14 @@ void GlobalWarehouse::Init() {
       {0x03, 0x02, 3.14159, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
   };
 
-  friction_left = new rm::device::M3508{*can2, 3};
-  friction_right = new rm::device::M3508{*can2, 2};
-  dial_motor = new rm::device::M3508{*can2, 4};
+  friction_left = new rm::device::M3508{*can2, 6};
+  friction_right = new rm::device::M3508{*can2, 7};
+  dial_motor = new rm::device::M3508{*can2, 8};
 
   wheel_lf = new rm::device::M3508{*can1, 1};
-  wheel_rf = new rm::device::M3508{*can1, 3};
-  wheel_lb = new rm::device::M3508{*can1, 4};
-  wheel_rb = new rm::device::M3508{*can1, 2};
+  wheel_rf = new rm::device::M3508{*can1, 2};
+  wheel_lb = new rm::device::M3508{*can1, 3};
+  wheel_rb = new rm::device::M3508{*can1, 4};
 
   device_rc << wfly_et16s;
   device_nuc << aimbot_communicator << navigate_communicator;
@@ -137,8 +152,13 @@ void GlobalWarehouse::Init() {
   can2->SetFilter(0, 0);
   can2->Begin();
 
+  ClearUartRxErrorState(huart5);
+  ClearUartRxErrorState(huart1);
+  ClearUartRxErrorState(huart10);
+
   wfly_et16s->Begin();
   rx_referee->Begin();
+  hipnuc_imu->Begin();
 
   buzzer.Init();
 
@@ -337,12 +357,16 @@ void GlobalWarehouse::SubLoop500Hz() {
 
   aimbot_communicator->UpdateControl(
       hipnuc_imu->yaw(),
-      hipnuc_imu->pitch(),
-      -hipnuc_imu->roll(),
+      -hipnuc_imu->pitch(),
+      hipnuc_imu->roll(),
       referee_data->data().robot_status.robot_id,
       aim_mode,
       imu_count,
       shoot_initial_speed);
+
+  const float small_gimbal_yaw = WrapDegree(up_yaw_motor->pos_degree() + 120.0f);
+  const float small_gimbal_pitch = ahrs.euler_angle().pitch * 180.0f / static_cast<float>(M_PI);
+  navigate_communicator->UpdateControl(small_gimbal_yaw, small_gimbal_pitch, aimbot_communicator->distance());
 
   down_yaw_motor->SetMitCommand(0, 0, -gimbal_controller.output().down_yaw, 0, 0);
   pitch_motor->SetMitCommand(0, 0, -gimbal->pitch_torque_, 0, 3.4f);

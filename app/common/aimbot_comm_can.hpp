@@ -15,6 +15,7 @@ class AimbotCanCommunicator final : public CanDevice {
   [[nodiscard]] u8 aimbot_target() const;
   [[nodiscard]] f32 yaw() const;
   [[nodiscard]] f32 pitch() const;
+  [[nodiscard]] f32 distance() const;
   [[nodiscard]] u8 nuc_start_flag() const;
   [[nodiscard]] f32 yaw_vel() const;
   [[nodiscard]] f32 pitch_vel() const;
@@ -30,6 +31,7 @@ class AimbotCanCommunicator final : public CanDevice {
   u8 aimbot_target_{};
   f32 yaw_{};
   f32 pitch_{};
+  f32 distance_{};
   u8 nuc_start_flag_{};
   // 前馈目标值 (0x160)
   f32 yaw_vel_{};

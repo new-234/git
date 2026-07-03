@@ -55,7 +55,8 @@ struct GlobalWarehouse {
   rm::hal::Can *can1{nullptr}, *can2{nullptr};
   rm::device::AimbotCanCommunicator *aimbot_communicator{nullptr};
   rm::device::NavigateCanCommunicator *navigate_communicator{nullptr};
-  rm::device::HipnucImuCan *hipnuc_imu{nullptr};
+  rm::hal::Serial<256> *hipnuc_uart{nullptr};
+  rm::device::HipnucImu *hipnuc_imu{nullptr};
   rm::device::BMI088 *imu{nullptr};
 
   rm::hal::Serial<128> *ident_uart{nullptr};
@@ -166,6 +167,7 @@ struct alignas(32) GlobalsNoDtcm {
   DmaObjectStorage<rm::hal::Serial<128>> ident_uart;
   DmaObjectStorage<rm::hal::Serial<25>> dbus;
   DmaObjectStorage<rm::hal::Serial<128>> referee_uart;
+  DmaObjectStorage<rm::hal::Serial<256>> hipnuc_uart;
 };
 
 extern GlobalWarehouse *globals;
