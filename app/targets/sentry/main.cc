@@ -12,9 +12,9 @@
 
 #include "common/bsp/timer_task.hpp"
 
-#include "Chassis.hpp"
-#include "Gimbal.hpp"
+#include "BigGimbal.hpp"
 #include "main.hpp"
+#include "SmallGimbal.hpp"
 
 using namespace rm;
 
@@ -65,8 +65,8 @@ extern "C" [[noreturn]] void AppMain(void) {
   rm::Sleep(std::chrono::milliseconds(100));
 
   globals = new GlobalWarehouse;
-  gimbal = new Gimbal;
-  chassis = new Chassis;
+  big_gimbal = new BigGimbal;
+  small_gimbal = new SmallGimbal;
 
   globals->Init();
 
@@ -105,6 +105,11 @@ void GlobalWarehouse::Init() {
       *can1,
       {0x07, 0x06, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
   };
+  wheel_lf = new rm::device::M3508{*can1, 1};
+  wheel_rf = new rm::device::M3508{*can1, 2};
+  wheel_lb = new rm::device::M3508{*can1, 3};
+  wheel_rb = new rm::device::M3508{*can1, 4};
+
   up_yaw_motor = new rm::device::GM6020{*can2, 5};
   pitch_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can2,
@@ -114,16 +119,12 @@ void GlobalWarehouse::Init() {
   friction_right = new rm::device::M3508{*can2, 7};
   dial_motor = new rm::device::M3508{*can2, 8};
 
-  wheel_lf = new rm::device::M3508{*can1, 1};
-  wheel_rf = new rm::device::M3508{*can1, 2};
-  wheel_lb = new rm::device::M3508{*can1, 3};
-  wheel_rb = new rm::device::M3508{*can1, 4};
-
   device_rc << wfly_et16s;
   device_nuc << aimbot_communicator << navigate_communicator;
-  device_gimbal << down_yaw_motor << up_yaw_motor << pitch_motor;
-  device_shoot << friction_left << friction_right << dial_motor;
+  device_big_gimbal << down_yaw_motor;
   device_chassis << wheel_lf << wheel_rf << wheel_lb << wheel_rb;
+  device_small_gimbal << up_yaw_motor << pitch_motor;
+  device_shoot << friction_left << friction_right << dial_motor;
 
   can1->SetFilter(0, 0);
   can1->Begin();
@@ -147,28 +148,8 @@ void GlobalWarehouse::Init() {
   led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
   buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
 
-  InitPid();
-  gimbal->Init();
-  chassis->Init();
-}
-
-void GlobalWarehouse::InitPid() {
-  gimbal_controller.pid().up_yaw_position.SetKp(12.5f).SetKi(0.0f).SetKd(700.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().up_yaw_speed.SetKp(180.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(25000.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().down_yaw_position.SetKp(20.0f).SetKi(0.0f).SetKd(1000.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().down_yaw_speed.SetKp(150.0f).SetKi(0.0f).SetKd(10.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().pitch_position.SetKp(18.0f).SetKi(0.0f).SetKd(1000.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().pitch_speed.SetKp(135.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
-
-  chassis_controller.pid().lf_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().rf_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().lb_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().rb_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-
-  shoot_controller.pid().fric_1_speed.SetKp(12.0f).SetKi(0.0f).SetKd(8.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().fric_2_speed.SetKp(12.0f).SetKi(0.0f).SetKd(8.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().fric_3_speed.SetKp(0.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(0.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().loader_speed.SetKp(16.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10000.0f).SetMaxIout(0.0f);
+  big_gimbal->Init();
+  small_gimbal->Init();
 }
 
 void GlobalWarehouse::Loop1kHz() {
@@ -181,8 +162,8 @@ void GlobalWarehouse::Loop1kHz() {
     UpdateModeFromRemote();
   }
 
-  gimbal->Task1kHz();
-  chassis->Task1kHz();
+  big_gimbal->Task1kHz();
+  small_gimbal->Task1kHz();
 
   SendVisionFrames();
 
@@ -212,41 +193,24 @@ void GlobalWarehouse::UpdateBoardSensors() {
 void GlobalWarehouse::UpdateDeviceManagers() {
   device_rc.Update();
   device_nuc.Update();
-  device_gimbal.Update();
-  device_shoot.Update();
+  device_big_gimbal.Update();
   device_chassis.Update();
+  device_small_gimbal.Update();
+  device_shoot.Update();
 }
 
 void GlobalWarehouse::UpdateModeFromRemote() {
   robot_mode = RobotMode::kNoForce;
-  requested_gimbal_mode = GimbalMode::kNoForce;
-  requested_chassis_mode = ChassisMode::kNoForce;
 
   if (!RcOnline()) {
     return;
   }
 
   const auto sd = wfly_et16s->switch_position(rc_ch::SD);
-  const auto sa = wfly_et16s->switch_position(rc_ch::SA);
-  const auto sg = wfly_et16s->switch_position(rc_ch::SG);
-
   if (sd == SwitchPosition::kMid) {
     robot_mode = RobotMode::kTest;
-    requested_gimbal_mode = (sa == SwitchPosition::kUp) ? GimbalMode::kAimbot : GimbalMode::kRemote;
-    requested_chassis_mode = ChassisMode::kFollow;
   } else if (sd == SwitchPosition::kUp) {
     robot_mode = RobotMode::kMatch;
-    requested_gimbal_mode = navigate_communicator->scan_mode() ? GimbalMode::kScan : GimbalMode::kAimbot;
-    requested_chassis_mode = ChassisMode::kNavigate;
-  }
-
-  if (sa == SwitchPosition::kMid) {
-    requested_gimbal_mode = GimbalMode::kScan;
-  }
-  if (sg == SwitchPosition::kDown) {
-    requested_chassis_mode = ChassisMode::kSlowRotate;
-  } else if (sg == SwitchPosition::kUp && robot_mode != RobotMode::kNoForce) {
-    requested_chassis_mode = ChassisMode::kQuickRotate;
   }
 }
 
@@ -263,7 +227,7 @@ void GlobalWarehouse::SendVisionFrames() {
                                        RadToDeg(hipnuc_imu->roll()),
                                        referee_data->data().robot_status.robot_id, aim_mode, imu_count, 0.0f);
   } else {
-    navigate_communicator->UpdateControl(gimbal->SmallYawDegree(), gimbal->SmallPitchDegree(),
+    navigate_communicator->UpdateControl(small_gimbal->YawForNavigateDegree(), small_gimbal->PitchForNavigateDegree(),
                                          aimbot_communicator->distance());
   }
 }
@@ -275,14 +239,6 @@ void GlobalWarehouse::UpdateIndicators() {
 }
 
 bool GlobalWarehouse::RcOnline() const { return device_rc.all_device_ok(); }
-
-bool GlobalWarehouse::GimbalPowerEnabled() const {
-  return referee_data->data().robot_status.power_management_gimbal_output || robot_mode == RobotMode::kTest;
-}
-
-bool GlobalWarehouse::ChassisPowerEnabled() const {
-  return referee_data->data().robot_status.power_management_chassis_output || robot_mode == RobotMode::kTest;
-}
 
 bool GlobalWarehouse::ShooterPowerEnabled() const {
   return referee_data->data().robot_status.power_management_shooter_output || robot_mode == RobotMode::kTest;

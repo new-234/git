@@ -9,10 +9,6 @@
 #include "common/aimbot_comm_can.hpp"
 #include "common/bsp/buzzer.hpp"
 #include "common/bsp/ws2812.hpp"
-#include "common/controllers/gimbal_double_yaw.hpp"
-#include "common/controllers/quad_omni_chassis.hpp"
-#include "common/controllers/shoot_3fric.hpp"
-#include "common/encoder_counter.hpp"
 #include "common/navigate_comm_can.hpp"
 
 #include "Referee.hpp"
@@ -22,24 +18,6 @@ enum class RobotMode : uint8_t {
   kNoForce = 0,
   kTest,
   kMatch,
-};
-
-enum class GimbalMode : uint8_t {
-  kNoForce = 0,
-  kInit,
-  kRemote,
-  kScan,
-  kAimbot,
-  kKeep,
-};
-
-enum class ChassisMode : uint8_t {
-  kNoForce = 0,
-  kFollow,
-  kSlowRotate,
-  kQuickRotate,
-  kNavigate,
-  kKeep,
 };
 
 template <typename T>
@@ -93,32 +71,27 @@ struct GlobalWarehouse {
   rm::device::HipnucImu *hipnuc_imu{nullptr};
 
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> *down_yaw_motor{nullptr};
+  rm::device::M3508 *wheel_lf{nullptr};
+  rm::device::M3508 *wheel_rf{nullptr};
+  rm::device::M3508 *wheel_lb{nullptr};
+  rm::device::M3508 *wheel_rb{nullptr};
+
   rm::device::GM6020 *up_yaw_motor{nullptr};
   rm::device::DmMotor<rm::device::DmMotorControlMode::kMit> *pitch_motor{nullptr};
   rm::device::M3508 *friction_left{nullptr};
   rm::device::M3508 *friction_right{nullptr};
   rm::device::M3508 *dial_motor{nullptr};
 
-  rm::device::M3508 *wheel_lf{nullptr};
-  rm::device::M3508 *wheel_rf{nullptr};
-  rm::device::M3508 *wheel_lb{nullptr};
-  rm::device::M3508 *wheel_rb{nullptr};
-
   rm::device::DeviceManager<1> device_rc;
   rm::device::DeviceManager<2> device_nuc;
-  rm::device::DeviceManager<3> device_gimbal;
-  rm::device::DeviceManager<3> device_shoot;
+  rm::device::DeviceManager<1> device_big_gimbal;
   rm::device::DeviceManager<4> device_chassis;
+  rm::device::DeviceManager<2> device_small_gimbal;
+  rm::device::DeviceManager<3> device_shoot;
 
   rm::modules::MahonyAhrs ahrs{1000.0f};
-  GimbalDoubleYaw gimbal_controller;
-  QuadOmniChassis chassis_controller;
-  Shoot3Fric shoot_controller{9, 17.0666f, true};
-  EncoderCounter dial_encoder_counter;
 
   RobotMode robot_mode{RobotMode::kNoForce};
-  GimbalMode requested_gimbal_mode{GimbalMode::kNoForce};
-  ChassisMode requested_chassis_mode{ChassisMode::kNoForce};
 
   uint32_t tick{0};
   uint16_t imu_count{0};
@@ -129,14 +102,11 @@ struct GlobalWarehouse {
   void Loop1kHz();
 
   bool RcOnline() const;
-  bool GimbalPowerEnabled() const;
-  bool ChassisPowerEnabled() const;
   bool ShooterPowerEnabled() const;
   uint16_t HeatLimit() const;
   uint16_t HeatCurrent() const;
 
  private:
-  void InitPid();
   void UpdateBoardSensors();
   void UpdateDeviceManagers();
   void UpdateModeFromRemote();
