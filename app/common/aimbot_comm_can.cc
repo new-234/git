@@ -2,7 +2,6 @@
 
 namespace rm::device {
 constexpr f32 kDegToRad = static_cast<f32>(M_PI) / 180.0f;
-constexpr f32 kRadToDeg = 180.0f / static_cast<f32>(M_PI);
 
 AimbotCanCommunicator::AimbotCanCommunicator(rm::hal::CanInterface &can) : CanDevice(can, 0x170, 0x160) {}
 
@@ -51,17 +50,17 @@ void AimbotCanCommunicator::RxCallback(const hal::CanFrame *msg) {
   }
 }
 
-void AimbotCanCommunicator::UpdateControl(f32 yaw, f32 pitch, f32 roll, u8 robot_id, u8 mode, u16 imu_count,
-                                          f32 bullet_speed) {
+void AimbotCanCommunicator::UpdateControl(f32 yaw_degree, f32 pitch_degree, f32 roll_degree, u8 robot_id, u8 mode,
+                                          u16 imu_count, f32 bullet_speed) {
   (void)imu_count;
   (void)bullet_speed;
 
-  tx_buf_[0] = modules::F32ToF16(yaw * kRadToDeg) >> 8;
-  tx_buf_[1] = modules::F32ToF16(yaw * kRadToDeg);
-  tx_buf_[2] = modules::F32ToF16(pitch * kRadToDeg) >> 8;
-  tx_buf_[3] = modules::F32ToF16(pitch * kRadToDeg);
-  tx_buf_[4] = modules::F32ToF16(roll * kRadToDeg) >> 8;
-  tx_buf_[5] = modules::F32ToF16(roll * kRadToDeg);
+  tx_buf_[0] = modules::F32ToF16(yaw_degree) >> 8;
+  tx_buf_[1] = modules::F32ToF16(yaw_degree);
+  tx_buf_[2] = modules::F32ToF16(pitch_degree) >> 8;
+  tx_buf_[3] = modules::F32ToF16(pitch_degree);
+  tx_buf_[4] = modules::F32ToF16(roll_degree) >> 8;
+  tx_buf_[5] = modules::F32ToF16(roll_degree);
   const u8 id_bit = robot_id > 100 ? 1 : 0;
   const u8 mode_bits = mode & 0x7;                       // 最低 2 位
 

@@ -4,24 +4,22 @@
 
 #include <librm.hpp>
 
-#include "fdcan.h"
-#include "usart.h"
-#include "spi.h"
 #include "adc.h"
+#include "fdcan.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
 
 #include "common/bsp/timer_task.hpp"
 
-#include "main.hpp"
-#include "Gimbal.hpp"
 #include "Chassis.hpp"
+#include "Gimbal.hpp"
+#include "main.hpp"
 
 using namespace rm;
 
 GlobalWarehouse *globals{nullptr};
-
 __attribute__((section(".sram4"), aligned(32))) GlobalsNoDtcm globals_no_dtcm;
-
-volatile long long mainloop_time_us = 0;
 
 namespace {
 
@@ -51,23 +49,17 @@ void ClearUartRxErrorState(UART_HandleTypeDef &huart) {
   huart.ErrorCode = HAL_UART_ERROR_NONE;
 }
 
-float WrapDegree(float value) {
-  return rm::modules::Wrap(value, -180.0f, 180.0f);
+void SentryLoop1kHz() {
+  if (globals != nullptr) {
+    globals->Loop1kHz();
+  }
+}
+
+float RadToDeg(float value) {
+  return value * 180.0f / static_cast<float>(M_PI);
 }
 
 }  // namespace
-
-void MainLoop2kHz() {
-  static size_t loop_divisor = 0;
-
-  if (loop_divisor % 4 == 0) globals->SubLoop500Hz();
-  if (loop_divisor % 8 == 0) globals->SubLoop250Hz();
-  if (loop_divisor % 20 == 0) globals->SubLoop100Hz();
-  if (loop_divisor % 40 == 0) globals->SubLoop50Hz();
-  if (loop_divisor % 200 == 0) globals->SubLoop10Hz();
-
-  loop_divisor = (loop_divisor + 1) % 2000;
-}
 
 extern "C" [[noreturn]] void AppMain(void) {
   rm::Sleep(std::chrono::milliseconds(100));
@@ -78,34 +70,26 @@ extern "C" [[noreturn]] void AppMain(void) {
 
   globals->Init();
 
-  globals_no_dtcm.adc.value = 0;
-  HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-  HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&globals_no_dtcm.adc.value), 1);
-
-  // for (auto ch : {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4}) {
-  //   HAL_TIM_PWM_Start(&htim1, ch);
-  // }
-
-  TimerTask mainloop{
+  TimerTask sentry_loop{
       &htim13,
-      etl::delegate<void()>::create<MainLoop2kHz>(),
+      etl::delegate<void()>::create<SentryLoop1kHz>(),
   };
-
-  mainloop.Start();
+  sentry_loop.SetPrescalerAndPeriod(275U - 1U, 1000U - 1U);
+  sentry_loop.Start();
 
   for (;;) {
-    // __WFI();
+    __WFI();
   }
 }
 
 void GlobalWarehouse::Init() {
   can1 = new rm::hal::Can{hfdcan1};
   can2 = new rm::hal::Can{hfdcan2};
+  can3 = new rm::hal::Can{hfdcan3};
 
-  aimbot_communicator = new rm::device::AimbotCanCommunicator(*can1);
-  navigate_communicator = new rm::device::NavigateCanCommunicator(*can2);
+  aimbot_communicator = new rm::device::AimbotCanCommunicator(*can3);
+  navigate_communicator = new rm::device::NavigateCanCommunicator(*can3);
 
-  // H7 串口使用 DMA，Serial 对象本体必须放到非 DTCM 区域。
   ident_uart = ConstructInDma(globals_no_dtcm.ident_uart, huart7, false, false);
   dbus = ConstructInDma(globals_no_dtcm.dbus, huart5, false, true);
   referee_uart = ConstructInDma(globals_no_dtcm.referee_uart, huart1, true, true);
@@ -113,24 +97,19 @@ void GlobalWarehouse::Init() {
 
   referee_data = new rm::device::Referee<rm::device::RefereeRevision::kNewV120>;
   rx_referee = new rm::device::RxReferee{*referee_uart, *referee_data};
-
   imu = new rm::device::BMI088{hspi2, ACC_CS_GPIO_Port, ACC_CS_Pin, GYRO_CS_GPIO_Port, GYRO_CS_Pin};
   hipnuc_imu = new rm::device::HipnucImu{*hipnuc_uart};
-
   wfly_et16s = new WflyET16s{*dbus};
-
-  up_yaw_motor = new rm::device::GM6020{*can2, 5};
 
   down_yaw_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can1,
-      {0x07, 0x06, 3.14159, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
+      {0x07, 0x06, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
   };
-
+  up_yaw_motor = new rm::device::GM6020{*can2, 5};
   pitch_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can2,
-      {0x03, 0x02, 3.14159, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
+      {0x03, 0x02, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
   };
-
   friction_left = new rm::device::M3508{*can2, 6};
   friction_right = new rm::device::M3508{*can2, 7};
   dial_motor = new rm::device::M3508{*can2, 8};
@@ -142,193 +121,84 @@ void GlobalWarehouse::Init() {
 
   device_rc << wfly_et16s;
   device_nuc << aimbot_communicator << navigate_communicator;
-  device_gimbal << up_yaw_motor << down_yaw_motor << pitch_motor;
+  device_gimbal << down_yaw_motor << up_yaw_motor << pitch_motor;
   device_shoot << friction_left << friction_right << dial_motor;
   device_chassis << wheel_lf << wheel_rf << wheel_lb << wheel_rb;
 
   can1->SetFilter(0, 0);
   can1->Begin();
-
   can2->SetFilter(0, 0);
   can2->Begin();
+  can3->SetFilter(0, 0);
+  can3->Begin();
 
   ClearUartRxErrorState(huart5);
   ClearUartRxErrorState(huart1);
   ClearUartRxErrorState(huart10);
-
   wfly_et16s->Begin();
   rx_referee->Begin();
   hipnuc_imu->Begin();
 
+  globals_no_dtcm.adc.value = 0;
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
+  HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t *>(&globals_no_dtcm.adc.value), 1);
+
   buzzer.Init();
+  led_controller.SetPattern<rm::modules::led_pattern::GreenBreath>();
+  buzzer_controller.Play<rm::modules::buzzer_melody::Startup>();
 
-  led_controller.SetPattern<modules::led_pattern::GreenBreath>();
-  buzzer_controller.Play<modules::buzzer_melody::Startup>();
-
-  GimbalPIDInit();
-  ChassisPIDInit();
-  ShootPIDInit();
-
-  gimbal->GimbalInit();
-  chassis->ChassisInit();
+  InitPid();
+  gimbal->Init();
+  chassis->Init();
 }
 
-void GlobalWarehouse::GimbalPIDInit() {
-  gimbal_controller.pid().up_yaw_position.SetKp(20.0f).SetKi(0.0f).SetKd(120.0f).SetMaxOut(20000.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().up_yaw_speed.SetKp(7000.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(25000.0f).SetMaxIout(0.0f);
+void GlobalWarehouse::InitPid() {
+  gimbal_controller.pid().up_yaw_position.SetKp(12.5f).SetKi(0.0f).SetKd(700.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
+  gimbal_controller.pid().up_yaw_speed.SetKp(180.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(25000.0f).SetMaxIout(0.0f);
+  gimbal_controller.pid().down_yaw_position.SetKp(20.0f).SetKi(0.0f).SetKd(1000.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
+  gimbal_controller.pid().down_yaw_speed.SetKp(150.0f).SetKi(0.0f).SetKd(10.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
+  gimbal_controller.pid().pitch_position.SetKp(18.0f).SetKi(0.0f).SetKd(1000.0f).SetMaxOut(250.0f).SetMaxIout(0.0f);
+  gimbal_controller.pid().pitch_speed.SetKp(135.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
 
-  gimbal_controller.pid().down_yaw_position.SetKp(38.0f).SetKi(0.0f).SetKd(2000.0f).SetMaxOut(30.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().down_yaw_speed.SetKp(2.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
+  chassis_controller.pid().lf_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
+  chassis_controller.pid().rf_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
+  chassis_controller.pid().lb_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
+  chassis_controller.pid().rb_wheel.SetKp(5.0f).SetKi(0.0f).SetKd(0.3f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
 
-  gimbal_controller.pid().pitch_position.SetKp(120.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(30.0f).SetMaxIout(0.0f);
-  gimbal_controller.pid().pitch_speed.SetKp(0.5f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10.0f).SetMaxIout(0.0f);
+  shoot_controller.pid().fric_1_speed.SetKp(12.0f).SetKi(0.0f).SetKd(8.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
+  shoot_controller.pid().fric_2_speed.SetKp(12.0f).SetKi(0.0f).SetKd(8.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
+  shoot_controller.pid().fric_3_speed.SetKp(0.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(0.0f).SetMaxIout(0.0f);
+  shoot_controller.pid().loader_speed.SetKp(16.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10000.0f).SetMaxIout(0.0f);
 }
 
-void GlobalWarehouse::ChassisPIDInit() {
-  chassis_controller.pid().lf_wheel.SetKp(8.0f).SetKi(0.0f).SetKd(1.0f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().rf_wheel.SetKp(8.0f).SetKi(0.0f).SetKd(1.0f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().lb_wheel.SetKp(8.0f).SetKi(0.0f).SetKd(1.0f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-  chassis_controller.pid().rb_wheel.SetKp(8.0f).SetKi(0.0f).SetKd(1.0f).SetMaxOut(15000.0f).SetMaxIout(0.0f);
-}
+void GlobalWarehouse::Loop1kHz() {
+  ++tick;
+  ++imu_count;
 
-void GlobalWarehouse::ShootPIDInit() {
-  shoot_controller.pid().fric_1_speed.SetKp(8.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().fric_2_speed.SetKp(8.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(16384.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().loader_position.SetKp(0.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10000.0f).SetMaxIout(0.0f);
-  shoot_controller.pid().loader_speed.SetKp(8.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10000.0f).SetMaxIout(0.0f);
-}
-
-void GlobalWarehouse::RCStateUpdate() {
-  if (referee_data->data().robot_status.power_management_gimbal_output && !last_gimbal_power) {
-    gimbal_init_time = 500;
+  UpdateBoardSensors();
+  if ((tick % 10U) == 0U) {
+    UpdateDeviceManagers();
+    UpdateModeFromRemote();
   }
 
-  last_gimbal_power = referee_data->data().robot_status.power_management_gimbal_output;
+  gimbal->Task1kHz();
+  chassis->Task1kHz();
 
-  if (gimbal_init_time > 0) {
-    gimbal_init_time--;
-  }
+  SendVisionFrames();
 
-  if (!device_rc.all_device_ok() || gimbal_init_time > 0 ||
-      !referee_data->data().robot_status.power_management_gimbal_output) {
-    StateMachine_ = kUnable;
-  } else {
-    switch (wfly_et16s->switch_position(rc_ch::SD)) {
-      case SwitchPosition::kUp:
-        switch (wfly_et16s->switch_position(rc_ch::SA)) {
-          case SwitchPosition::kDown:
-            StateMachine_ = kMatch;
-            break;
+  rm::device::DjiMotorBase::SendCommand(*can1);
+  rm::device::DjiMotorBase::SendCommand(*can2);
 
-          case SwitchPosition::kUp:
-          case SwitchPosition::kMid:
-          default:
-            StateMachine_ = kNoForce;
-            break;
-        }
-        break;
-
-      case SwitchPosition::kMid:
-        switch (wfly_et16s->switch_position(rc_ch::SA)) {
-          case SwitchPosition::kDown:
-            if (wfly_et16s->switch_position(rc_ch::SE) == SwitchPosition::kMid) {
-              StateMachine_ = kTest;
-              gimbal->GimbalMove_ = kGbIdentify;
-              chassis->ChassisMove_ = kNoForce;
-            } else if (wfly_et16s->switch_position(rc_ch::SE) == SwitchPosition::kDown) {
-              StateMachine_ = kTest;
-              gimbal->GimbalMove_ = kGbFfVerify;
-              chassis->ChassisMove_ = kNoForce;
-            } else {
-              StateMachine_ = kTest;
-              gimbal->GimbalMove_ = kGbRemote;
-              chassis->ChassisMove_ = kCsRemote;
-            }
-            break;
-
-          case SwitchPosition::kMid:
-            StateMachine_ = kTest;
-            gimbal->GimbalMove_ = kGbScan;
-            chassis->ChassisMove_ = kCsNavigate;
-            break;
-
-          case SwitchPosition::kUp:
-            StateMachine_ = kTest;
-            gimbal->GimbalMove_ = kGbAimbot;
-            chassis->ChassisMove_ = kNoForce;
-            break;
-
-          default:
-            StateMachine_ = kNoForce;
-            break;
-        }
-        break;
-
-      case SwitchPosition::kDown:
-        switch (wfly_et16s->switch_position(rc_ch::SA)) {
-          case SwitchPosition::kUp:
-            Music();
-            StateMachine_ = kNoForce;
-            break;
-
-          case SwitchPosition::kMid:
-          case SwitchPosition::kDown:
-          default:
-            StateMachine_ = kNoForce;
-            break;
-        }
-        break;
-
-      default:
-        StateMachine_ = kNoForce;
-        break;
-    }
+  if ((tick % 20U) == 0U) {
+    UpdateIndicators();
   }
 }
 
-void GlobalWarehouse::Music() {
-  if (wfly_et16s->wheel_position(rc_ch::LS) >= 650 && music == 0 &&
-      wfly_et16s->switch_position(rc_ch::SH) == SwitchPosition::kDown) {
-    music = 1;
-  }
-
-  if (wfly_et16s->wheel_position(rc_ch::LS) <= -650 && !music_change_flag &&
-      wfly_et16s->switch_position(rc_ch::SH) == SwitchPosition::kDown) {
-    music_choice++;
-
-    if (music_choice == 3) {
-      music_choice = 0;
-    }
-
-    buzzer_controller.Play<modules::buzzer_melody::Beeps<1>>();
-    music_change_flag = true;
-  }
-
-  if (wfly_et16s->switch_position(rc_ch::SH) == SwitchPosition::kUp && (music == 0 || music == 2)) {
-    music_change_flag = false;
-    music = 0;
-  }
-
-  if (music == 1) {
-    if (music_choice == 1) {
-      buzzer_controller.Play<modules::buzzer_melody::SeeUAgain>();
-      music = 2;
-    }
-
-    if (music_choice == 2) {
-      buzzer_controller.Play<modules::buzzer_melody::SuperMario>();
-      music = 2;
-    }
-  }
-}
-
-void GlobalWarehouse::SubLoop500Hz() {
+void GlobalWarehouse::UpdateBoardSensors() {
   InvalidateDCacheLineIfEnabled(&globals_no_dtcm.adc, sizeof(globals_no_dtcm.adc));
-
-  vbus = (globals_no_dtcm.adc.value * 3.3f / 65535.0f) * 11.0f;
+  vbus = (static_cast<float>(globals_no_dtcm.adc.value) * 3.3f / 65535.0f) * 11.0f;
 
   imu->Update();
-
   ahrs.Update(rm::modules::ImuData6Dof{
       imu->gyro_x(),
       imu->gyro_y(),
@@ -337,69 +207,90 @@ void GlobalWarehouse::SubLoop500Hz() {
       imu->accel_y(),
       imu->accel_z(),
   });
-
-  rm::device::DjiMotorBase::SendCommand(*can1);
-  rm::device::DjiMotorBase::SendCommand(*can2);
-
-  RCStateUpdate();
-
-  gimbal->GimbalTask();
-  chassis->ChassisTask();
-
-  f32 shoot_initial_speed = 0.0f;
-
-  if (referee_data->data().shoot_data.initial_speed >= 18.f &&
-      referee_data->data().shoot_data.initial_speed <= 26.f) {
-    shoot_initial_speed = referee_data->data().shoot_data.initial_speed;
-  } else {
-    shoot_initial_speed = 22.5f;
-  }
-
-  aimbot_communicator->UpdateControl(
-      hipnuc_imu->yaw(),
-      -hipnuc_imu->pitch(),
-      hipnuc_imu->roll(),
-      referee_data->data().robot_status.robot_id,
-      aim_mode,
-      imu_count,
-      shoot_initial_speed);
-
-  const float small_gimbal_yaw = WrapDegree(up_yaw_motor->pos_degree() + 120.0f);
-  const float small_gimbal_pitch = ahrs.euler_angle().pitch * 180.0f / static_cast<float>(M_PI);
-  navigate_communicator->UpdateControl(small_gimbal_yaw, small_gimbal_pitch, aimbot_communicator->distance());
-
-  down_yaw_motor->SetMitCommand(0, 0, -gimbal_controller.output().down_yaw, 0, 0);
-  pitch_motor->SetMitCommand(0, 0, -gimbal->pitch_torque_, 0, 3.4f);
 }
 
-void GlobalWarehouse::SubLoop250Hz() {}
-
-void GlobalWarehouse::SubLoop100Hz() {
+void GlobalWarehouse::UpdateDeviceManagers() {
   device_rc.Update();
   device_nuc.Update();
   device_gimbal.Update();
   device_shoot.Update();
   device_chassis.Update();
+}
 
-  for (i8 i = 0; i < 7; i++) {
-    if (wfly_et16s->switch_position(i + 4) != SwitchPosition::kUnknown) {
-      if (last_switch[i] != wfly_et16s->switch_position(i + 4)) {
-        buzzer_controller.Play<modules::buzzer_melody::Beeps<1>>();
-        last_switch[i] = wfly_et16s->switch_position(i + 4);
-      }
-    }
+void GlobalWarehouse::UpdateModeFromRemote() {
+  robot_mode = RobotMode::kNoForce;
+  requested_gimbal_mode = GimbalMode::kNoForce;
+  requested_chassis_mode = ChassisMode::kNoForce;
+
+  if (!RcOnline()) {
+    return;
+  }
+
+  const auto sd = wfly_et16s->switch_position(rc_ch::SD);
+  const auto sa = wfly_et16s->switch_position(rc_ch::SA);
+  const auto sg = wfly_et16s->switch_position(rc_ch::SG);
+
+  if (sd == SwitchPosition::kMid) {
+    robot_mode = RobotMode::kTest;
+    requested_gimbal_mode = (sa == SwitchPosition::kUp) ? GimbalMode::kAimbot : GimbalMode::kRemote;
+    requested_chassis_mode = ChassisMode::kFollow;
+  } else if (sd == SwitchPosition::kUp) {
+    robot_mode = RobotMode::kMatch;
+    requested_gimbal_mode = navigate_communicator->scan_mode() ? GimbalMode::kScan : GimbalMode::kAimbot;
+    requested_chassis_mode = ChassisMode::kNavigate;
+  }
+
+  if (sa == SwitchPosition::kMid) {
+    requested_gimbal_mode = GimbalMode::kScan;
+  }
+  if (sg == SwitchPosition::kDown) {
+    requested_chassis_mode = ChassisMode::kSlowRotate;
+  } else if (sg == SwitchPosition::kUp && robot_mode != RobotMode::kNoForce) {
+    requested_chassis_mode = ChassisMode::kQuickRotate;
   }
 }
 
-void GlobalWarehouse::SubLoop50Hz() {
-  gimbal->GimbalIdentifyDataSend();
+void GlobalWarehouse::SendVisionFrames() {
+  if ((tick & 1U) == 0U) {
+    if (navigate_communicator->aimbot_mode() == 1U) {
+      aim_mode = 2;
+    } else if (navigate_communicator->outpost_mode() == 1U) {
+      aim_mode = 4;
+    } else {
+      aim_mode = 1;
+    }
+    aimbot_communicator->UpdateControl(RadToDeg(hipnuc_imu->yaw()), RadToDeg(-hipnuc_imu->pitch()),
+                                       RadToDeg(hipnuc_imu->roll()),
+                                       referee_data->data().robot_status.robot_id, aim_mode, imu_count, 0.0f);
+  } else {
+    navigate_communicator->UpdateControl(gimbal->SmallYawDegree(), gimbal->SmallPitchDegree(),
+                                         aimbot_communicator->distance());
+  }
+}
 
-  const auto &[led_r, led_g, led_b] = led_controller.Update();
-  led.SetColor(led_r, led_g, led_b);
-
+void GlobalWarehouse::UpdateIndicators() {
+  const auto [r, g, b] = led_controller.Update();
+  led.SetColor(r, g, b);
   buzzer.SetFrequency(buzzer_controller.Update().frequency);
 }
 
-void GlobalWarehouse::SubLoop10Hz() {
-  time = 0;
+bool GlobalWarehouse::RcOnline() const { return device_rc.all_device_ok(); }
+
+bool GlobalWarehouse::GimbalPowerEnabled() const {
+  return referee_data->data().robot_status.power_management_gimbal_output || robot_mode == RobotMode::kTest;
 }
+
+bool GlobalWarehouse::ChassisPowerEnabled() const {
+  return referee_data->data().robot_status.power_management_chassis_output || robot_mode == RobotMode::kTest;
+}
+
+bool GlobalWarehouse::ShooterPowerEnabled() const {
+  return referee_data->data().robot_status.power_management_shooter_output || robot_mode == RobotMode::kTest;
+}
+
+uint16_t GlobalWarehouse::HeatLimit() const {
+  const uint16_t limit = referee_data->data().robot_status.shooter_barrel_heat_limit;
+  return limit == 0 ? 350 : limit;
+}
+
+uint16_t GlobalWarehouse::HeatCurrent() const { return referee_data->data().power_heat_data.shooter_17mm_1_barrel_heat; }
