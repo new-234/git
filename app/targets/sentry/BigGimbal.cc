@@ -16,21 +16,15 @@ constexpr float kRotateRate = 1.5f;
 constexpr float kWheelRpmRate = 3000.0f;
 constexpr uint8_t kAimbotTargetInside = 1U << 0U;
 
-float WrapDegree(float value) {
-  return rm::modules::Wrap(value, -180.0f, 180.0f);
-}
+float WrapDegree(float value) { return rm::modules::Wrap(value, -180.0f, 180.0f); }
 
-float ConstrainAround(float value, float center) {
-  return rm::modules::Wrap(value, center - 180.0f, center + 180.0f);
-}
+float ConstrainAround(float value, float center) { return rm::modules::Wrap(value, center - 180.0f, center + 180.0f); }
 
 int16_t ClampCurrent(float value, float limit) {
   return static_cast<int16_t>(rm::modules::Clamp(value, -limit, limit));
 }
 
-float FirstOrderFilter(float previous, float input, float alpha) {
-  return previous + alpha * (input - previous);
-}
+float FirstOrderFilter(float previous, float input, float alpha) { return previous + alpha * (input - previous); }
 }  // namespace
 
 void BigGimbal::Init() {
@@ -154,7 +148,8 @@ void BigGimbal::ControlStateVisionUpdate() {
   if (SwitchUp(rc_ch::SA)) {
     control_mode_ = BigGimbalControlMode::kRcControl;
   } else if (SwitchMid(rc_ch::SA) || SwitchDown(rc_ch::SA)) {
-    control_mode_ = globals->device_nuc.all_device_ok() ? BigGimbalControlMode::kNavi : BigGimbalControlMode::kRcControl;
+    control_mode_ =
+        globals->device_nuc.all_device_ok() ? BigGimbalControlMode::kNavi : BigGimbalControlMode::kRcControl;
   } else {
     control_mode_ = BigGimbalControlMode::kNoForce;
   }
@@ -369,8 +364,8 @@ void BigGimbal::SendMotorOutput() {
     output_ = {};
   }
 
-  globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f),
-                                         0.0f, 0.0f);
+  globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f), 0.0f,
+                                         0.0f);
   globals->wheel_lf->SetCurrent(output_.wheel_motor[0]);
   globals->wheel_rf->SetCurrent(output_.wheel_motor[1]);
   globals->wheel_lb->SetCurrent(output_.wheel_motor[2]);
@@ -432,7 +427,9 @@ void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
       .SetDiffLpfAlpha(1.0f);
 }
 
-bool BigGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const { return globals->tick - since >= duration_ms; }
+bool BigGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const {
+  return globals->tick - since >= duration_ms;
+}
 
 bool BigGimbal::SwitchDown(int channel) const {
   return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kDown;

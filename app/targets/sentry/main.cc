@@ -55,9 +55,7 @@ void SentryLoop1kHz() {
   }
 }
 
-float RadToDeg(float value) {
-  return value * 180.0f / static_cast<float>(M_PI);
-}
+float RadToDeg(float value) { return value * 180.0f / static_cast<float>(M_PI); }
 
 }  // namespace
 
@@ -222,8 +220,8 @@ void GlobalWarehouse::SendVisionFrames() {
       aim_mode = 1;
     }
     aimbot_communicator->UpdateControl(RadToDeg(hipnuc_imu->yaw()), RadToDeg(-hipnuc_imu->pitch()),
-                                       RadToDeg(hipnuc_imu->roll()),
-                                       referee_data->data().robot_status.robot_id, aim_mode, imu_count, 0.0f);
+                                       RadToDeg(hipnuc_imu->roll()), referee_data->data().robot_status.robot_id,
+                                       aim_mode, imu_count, 0.0f);
   } else {
     navigate_communicator->UpdateControl(small_gimbal->YawForNavigateDegree(), small_gimbal->PitchForNavigateDegree(),
                                          aimbot_communicator->distance());
@@ -247,4 +245,6 @@ uint16_t GlobalWarehouse::HeatLimit() const {
   return limit == 0 ? 350 : limit;
 }
 
-uint16_t GlobalWarehouse::HeatCurrent() const { return referee_data->data().power_heat_data.shooter_17mm_1_barrel_heat; }
+uint16_t GlobalWarehouse::HeatCurrent() const {
+  return referee_data->data().power_heat_data.shooter_17mm_1_barrel_heat;
+}

@@ -32,8 +32,7 @@ void AimbotCanCommunicator::RxCallback(const hal::CanFrame *msg) {
     aimbot_target_ = static_cast<u8>(msg->data[1]);
     yaw_ = modules::F16ToF32(static_cast<modules::f16>((static_cast<uint16_t>(msg->data[2]) << 8) | msg->data[3]));
     pitch_ = -modules::F16ToF32(static_cast<modules::f16>((static_cast<uint16_t>(msg->data[4]) << 8) | msg->data[5]));
-    distance_ =
-        modules::F16ToF32(static_cast<modules::f16>((static_cast<uint16_t>(msg->data[6]) << 8) | msg->data[7]));
+    distance_ = modules::F16ToF32(static_cast<modules::f16>((static_cast<uint16_t>(msg->data[6]) << 8) | msg->data[7]));
     nuc_start_flag_ = (aimbot_state_ != 0U) ? 1U : 0U;
   } else if (msg->rx_std_id == 0x160) {
     ReportStatus(kOk);
@@ -62,7 +61,7 @@ void AimbotCanCommunicator::UpdateControl(f32 yaw_degree, f32 pitch_degree, f32 
   tx_buf_[4] = modules::F32ToF16(roll_degree) >> 8;
   tx_buf_[5] = modules::F32ToF16(roll_degree);
   const u8 id_bit = robot_id > 100 ? 1 : 0;
-  const u8 mode_bits = mode & 0x7;                       // 最低 2 位
+  const u8 mode_bits = mode & 0x7;  // 最低 2 位
 
   tx_buf_[6] = static_cast<u8>((id_bit << 7) | (mode_bits << 4));
   tx_buf_[7] = 0;

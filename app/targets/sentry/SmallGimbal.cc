@@ -36,13 +36,9 @@ constexpr uint8_t kAimbotShootRequest = 1U << 1U;
 constexpr float kAmmoSpeedSet = 5500.0f;
 constexpr float kRotorSpeedSet = 2000.0f;
 
-float WrapDegree(float value) {
-  return rm::modules::Wrap(value, -180.0f, 180.0f);
-}
+float WrapDegree(float value) { return rm::modules::Wrap(value, -180.0f, 180.0f); }
 
-float ConstrainAround(float value, float center) {
-  return rm::modules::Wrap(value, center - 180.0f, center + 180.0f);
-}
+float ConstrainAround(float value, float center) { return rm::modules::Wrap(value, center - 180.0f, center + 180.0f); }
 
 int16_t ClampCurrent(float value, float limit) {
   return static_cast<int16_t>(rm::modules::Clamp(value, -limit, limit));
@@ -217,9 +213,8 @@ void SmallGimbal::ControlStateVisionUpdate() {
   if (SwitchUp(rc_ch::SB)) {
     rotor_mode_ = SmallRotorMode::kStop;
   } else if (SwitchMid(rc_ch::SB)) {
-    if (special_.single_ammo_flag == 0U &&
-        (globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U && SwitchDown(rc_ch::SH) &&
-        TimeExceeded(special_.auto_ammo_delay_time, kSingleAmmoDelayTime)) {
+    if (special_.single_ammo_flag == 0U && (globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U &&
+        SwitchDown(rc_ch::SH) && TimeExceeded(special_.auto_ammo_delay_time, kSingleAmmoDelayTime)) {
       special_.single_ammo_flag = 1;
       special_.rotor_single_time = globals->tick;
       special_.auto_ammo_delay_time = globals->tick;
@@ -460,8 +455,8 @@ void SmallGimbal::ScanInit(float yaw_left, float yaw_right, float pitch_up, floa
 }
 
 void SmallGimbal::ScanControl() {
-  command_.pitch = scan_.pitch_a * std::sin(scan_.pitch_start + kDeltaPitch * static_cast<float>(scan_.time)) +
-                   scan_.pitch_bias;
+  command_.pitch =
+      scan_.pitch_a * std::sin(scan_.pitch_start + kDeltaPitch * static_cast<float>(scan_.time)) + scan_.pitch_bias;
   command_.pitch = rm::modules::Clamp(command_.pitch, scan_.pitch_down, scan_.pitch_up);
   command_.yaw =
       scan_.yaw_a * std::sin(scan_.yaw_start + scan_.yaw_speed * static_cast<float>(scan_.time) * kDegToRad) +
@@ -494,8 +489,8 @@ void SmallGimbal::BulletSpeedLimit() {
   } else {
     special_.real_ammo_speed += speed_error * 150.0f;
   }
-  special_.real_ammo_speed = rm::modules::Clamp(special_.real_ammo_speed, kAmmoSpeedSet - 1500.0f,
-                                                kAmmoSpeedSet + 1200.0f);
+  special_.real_ammo_speed =
+      rm::modules::Clamp(special_.real_ammo_speed, kAmmoSpeedSet - 1500.0f, kAmmoSpeedSet + 1200.0f);
   command_.left = special_.real_ammo_speed;
   command_.right = -special_.real_ammo_speed;
 }
@@ -585,8 +580,16 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
 
 void SmallGimbal::ConfigureAmmoPidFor(SmallAmmoMode mode) {
   const bool enable = mode == SmallAmmoMode::kNormalSpeed;
-  pid_.left_speed.SetKp(enable ? 12.0f : 0.0f).SetKi(0.0f).SetKd(enable ? 8.0f : 0.0f).SetMaxOut(16384.0f).SetMaxIout(6000.0f);
-  pid_.right_speed.SetKp(enable ? 12.0f : 0.0f).SetKi(0.0f).SetKd(enable ? 8.0f : 0.0f).SetMaxOut(16384.0f).SetMaxIout(6000.0f);
+  pid_.left_speed.SetKp(enable ? 12.0f : 0.0f)
+      .SetKi(0.0f)
+      .SetKd(enable ? 8.0f : 0.0f)
+      .SetMaxOut(16384.0f)
+      .SetMaxIout(6000.0f);
+  pid_.right_speed.SetKp(enable ? 12.0f : 0.0f)
+      .SetKi(0.0f)
+      .SetKd(enable ? 8.0f : 0.0f)
+      .SetMaxOut(16384.0f)
+      .SetMaxIout(6000.0f);
 }
 
 void SmallGimbal::ConfigureRotorPidFor(SmallRotorMode mode) {
@@ -594,10 +597,18 @@ void SmallGimbal::ConfigureRotorPidFor(SmallRotorMode mode) {
   pid_.rotor_speed.SetKp(enable ? 16.0f : 0.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(10000.0f).SetMaxIout(5000.0f);
 }
 
-bool SmallGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const { return globals->tick - since >= duration_ms; }
+bool SmallGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const {
+  return globals->tick - since >= duration_ms;
+}
 
-bool SmallGimbal::SwitchDown(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kDown; }
+bool SmallGimbal::SwitchDown(int channel) const {
+  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kDown;
+}
 
-bool SmallGimbal::SwitchMid(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kMid; }
+bool SmallGimbal::SwitchMid(int channel) const {
+  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kMid;
+}
 
-bool SmallGimbal::SwitchUp(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kUp; }
+bool SmallGimbal::SwitchUp(int channel) const {
+  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kUp;
+}
