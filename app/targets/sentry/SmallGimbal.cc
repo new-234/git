@@ -139,7 +139,7 @@ void SmallGimbal::RcStateUpdate() {
   if (basic_mode_ == SmallBasicMode::kMatch) {
     return;
   }
-  rc_mode_ = SwitchUp(rc_ch::SC) ? SmallRcMode::kYes : SmallRcMode::kNo;
+  rc_mode_ = SwitchMid(rc_ch::SC) ? SmallRcMode::kYes : SmallRcMode::kNo;
 }
 
 void SmallGimbal::ControlStateUpdate() {
@@ -424,7 +424,7 @@ void SmallGimbal::ShootCommandUpdate() {
   pid_.rotor_speed.Update(command_.rotor, motor_measure_.rotor_speed, 0.001f);
   output_.left = ClampCurrent(pid_.left_speed.out(), 16384.0f);
   output_.right = ClampCurrent(pid_.right_speed.out(), 16384.0f);
-  output_.rotor = ClampCurrent(pid_.rotor_speed.out(), 10000.0f);
+  output_.rotor = ClampCurrent(pid_.rotor_speed.out(), 16384.0f);
 }
 
 void SmallGimbal::ScanInit(float yaw_left, float yaw_right, float pitch_up, float pitch_down) {
@@ -521,8 +521,8 @@ void SmallGimbal::SendMotorOutput() {
   }
 
   globals->up_yaw_motor->SetCurrent(output_.yaw);
-  globals->pitch_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(output_.pitch / 5000.0f, -10.0f, 10.0f), 0.0f,
-                                      3.0f);
+  globals->pitch_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(output_.pitch / 10000.0f, -10.0f, 10.0f), 0.0f,
+                                      0.0f);
   globals->friction_left->SetCurrent(output_.left);
   globals->friction_right->SetCurrent(output_.right);
   globals->dial_motor->SetCurrent(output_.rotor);
@@ -577,6 +577,10 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
   pid_.yaw_speed.SetKp(yaw_speed_kp).SetKi(0.0f).SetKd(0.0f).SetMaxOut(25000.0f).SetMaxIout(10000.0f);
   pid_.pitch_angle.SetKp(pitch_angle_kp).SetKi(0.0f).SetKd(pitch_angle_kd).SetMaxOut(600.0f).SetMaxIout(30.0f);
   pid_.pitch_speed.SetKp(pitch_speed_kp).SetKi(0.0f).SetKd(0.0f).SetMaxOut(50000.0f).SetMaxIout(10000.0f);
+  pid_.yaw_angle.SetDiffLpfAlpha(mode == SmallControlMode::kNoForce ? 1.0f : 0.1f);
+  pid_.yaw_speed.SetDiffLpfAlpha(1.0f);
+  pid_.pitch_angle.SetDiffLpfAlpha(mode == SmallControlMode::kNoForce ? 1.0f : 0.1f);
+  pid_.pitch_speed.SetDiffLpfAlpha(1.0f);
 }
 
 void SmallGimbal::ConfigureAmmoPidFor(SmallAmmoMode mode) {

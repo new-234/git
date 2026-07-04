@@ -170,9 +170,9 @@ void GlobalWarehouse::Loop1kHz() {
   rm::device::DjiMotorBase::SendCommand(*can1);
   rm::device::DjiMotorBase::SendCommand(*can2);
 
-  if ((tick % 20U) == 0U) {
-    UpdateIndicators();
-  }
+  // if ((tick % 20U) == 0U) {
+  //   UpdateIndicators();
+  // }
 }
 
 void GlobalWarehouse::UpdateBoardSensors() {
@@ -206,10 +206,8 @@ void GlobalWarehouse::UpdateModeFromRemote() {
     return;
   }
 
-  const auto sd = wfly_et16s->switch_position(rc_ch::SD);
-  if (sd == SwitchPosition::kMid) {
-    robot_mode = RobotMode::kTest;
-  } else if (sd == SwitchPosition::kUp) {
+  const auto sf = wfly_et16s->switch_position(rc_ch::SF);
+  if (sf == SwitchPosition::kUp) {
     robot_mode = RobotMode::kMatch;
   }
 }

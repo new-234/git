@@ -408,16 +408,28 @@ void BigGimbal::ConfigureGimbalPidFor(BigGimbalControlMode mode) {
 
   pid_.yaw_angle.SetKp(yaw_angle_kp).SetKi(0.0f).SetKd(yaw_angle_kd).SetMaxOut(250.0f).SetMaxIout(30.0f);
   pid_.yaw_speed.SetKp(yaw_speed_kp).SetKi(0.0f).SetKd(yaw_speed_kd).SetMaxOut(50000.0f).SetMaxIout(10000.0f);
+  pid_.yaw_angle.SetDiffLpfAlpha(1.0f);
+  pid_.yaw_speed.SetDiffLpfAlpha(1.0f);
 }
 
 void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
   const bool enable = mode != BigChassisControlMode::kNoForce && mode != BigChassisControlMode::kInit;
   for (auto &wheel_pid : pid_.wheel_speed) {
-    wheel_pid.SetKp(enable ? 5.0f : 0.0f).SetKi(0.0f).SetKd(enable ? 0.3f : 0.0f).SetMaxOut(16384.0f).SetMaxIout(6000.0f);
+    wheel_pid.SetKp(enable ? 5.0f : 0.0f)
+        .SetKi(0.0f)
+        .SetKd(enable ? 0.3f : 0.0f)
+        .SetMaxOut(16384.0f)
+        .SetMaxIout(6000.0f)
+        .SetDiffLpfAlpha(1.0f);
   }
 
   const bool follow_enable = mode != BigChassisControlMode::kNoForce && mode != BigChassisControlMode::kInit;
-  pid_.follow_w.SetKp(follow_enable ? 0.1f : 0.0f).SetKi(0.0f).SetKd(0.0f).SetMaxOut(300.0f).SetMaxIout(25.0f);
+  pid_.follow_w.SetKp(follow_enable ? 0.1f : 0.0f)
+      .SetKi(0.0f)
+      .SetKd(0.0f)
+      .SetMaxOut(300.0f)
+      .SetMaxIout(25.0f)
+      .SetDiffLpfAlpha(1.0f);
 }
 
 bool BigGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const { return globals->tick - since >= duration_ms; }
