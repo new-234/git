@@ -374,8 +374,10 @@ void BigGimbal::SendMotorOutput() {
     output_ = {};
   }
 
-  globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f),
-                                         0.0f, 0.0f);
+  if ((globals->tick & 1U) == 0U) {
+    globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f),
+                                           0.0f, 0.0f);
+  }
   globals->wheel_lf->SetCurrent(output_.wheel_motor[0]);
   globals->wheel_rf->SetCurrent(output_.wheel_motor[1]);
   globals->wheel_lb->SetCurrent(output_.wheel_motor[2]);

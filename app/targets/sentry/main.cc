@@ -166,8 +166,11 @@ void GlobalWarehouse::Loop1kHz() {
 
   SendVisionFrames();
 
-  rm::device::DjiMotorBase::SendCommand(*can1);
-  rm::device::DjiMotorBase::SendCommand(*can2);
+  if ((tick & 1U) == 0U) {
+    rm::device::DjiMotorBase::SendCommand(*can1);
+  } else {
+    rm::device::DjiMotorBase::SendCommand(*can2);
+  }
 
   // if ((tick % 20U) == 0U) {
   //   UpdateIndicators();

@@ -527,8 +527,10 @@ void SmallGimbal::SendMotorOutput() {
   }
 
   globals->up_yaw_motor->SetCurrent(output_.yaw);
-  globals->pitch_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(output_.pitch / 10000.0f, -10.0f, 10.0f), 0.0f,
-                                      0.0f);
+  if ((globals->tick & 1U) != 0U) {
+    globals->pitch_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(output_.pitch / 10000.0f, -10.0f, 10.0f), 0.0f,
+                                        0.0f);
+  }
   globals->friction_left->SetCurrent(output_.left);
   globals->friction_right->SetCurrent(output_.right);
   globals->dial_motor->SetCurrent(output_.rotor);
