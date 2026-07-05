@@ -55,9 +55,7 @@ void SentryLoop1kHz() {
   }
 }
 
-float RadToDeg(float value) {
-  return value * 180.0f / static_cast<float>(M_PI);
-}
+float RadToDeg(float value) { return value * 180.0f / static_cast<float>(M_PI); }
 
 }  // namespace
 
@@ -248,4 +246,6 @@ uint16_t GlobalWarehouse::HeatLimit() const {
   return limit == 0 ? 350 : limit;
 }
 
-uint16_t GlobalWarehouse::HeatCurrent() const { return referee_data->data().power_heat_data.shooter_17mm_1_barrel_heat; }
+uint16_t GlobalWarehouse::HeatCurrent() const {
+  return referee_data->data().power_heat_data.shooter_17mm_1_barrel_heat;
+}
