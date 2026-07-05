@@ -163,7 +163,7 @@ class SmallGimbal {
   void ScanControl();
   void CommandLimit();
   void BulletSpeedLimit();
-  void EnablePitchMotor(bool enable);
+  [[nodiscard]] bool EnablePitchMotor(bool enable);
   void SendMotorOutput();
 
   void ConfigureGimbalPidFor(SmallControlMode mode);

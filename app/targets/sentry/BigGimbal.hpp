@@ -108,7 +108,7 @@ class BigGimbal {
   void CommandUpdate();
   void ChassisSourceUpdate();
   void ChassisPowerControl();
-  void EnableYawMotor(bool enable);
+  [[nodiscard]] bool EnableYawMotor(bool enable);
   void SendMotorOutput();
 
   void ConfigureGimbalPidFor(BigGimbalControlMode mode);

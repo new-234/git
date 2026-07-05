@@ -500,23 +500,29 @@ void SmallGimbal::BulletSpeedLimit() {
   command_.right = -special_.real_ammo_speed;
 }
 
-void SmallGimbal::EnablePitchMotor(bool enable) {
+bool SmallGimbal::EnablePitchMotor(bool enable) {
+  const auto status = globals->pitch_motor->status();
   if (++dm_instruction_tick_ < 100U) {
-    return;
+    return status == 0x01;
   }
   dm_instruction_tick_ = 0;
-  if (enable && globals->pitch_motor->status() != 0x01) {
-    globals->pitch_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+
+  if (enable && status == 0x00) {
     globals->pitch_motor->SendInstruction(rm::device::DmMotorInstructions::kEnable);
-  } else if (!enable && globals->pitch_motor->status() == 0x01) {
+  } else if (enable && status == 0x0d) {
+    globals->pitch_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  } else if (enable && status != 0x01) {
+    globals->pitch_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  } else if (!enable && status == 0x01) {
     globals->pitch_motor->SendInstruction(rm::device::DmMotorInstructions::kDisable);
   }
+  return status == 0x01;
 }
 
 void SmallGimbal::SendMotorOutput() {
   const bool enable = control_mode_ != SmallControlMode::kNoForce;
-  EnablePitchMotor(enable);
-  if (!enable) {
+  const bool pitch_enabled = EnablePitchMotor(enable);
+  if (!enable || !pitch_enabled) {
     output_ = {};
   }
 

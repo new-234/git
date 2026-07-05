@@ -348,24 +348,29 @@ void BigGimbal::ChassisPowerControl() {
   }
 }
 
-void BigGimbal::EnableYawMotor(bool enable) {
+bool BigGimbal::EnableYawMotor(bool enable) {
+  const auto status = globals->down_yaw_motor->status();
   if (++dm_instruction_tick_ < 100U) {
-    return;
+    return status == 0x01;
   }
   dm_instruction_tick_ = 0;
 
-  if (enable && globals->down_yaw_motor->status() != 0x01) {
-    globals->down_yaw_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  if (enable && status == 0x00) {
     globals->down_yaw_motor->SendInstruction(rm::device::DmMotorInstructions::kEnable);
-  } else if (!enable && globals->down_yaw_motor->status() == 0x01) {
+  } else if (enable && status == 0x0d) {
+    globals->down_yaw_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  } else if (enable && status != 0x01) {
+    globals->down_yaw_motor->SendInstruction(rm::device::DmMotorInstructions::kClearError);
+  } else if (!enable && status == 0x01) {
     globals->down_yaw_motor->SendInstruction(rm::device::DmMotorInstructions::kDisable);
   }
+  return status == 0x01;
 }
 
 void BigGimbal::SendMotorOutput() {
   const bool enable = control_mode_ != BigGimbalControlMode::kNoForce;
-  EnableYawMotor(enable);
-  if (!enable) {
+  const bool yaw_enabled = EnableYawMotor(enable);
+  if (!enable || !yaw_enabled) {
     output_ = {};
   }
 
