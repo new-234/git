@@ -94,7 +94,6 @@ struct GlobalWarehouse {
   RobotMode robot_mode{RobotMode::kNoForce};
 
   uint32_t tick{0};
-  uint16_t imu_count{0};
   uint8_t aim_mode{1};
   float vbus{0.0f};
 

@@ -154,7 +154,6 @@ void GlobalWarehouse::Init() {
 
 void GlobalWarehouse::Loop1kHz() {
   ++tick;
-  ++imu_count;
 
   UpdateBoardSensors();
   if ((tick % 10U) == 0U) {
@@ -222,7 +221,7 @@ void GlobalWarehouse::SendVisionFrames() {
     }
     aimbot_communicator->UpdateControl(RadToDeg(hipnuc_imu->yaw()), RadToDeg(-hipnuc_imu->pitch()),
                                        RadToDeg(hipnuc_imu->roll()),
-                                       referee_data->data().robot_status.robot_id, aim_mode, imu_count, 0.0f);
+                                       referee_data->data().robot_status.robot_id, aim_mode);
   } else {
     navigate_communicator->UpdateControl(small_gimbal->YawForNavigateDegree(), small_gimbal->PitchForNavigateDegree(),
                                          aimbot_communicator->distance());
