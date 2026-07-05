@@ -33,7 +33,8 @@ void NavigateCanCommunicator::RxCallback(const hal::CanFrame *msg) {
     ReportStatus(kOk);
     chassis_target_x_ = static_cast<f32>(static_cast<int8_t>(msg->data[0])) / 127.0f;
     chassis_target_y_ = static_cast<f32>(static_cast<int8_t>(msg->data[1])) / 127.0f;
-    target_yaw_speed_ = static_cast<f32>(static_cast<i16>((static_cast<u16>(msg->data[2]) << 8U) | msg->data[3])) / 100.0f;
+    target_yaw_speed_ =
+        static_cast<f32>(static_cast<i16>((static_cast<u16>(msg->data[2]) << 8U) | msg->data[3])) / 100.0f;
     perception_flag_ = msg->data[4] & 0x0fU;
     scan_mode_ = (msg->data[4] & 0x10U) >> 4U;
     aimbot_mode_ = (msg->data[4] & 0x20U) >> 5U;

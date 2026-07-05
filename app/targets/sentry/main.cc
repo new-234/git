@@ -221,8 +221,8 @@ void GlobalWarehouse::SendVisionFrames() {
       aim_mode = 1;
     }
     aimbot_communicator->UpdateControl(RadToDeg(hipnuc_imu->yaw()), RadToDeg(-hipnuc_imu->pitch()),
-                                       RadToDeg(hipnuc_imu->roll()),
-                                       referee_data->data().robot_status.robot_id, aim_mode);
+                                       RadToDeg(hipnuc_imu->roll()), referee_data->data().robot_status.robot_id,
+                                       aim_mode);
   } else {
     navigate_communicator->UpdateControl(small_gimbal->YawForNavigateDegree(), small_gimbal->PitchForNavigateDegree(),
                                          aimbot_communicator->distance());

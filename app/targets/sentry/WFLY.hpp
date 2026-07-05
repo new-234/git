@@ -117,7 +117,9 @@ class WflyET16s : public rm::device::Sbus {
 
   [[nodiscard]] bool SwitchIsUp(i8 channel_num) const { return switch_position(channel_num) == SwitchPosition::kUp; }
   [[nodiscard]] bool SwitchIsMid(i8 channel_num) const { return switch_position(channel_num) == SwitchPosition::kMid; }
-  [[nodiscard]] bool SwitchIsDown(i8 channel_num) const { return switch_position(channel_num) == SwitchPosition::kDown; }
+  [[nodiscard]] bool SwitchIsDown(i8 channel_num) const {
+    return switch_position(channel_num) == SwitchPosition::kDown;
+  }
 
   [[nodiscard]] i16 wheel_position(i8 channel_num) const {
     if (channel_num >= rc_ch::LS && channel_num <= rc_ch::RD) {

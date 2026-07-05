@@ -370,8 +370,8 @@ void BigGimbal::SendMotorOutput() {
   }
 
   if ((globals->tick & 1U) == 0U) {
-    globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f),
-                                           0.0f, 0.0f);
+    globals->down_yaw_motor->SetMitCommand(0.0f, 0.0f, rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f), 0.0f,
+                                           0.0f);
   }
   globals->wheel_lf->SetCurrent(output_.wheel_motor[0]);
   globals->wheel_rf->SetCurrent(output_.wheel_motor[1]);
@@ -438,14 +438,8 @@ bool BigGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const {
   return globals->tick - since >= duration_ms;
 }
 
-bool BigGimbal::SwitchDown(int channel) const {
-  return globals->wfly_et16s->SwitchIsDown(channel);
-}
+bool BigGimbal::SwitchDown(int channel) const { return globals->wfly_et16s->SwitchIsDown(channel); }
 
-bool BigGimbal::SwitchMid(int channel) const {
-  return globals->wfly_et16s->SwitchIsMid(channel);
-}
+bool BigGimbal::SwitchMid(int channel) const { return globals->wfly_et16s->SwitchIsMid(channel); }
 
-bool BigGimbal::SwitchUp(int channel) const {
-  return globals->wfly_et16s->SwitchIsUp(channel);
-}
+bool BigGimbal::SwitchUp(int channel) const { return globals->wfly_et16s->SwitchIsUp(channel); }
