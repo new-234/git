@@ -214,14 +214,14 @@ void BigGimbal::CommandUpdate() {
 
     case BigGimbalControlMode::kRcControl:
       if (rc_mode_ == BigGimbalRcMode::kYes) {
-        command_.yaw += globals->wfly_et16s->left_x() * 0.25f;
+        command_.yaw += globals->wfly_et16s->RemoteChannalLeftX() * 0.25f;
       }
       command_.yaw = ConstrainAround(command_.yaw, imu_.yaw_angle);
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), imu_.yaw_speed, 0.001f);
       output_.yaw = pid_.yaw_speed.out();
-      source_.vx = globals->wfly_et16s->right_x();
-      source_.vy = -globals->wfly_et16s->right_y();
+      source_.vx = globals->wfly_et16s->RemoteChannalRightX();
+      source_.vy = globals->wfly_et16s->RemoteChannalRightY();
       break;
 
     case BigGimbalControlMode::kNavi:
@@ -435,13 +435,13 @@ void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
 bool BigGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const { return globals->tick - since >= duration_ms; }
 
 bool BigGimbal::SwitchDown(int channel) const {
-  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kDown;
+  return globals->wfly_et16s->SwitchIsDown(channel);
 }
 
 bool BigGimbal::SwitchMid(int channel) const {
-  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kMid;
+  return globals->wfly_et16s->SwitchIsMid(channel);
 }
 
 bool BigGimbal::SwitchUp(int channel) const {
-  return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kUp;
+  return globals->wfly_et16s->SwitchIsUp(channel);
 }

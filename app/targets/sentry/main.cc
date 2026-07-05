@@ -206,8 +206,7 @@ void GlobalWarehouse::UpdateModeFromRemote() {
     return;
   }
 
-  const auto sf = wfly_et16s->switch_position(rc_ch::SF);
-  if (sf == SwitchPosition::kUp) {
+  if (wfly_et16s->SwitchIsUp(rc_ch::SF)) {
     robot_mode = RobotMode::kMatch;
   }
 }

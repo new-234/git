@@ -328,8 +328,8 @@ void SmallGimbal::CommandUpdate() {
 
     case SmallControlMode::kRcControl:
       if (rc_mode_ == SmallRcMode::kYes) {
-        command_.yaw += globals->wfly_et16s->left_x() * 0.25f / 3.0f;
-        command_.pitch += globals->wfly_et16s->left_y() * 0.25f / 3.0f;
+        command_.yaw += globals->wfly_et16s->RemoteChannalLeftX() * 0.25f / 3.0f;
+        command_.pitch += globals->wfly_et16s->RemoteChannalLeftY() * 0.25f / 3.0f;
       }
       CommandLimit();
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
@@ -596,8 +596,8 @@ void SmallGimbal::ConfigureRotorPidFor(SmallRotorMode mode) {
 
 bool SmallGimbal::TimeExceeded(uint32_t since, uint32_t duration_ms) const { return globals->tick - since >= duration_ms; }
 
-bool SmallGimbal::SwitchDown(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kDown; }
+bool SmallGimbal::SwitchDown(int channel) const { return globals->wfly_et16s->SwitchIsDown(channel); }
 
-bool SmallGimbal::SwitchMid(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kMid; }
+bool SmallGimbal::SwitchMid(int channel) const { return globals->wfly_et16s->SwitchIsMid(channel); }
 
-bool SmallGimbal::SwitchUp(int channel) const { return globals->wfly_et16s->switch_position(channel) == SwitchPosition::kUp; }
+bool SmallGimbal::SwitchUp(int channel) const { return globals->wfly_et16s->SwitchIsUp(channel); }
