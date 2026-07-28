@@ -11,10 +11,12 @@ constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
 constexpr float kDegToRad = static_cast<float>(M_PI) / 180.0f;
 
 constexpr uint32_t kGimbalInitTime = 1000;
-constexpr float kFollowAngle = -107.07164f;
-constexpr float kRotateRate = 1.5f;
+constexpr float kFollowAngle = 12.2746696f;
+constexpr float kRotateRate = 1.2f;
 constexpr float kWheelRpmRate = 3000.0f;
 constexpr uint8_t kAimbotTargetInside = 1U << 0U;
+constexpr float kYawMachineLeft = -60.0f;
+constexpr float kYawMachineRight = 170.0f;
 
 float WrapDegree(float value) { return rm::modules::Wrap(value, -180.0f, 180.0f); }
 
@@ -55,9 +57,12 @@ void BigGimbal::Task1kHz() {
   SendMotorOutput();
 }
 
+float BigGimbal::YawForNavigateDegree() const { return imu_.yaw_angle; }
+
 void BigGimbal::UpdateSensorData() {
   motor_measure_.yaw_angle = WrapDegree(globals->down_yaw_motor->pos() * kRadToDeg);
   motor_measure_.yaw_speed = globals->down_yaw_motor->vel() * kRadToDeg;
+  motor_measure_.small_yaw_angle = WrapDegree(globals->up_yaw_motor->pos_degree());
   motor_measure_.wheel_speed[0] = static_cast<float>(globals->wheel_lf->rpm());
   motor_measure_.wheel_speed[1] = static_cast<float>(globals->wheel_rf->rpm());
   motor_measure_.wheel_speed[2] = static_cast<float>(globals->wheel_lb->rpm());
@@ -126,8 +131,9 @@ void BigGimbal::ControlStateYesForceUpdate() {
   switch (basic_mode_) {
     case BigGimbalBasicMode::kMatch:
       if (!globals->device_nuc.all_device_ok()) {
-        control_mode_ = BigGimbalControlMode::kRcControl;
+        control_mode_ = BigGimbalControlMode::kNavi;
         chassis_mode_ = BigChassisControlMode::kSlowRoting;
+        source_ = {};
       } else {
         control_mode_ = BigGimbalControlMode::kNavi;
         chassis_mode_ = BigChassisControlMode::kKeep;
@@ -147,7 +153,10 @@ void BigGimbal::ControlStateYesForceUpdate() {
 void BigGimbal::ControlStateVisionUpdate() {
   if (SwitchUp(rc_ch::SA)) {
     control_mode_ = BigGimbalControlMode::kRcControl;
-  } else if (SwitchMid(rc_ch::SA) || SwitchDown(rc_ch::SA)) {
+  } else if (SwitchMid(rc_ch::SA)) {
+    control_mode_ =
+        globals->device_nuc.all_device_ok() ? BigGimbalControlMode::kKeep : BigGimbalControlMode::kRcControl;
+  } else if (SwitchDown(rc_ch::SA)) {
     control_mode_ =
         globals->device_nuc.all_device_ok() ? BigGimbalControlMode::kNavi : BigGimbalControlMode::kRcControl;
   } else {
@@ -180,9 +189,7 @@ void BigGimbal::ChassisControlModeUpdate() {
 void BigGimbal::ControlPidUpdate() {
   if (last_control_mode_ != control_mode_) {
     ConfigureGimbalPidFor(control_mode_);
-    if (last_control_mode_ == BigGimbalControlMode::kNoForce) {
-      command_.yaw = imu_.yaw_angle;
-    }
+    command_.yaw = imu_.yaw_angle;
     last_control_mode_ = control_mode_;
   }
 
@@ -216,12 +223,42 @@ void BigGimbal::CommandUpdate() {
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), imu_.yaw_speed, 0.001f);
       output_.yaw = pid_.yaw_speed.out();
       source_.vx = globals->wfly_et16s->RemoteChannalRightX();
-      source_.vy = globals->wfly_et16s->RemoteChannalRightY();
+      source_.vy = -globals->wfly_et16s->RemoteChannalRightY();
       break;
 
     case BigGimbalControlMode::kNavi:
-      if (globals->navigate_communicator->scan_mode() == 1U ||
-          (globals->aimbot_communicator->aimbot_state() & kAimbotTargetInside) != 0U) {
+      if (!globals->device_nuc.all_device_ok()) {
+        command_.yaw = imu_.yaw_angle + 3.0f;
+        source_ = {};
+      } else if (globals->navigate_communicator->scan_mode() == 0U) {
+        if ((globals->aimbot_communicator->aimbot_state() & kAimbotTargetInside) != 0U) {
+          if (motor_measure_.small_yaw_angle > kYawMachineLeft - 5.0f && motor_measure_.small_yaw_angle < 0.0f) {
+            command_.yaw = imu_.yaw_angle + 3.0f;
+          } else if (motor_measure_.small_yaw_angle < kYawMachineRight + 5.0f &&
+                     motor_measure_.small_yaw_angle > 0.0f) {
+            command_.yaw = imu_.yaw_angle - 3.0f;
+          }
+        } else {
+          if (special_.omni_flag != 0U && TimeExceeded(special_.omni_time, 3000U)) {
+            special_.omni_flag = 0U;
+          }
+          if (special_.omni_flag == 0U && globals->navigate_communicator->perception_flag() == 0U) {
+            command_.yaw = imu_.yaw_angle + 3.0f;
+          } else if ((globals->navigate_communicator->perception_flag() & 0x1U) != 0U && special_.omni_flag == 0U) {
+            special_.omni_time = globals->tick;
+            special_.omni_flag = 1U;
+            command_.yaw = imu_.yaw_angle + 90.0f;
+          } else if ((globals->navigate_communicator->perception_flag() & 0x4U) != 0U && special_.omni_flag == 0U) {
+            special_.omni_time = globals->tick;
+            special_.omni_flag = 1U;
+            command_.yaw = imu_.yaw_angle - 90.0f;
+          } else if ((globals->navigate_communicator->perception_flag() & 0x2U) != 0U && special_.omni_flag == 0U) {
+            special_.omni_time = globals->tick;
+            special_.omni_flag = 1U;
+            command_.yaw = imu_.yaw_angle + 175.0f;
+          }
+        }
+      } else if (globals->navigate_communicator->scan_mode() == 1U) {
         command_.yaw = FirstOrderFilter(command_.yaw, globals->navigate_communicator->target_yaw_speed(), 0.15f);
       }
       command_.yaw = ConstrainAround(command_.yaw, imu_.yaw_angle);
@@ -233,10 +270,17 @@ void BigGimbal::CommandUpdate() {
       break;
 
     case BigGimbalControlMode::kKeep:
+      if (globals->navigate_communicator->scan_mode() == 1U) {
+        command_.yaw = FirstOrderFilter(command_.yaw, globals->navigate_communicator->target_yaw_speed(), 0.15f);
+      }
       command_.yaw = ConstrainAround(command_.yaw, imu_.yaw_angle);
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), imu_.yaw_speed, 0.001f);
       output_.yaw = pid_.yaw_speed.out();
+      if (globals->device_nuc.all_device_ok()) {
+        source_.vx = globals->navigate_communicator->chassis_target_y();
+        source_.vy = -globals->navigate_communicator->chassis_target_x();
+      }
       break;
   }
 }
@@ -267,7 +311,7 @@ void BigGimbal::ChassisSourceUpdate() {
       set_.wz = -0.8f;
       break;
     case BigChassisControlMode::kKeep:
-      set_.wz = globals->navigate_communicator->chassis_target_w();
+      set_.wz = rm::modules::Clamp(globals->navigate_communicator->chassis_target_w(), -1.0f, 1.0f);
       break;
   }
 
@@ -281,9 +325,9 @@ void BigGimbal::ChassisSourceUpdate() {
     return;
   }
 
-  command_.wheel_motor[0] = (-set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
-  command_.wheel_motor[1] = (set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
-  command_.wheel_motor[2] = (set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[0] = (set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[1] = (set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[2] = (-set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
   command_.wheel_motor[3] = (-set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
 
   for (size_t i = 0; i < output_.wheel_motor.size(); ++i) {
@@ -306,7 +350,7 @@ void BigGimbal::ChassisPowerControl() {
   if (buffer_energy < special_.real_buffer_limit) {
     special_.real_power_limit = buffer_energy;
   } else {
-    special_.real_power_limit = 100.0f;
+    special_.real_power_limit = power_limit;
   }
 
   special_.total_power = 0.0f;
@@ -321,7 +365,7 @@ void BigGimbal::ChassisPowerControl() {
   }
 
   special_.sup_kp = special_.real_power_limit / special_.total_power;
-  if (chassis_mode_ == BigChassisControlMode::kFollow) {
+  if (chassis_mode_ == BigChassisControlMode::kFollow || chassis_mode_ == BigChassisControlMode::kKeep) {
     if (power_limit < 90.0f && power_limit > 58.0f) {
       special_.sup_kp *= 1.2f;
     } else if (power_limit > 90.0f) {
@@ -426,7 +470,7 @@ void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
   }
 
   const bool follow_enable = mode != BigChassisControlMode::kNoForce && mode != BigChassisControlMode::kInit;
-  pid_.follow_w.SetKp(follow_enable ? 0.1f : 0.0f)
+  pid_.follow_w.SetKp(follow_enable ? 0.08f : 0.0f)
       .SetKi(0.0f)
       .SetKd(0.0f)
       .SetMaxOut(300.0f)

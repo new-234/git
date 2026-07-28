@@ -46,6 +46,7 @@ enum class BigChassisControlMode : uint8_t {
 struct BigGimbalMotorMeasure {
   float yaw_angle{};
   float yaw_speed{};
+  float small_yaw_angle{};
   std::array<float, 4> wheel_speed{};
 };
 
@@ -80,6 +81,8 @@ struct BigGimbalSpecial {
   float total_power{};
   float total_power_kp{2.80099994e-06f};
   float sup_kp{1.0f};
+  uint8_t omni_flag{};
+  uint32_t omni_time{};
 };
 
 struct BigGimbalPid {
@@ -93,6 +96,7 @@ class BigGimbal {
  public:
   void Init();
   void Task1kHz();
+  [[nodiscard]] float YawForNavigateDegree() const;
 
  private:
   void UpdateSensorData();

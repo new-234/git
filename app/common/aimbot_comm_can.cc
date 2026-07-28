@@ -61,9 +61,9 @@ void AimbotCanCommunicator::RxCallback(const hal::CanFrame *msg) {
   } else if (msg->rx_std_id == kAimbotFeedForwardId) {
     ReportStatus(kOk);
     yaw_vel_ = UnpackF16(msg->data[0], msg->data[1]) * kDegToRad;
-    pitch_vel_ = UnpackF16(msg->data[2], msg->data[3]) * kDegToRad;
+    pitch_vel_ = -UnpackF16(msg->data[2], msg->data[3]) * kDegToRad;
     yaw_acc_ = UnpackF16(msg->data[4], msg->data[5]) * kDegToRad;
-    pitch_acc_ = UnpackF16(msg->data[6], msg->data[7]) * kDegToRad;
+    pitch_acc_ = -UnpackF16(msg->data[6], msg->data[7]) * kDegToRad;
   }
 }
 

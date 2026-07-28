@@ -34,7 +34,7 @@ enum class SmallRotorMode : uint8_t {
   kNoForce = 0,
   kStop,
   kForward,
-  kBackward,
+  kSingle,
 };
 
 enum class SmallControlMode : uint8_t {
@@ -122,6 +122,7 @@ struct SmallGimbalSpecial {
   uint32_t rotor_single_time{};
   uint8_t single_ammo_flag{};
   float real_ammo_speed{5500.0f};
+  float last_initial_speed{};
 };
 
 struct SmallGimbalPid {

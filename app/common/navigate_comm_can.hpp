@@ -20,7 +20,8 @@ class NavigateCanCommunicator final : public CanDevice {
   [[nodiscard]] u8 aimbot_mode() const;
   [[nodiscard]] u8 outpost_mode() const;
 
-  void UpdateControl(f32 small_gimbal_yaw_degree, f32 small_gimbal_pitch_degree, f32 aimbot_distance);
+  void UpdateControl(f32 small_gimbal_yaw_degree, f32 small_gimbal_pitch_degree, f32 aimbot_distance,
+                     f32 big_yaw_degree);
   void RxCallback(const hal::CanFrame *msg) override;
 
  private:

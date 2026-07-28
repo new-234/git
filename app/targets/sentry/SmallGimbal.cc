@@ -15,17 +15,18 @@ constexpr float kPitchUpAngle = 33.0f;
 constexpr float kPitchDownAngle = -30.0f;
 constexpr float kYawMachineLeft = -60.0f;
 constexpr float kYawMachineRight = 170.0f;
-constexpr float kSmallRangeLeftAngle = 20.0f;
-constexpr float kSmallRangeRightAngle = 20.0f;
-constexpr float kPitchScanUpAngle = 20.0f;
+constexpr float kSmallRangeLeftAngle = 15.0f;
+constexpr float kSmallRangeRightAngle = 15.0f;
+constexpr float kPitchScanUpAngle = 15.0f;
 constexpr float kPitchScanDownAngle = -10.0f;
 constexpr float kYawMachineZero = -121.0f;
 constexpr float kDeltaPitch = 0.0030f;
 constexpr float kDeltaYaw = 3.5f;
 
 constexpr uint32_t kGimbalInitTime = 1000;
-constexpr uint32_t kAutoAmmoToSmallRangeTime = 200;
-constexpr uint32_t kSmallRangeToFullRangeTime = 1500;
+constexpr uint32_t kAutoAmmoToSmallRangeTime = 100;
+constexpr uint32_t kSmallRangeToFullRangeTime = 2000;
+constexpr uint32_t kPerceptionToNormalTime = 3000;
 constexpr uint32_t kAutoShootTime = 30;
 constexpr uint32_t kSingleAmmoTime = 30;
 constexpr uint32_t kSingleAmmoDelayTime = 1000;
@@ -34,7 +35,9 @@ constexpr uint8_t kAimbotTargetInside = 1U << 0U;
 constexpr uint8_t kAimbotShootRequest = 1U << 1U;
 
 constexpr float kAmmoSpeedSet = 5500.0f;
-constexpr float kRotorSpeedSet = 2000.0f;
+constexpr float kRotorSingleSpeedSet = 1200.0f;
+constexpr float kRotorQuickSpeedSet = 3000.0f;
+constexpr float kRotorNormalSpeedSet = 2300.0f;
 
 float WrapDegree(float value) { return rm::modules::Wrap(value, -180.0f, 180.0f); }
 
@@ -135,7 +138,7 @@ void SmallGimbal::RcStateUpdate() {
   if (basic_mode_ == SmallBasicMode::kMatch) {
     return;
   }
-  rc_mode_ = SwitchMid(rc_ch::SC) ? SmallRcMode::kYes : SmallRcMode::kNo;
+  rc_mode_ = SwitchUp(rc_ch::SC) ? SmallRcMode::kYes : SmallRcMode::kNo;
 }
 
 void SmallGimbal::ControlStateUpdate() {
@@ -184,6 +187,8 @@ void SmallGimbal::ControlStateMatchUpdate() {
     control_mode_ = SmallControlMode::kSmallRangeScan;
     special_.match_mode_flag = 2;
     special_.match_mode_time = globals->tick;
+  } else if (special_.match_mode_flag == 2 && !TimeExceeded(special_.match_mode_time, kSmallRangeToFullRangeTime)) {
+    control_mode_ = SmallControlMode::kSmallRangeScan;
   } else if (special_.match_mode_flag == 2 && TimeExceeded(special_.match_mode_time, kSmallRangeToFullRangeTime)) {
     control_mode_ = SmallControlMode::kScan;
     special_.match_mode_flag = 3;
@@ -191,10 +196,41 @@ void SmallGimbal::ControlStateMatchUpdate() {
     control_mode_ = (special_.match_mode_flag == 1) ? SmallControlMode::kAutoAmmo : SmallControlMode::kScan;
   }
 
-  if ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U &&
-      globals->HeatCurrent() < globals->HeatLimit() - 50U) {
+  if (special_.match_mode_flag == 3U) {
+    control_mode_ = SmallControlMode::kScan;
+    if (globals->navigate_communicator->aimbot_mode() == 1U || globals->navigate_communicator->outpost_mode() == 1U) {
+      control_mode_ = SmallControlMode::kMachineZero;
+    } else if (globals->navigate_communicator->perception_flag() != 0U) {
+      control_mode_ = SmallControlMode::kSmallRangeScan;
+      special_.match_mode_time = globals->tick;
+    } else if (!TimeExceeded(special_.match_mode_time, kPerceptionToNormalTime)) {
+      control_mode_ = SmallControlMode::kSmallRangeScan;
+    }
+  }
+
+  if (globals->navigate_communicator->aimbot_mode() == 1U) {
+    if (special_.single_ammo_flag == 0U) {
+      if ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U &&
+          TimeExceeded(special_.auto_ammo_delay_time, kSingleAmmoDelayTime)) {
+        special_.single_ammo_flag = 1U;
+        special_.rotor_single_time = globals->tick;
+        special_.auto_ammo_delay_time = globals->tick;
+        rotor_mode_ = SmallRotorMode::kSingle;
+      } else {
+        rotor_mode_ = SmallRotorMode::kStop;
+      }
+    } else if (!TimeExceeded(special_.rotor_single_time, kSingleAmmoTime)) {
+      rotor_mode_ = SmallRotorMode::kSingle;
+    } else {
+      rotor_mode_ = SmallRotorMode::kStop;
+      special_.single_ammo_flag = 0U;
+    }
+  } else if ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U) {
     rotor_mode_ = SmallRotorMode::kForward;
     special_.rotor_mode_time = globals->tick;
+    if (globals->HeatCurrent() >= globals->HeatLimit() - 50U) {
+      rotor_mode_ = SmallRotorMode::kStop;
+    }
   } else if (last_rotor_mode_ == SmallRotorMode::kForward && !TimeExceeded(special_.rotor_mode_time, kAutoShootTime)) {
     rotor_mode_ = SmallRotorMode::kForward;
   } else {
@@ -203,30 +239,33 @@ void SmallGimbal::ControlStateMatchUpdate() {
 }
 
 void SmallGimbal::ControlStateVisionUpdate() {
-  if ((SwitchUp(rc_ch::SA) || SwitchMid(rc_ch::SA)) &&
-      (globals->aimbot_communicator->aimbot_state() & kAimbotTargetInside) != 0U) {
-    control_mode_ = SmallControlMode::kAutoAmmo;
-  } else {
+  if (SwitchUp(rc_ch::SA) || SwitchMid(rc_ch::SA)) {
+    control_mode_ = ((globals->aimbot_communicator->aimbot_state() & kAimbotTargetInside) != 0U)
+                        ? SmallControlMode::kAutoAmmo
+                        : SmallControlMode::kRcControl;
+  } else if (SwitchDown(rc_ch::SA)) {
     control_mode_ = SmallControlMode::kRcControl;
   }
 
   if (SwitchUp(rc_ch::SB)) {
     rotor_mode_ = SmallRotorMode::kStop;
   } else if (SwitchMid(rc_ch::SB)) {
-    if (special_.single_ammo_flag == 0U && (globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U &&
-        SwitchDown(rc_ch::SH) && TimeExceeded(special_.auto_ammo_delay_time, kSingleAmmoDelayTime)) {
+    const bool vision_fire = globals->wfly_et16s->remote_data().knob[rc_ch::RD - rc_ch::LS] < 500;
+    const bool request_ok =
+        !vision_fire || ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U);
+    if (special_.single_ammo_flag == 0U && request_ok && SwitchDown(rc_ch::SH) &&
+        TimeExceeded(special_.auto_ammo_delay_time, kSingleAmmoDelayTime)) {
       special_.single_ammo_flag = 1;
       special_.rotor_single_time = globals->tick;
       special_.auto_ammo_delay_time = globals->tick;
-      rotor_mode_ = SmallRotorMode::kForward;
+      rotor_mode_ = SmallRotorMode::kSingle;
     } else if (special_.single_ammo_flag != 0U && !TimeExceeded(special_.rotor_single_time, kSingleAmmoTime)) {
-      rotor_mode_ = SmallRotorMode::kForward;
+      rotor_mode_ = SmallRotorMode::kSingle;
     } else {
       rotor_mode_ = SmallRotorMode::kStop;
       special_.single_ammo_flag = 0;
     }
-  } else if ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U && SwitchDown(rc_ch::SH) &&
-             globals->HeatCurrent() < globals->HeatLimit() - 45U) {
+  } else if ((globals->aimbot_communicator->aimbot_state() & kAimbotShootRequest) != 0U && SwitchDown(rc_ch::SH)) {
     rotor_mode_ = SmallRotorMode::kForward;
   } else {
     rotor_mode_ = SmallRotorMode::kStop;
@@ -235,9 +274,9 @@ void SmallGimbal::ControlStateVisionUpdate() {
 
 void SmallGimbal::ControlStateEcUpdate() {
   if (SwitchUp(rc_ch::SA)) {
-    control_mode_ = SmallControlMode::kSmallRangeScan;
+    control_mode_ = SmallControlMode::kMachineZero;
   } else if (SwitchMid(rc_ch::SA)) {
-    control_mode_ = SmallControlMode::kScan;
+    control_mode_ = SmallControlMode::kSmallRangeScan;
   } else {
     control_mode_ = SmallControlMode::kRcControl;
   }
@@ -250,9 +289,9 @@ void SmallGimbal::ControlStateEcUpdate() {
       special_.single_ammo_flag = 1;
       special_.rotor_single_time = globals->tick;
       special_.auto_ammo_delay_time = globals->tick;
-      rotor_mode_ = SmallRotorMode::kForward;
+      rotor_mode_ = SmallRotorMode::kSingle;
     } else if (special_.single_ammo_flag != 0U && !TimeExceeded(special_.rotor_single_time, kSingleAmmoTime)) {
-      rotor_mode_ = SmallRotorMode::kForward;
+      rotor_mode_ = SmallRotorMode::kSingle;
     } else {
       rotor_mode_ = SmallRotorMode::kStop;
       special_.single_ammo_flag = 0;
@@ -330,12 +369,13 @@ void SmallGimbal::CommandUpdate() {
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), -imu_.yaw_speed, 0.001f);
       pid_.pitch_angle.Update(command_.pitch, imu_.pitch_angle, 0.001f);
-      pid_.pitch_speed.Update(pid_.pitch_angle.out(), -imu_.pitch_speed, 0.001f);
+      pid_.pitch_speed.Update(pid_.pitch_angle.out(), imu_.pitch_speed, 0.001f);
       output_.yaw = ClampCurrent(pid_.yaw_speed.out(), 25000.0f);
-      output_.pitch = pid_.pitch_speed.out() + 17900.0f * std::cos(imu_.pitch_angle * kDegToRad);
+      output_.pitch = pid_.pitch_speed.out() + 16200.0f * std::cos(motor_measure_.pitch_angle * kDegToRad);
       break;
 
     case SmallControlMode::kAutoAmmo:
+      ConfigureGimbalPidFor(SmallControlMode::kAutoAmmo);
       if ((globals->aimbot_communicator->aimbot_state() & kAimbotTargetInside) != 0U) {
         command_.yaw = globals->aimbot_communicator->yaw();
         command_.pitch = globals->aimbot_communicator->pitch();
@@ -345,9 +385,9 @@ void SmallGimbal::CommandUpdate() {
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), -imu_.yaw_speed, 0.001f);
       pid_.pitch_angle.Update(command_.pitch, imu_.pitch_angle, 0.001f);
-      pid_.pitch_speed.Update(pid_.pitch_angle.out(), -imu_.pitch_speed, 0.001f);
+      pid_.pitch_speed.Update(pid_.pitch_angle.out(), imu_.pitch_speed, 0.001f);
       output_.yaw = ClampCurrent(pid_.yaw_speed.out(), 25000.0f);
-      output_.pitch = pid_.pitch_speed.out() + 17900.0f * std::cos(imu_.pitch_angle * kDegToRad);
+      output_.pitch = pid_.pitch_speed.out() + 14500.0f * std::cos(motor_measure_.pitch_angle * kDegToRad);
       break;
 
     case SmallControlMode::kScan:
@@ -358,7 +398,7 @@ void SmallGimbal::CommandUpdate() {
       if (!scan_.flag) {
         ScanInit(kYawMachineLeft, kYawMachineRight, kPitchScanUpAngle, kPitchScanDownAngle);
       }
-      scan_.yaw_speed = kDeltaYaw * kDegToRad;
+      scan_.yaw_speed = 0.7f * kDeltaYaw * kDegToRad;
       ScanControl();
       break;
 
@@ -375,7 +415,16 @@ void SmallGimbal::CommandUpdate() {
           yaw_right = 180.0f - kSmallRangeRightAngle;
         }
         ScanInit(yaw_left, yaw_right, kPitchScanUpAngle, kPitchScanDownAngle);
-        scan_.yaw_speed = 3.0f * kDeltaYaw * kDegToRad;
+        scan_.yaw_speed = 2.0f * kDeltaYaw * kDegToRad;
+      }
+      ScanControl();
+      break;
+
+    case SmallControlMode::kMachineZero:
+      ++scan_.time;
+      if (!scan_.flag) {
+        ScanInit(kYawMachineZero + kSmallRangeLeftAngle, kYawMachineZero - kSmallRangeRightAngle, 30.0f, 0.0f);
+        scan_.yaw_speed = 2.0f * kDeltaYaw * kDegToRad;
       }
       ScanControl();
       break;
@@ -404,8 +453,15 @@ void SmallGimbal::ShootCommandUpdate() {
 
   switch (rotor_mode_) {
     case SmallRotorMode::kForward:
-    case SmallRotorMode::kBackward:
-      command_.rotor = kRotorSpeedSet;
+      if (((globals->referee_data->data().sentry_info.sentry_info_2 >> 12U) & 0x3U) == 1U &&
+          (globals->referee_data->data().sentry_info.sentry_info_2 & 0x8000U) != 0U) {
+        command_.rotor = kRotorQuickSpeedSet;
+      } else {
+        command_.rotor = kRotorNormalSpeedSet;
+      }
+      break;
+    case SmallRotorMode::kSingle:
+      command_.rotor = kRotorSingleSpeedSet;
       break;
     case SmallRotorMode::kStop:
     case SmallRotorMode::kNoForce:
@@ -468,7 +524,7 @@ void SmallGimbal::ScanControl() {
   pid_.pitch_speed.Update(pid_.pitch_angle.out(), imu_.pitch_speed, 0.001f);
   pid_.yaw_angle.Update(command_.yaw, motor_measure_.yaw_angle, 0.001f);
   pid_.yaw_speed.Update(pid_.yaw_angle.out(), motor_measure_.yaw_speed, 0.001f);
-  output_.pitch = pid_.pitch_speed.out();
+  output_.pitch = pid_.pitch_speed.out() + 16200.0f * std::cos(motor_measure_.pitch_angle * kDegToRad);
   output_.yaw = ClampCurrent(pid_.yaw_speed.out(), 25000.0f);
 }
 
@@ -480,8 +536,13 @@ void SmallGimbal::CommandLimit() {
 
 void SmallGimbal::BulletSpeedLimit() {
   const float initial_speed = globals->referee_data->data().shoot_data.initial_speed;
-  if (initial_speed < 1.0f) {
+  if (initial_speed < 1.0f || std::abs(initial_speed - special_.last_initial_speed) < 0.05f) {
     return;
+  }
+  special_.last_initial_speed = initial_speed;
+  if (special_.single_ammo_flag != 0U) {
+    rotor_mode_ = SmallRotorMode::kStop;
+    special_.single_ammo_flag = 0U;
   }
   const float speed_error = 23.8f - initial_speed;
   if (std::abs(speed_error) <= 2.0f) {
@@ -541,23 +602,30 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
 
   switch (mode) {
     case SmallControlMode::kRcControl:
-      yaw_angle_kp = 12.5f;
+      yaw_angle_kp = 11.5f;
       yaw_angle_kd = 700.0f;
-      yaw_speed_kp = 180.0f;
-      pitch_angle_kp = 19.0f;
-      pitch_angle_kd = 1300.0f;
-      pitch_speed_kp = 150.0f;
+      yaw_speed_kp = 170.0f;
+      pitch_angle_kp = 17.0f;
+      pitch_angle_kd = 1230.0f;
+      pitch_speed_kp = 135.0f;
       break;
     case SmallControlMode::kAutoAmmo:
-      yaw_angle_kp = 12.5f;
+      yaw_angle_kp = 11.5f;
       yaw_angle_kd = 700.0f;
-      yaw_speed_kp = 160.0f;
-      pitch_angle_kp = 18.0f;
-      pitch_angle_kd = 1000.0f;
-      pitch_speed_kp = 135.0f;
+      yaw_speed_kp = 130.0f;
+      pitch_angle_kp = 17.0f;
+      pitch_angle_kd = 1250.0f;
+      pitch_speed_kp = 145.0f;
+      if (globals != nullptr && (globals->aim_mode == 2U || globals->aim_mode == 3U)) {
+        yaw_speed_kp = 150.0f;
+        pitch_angle_kp = 11.5f;
+        pitch_angle_kd = 1150.0f;
+        pitch_speed_kp = 100.0f;
+      }
       break;
     case SmallControlMode::kScan:
     case SmallControlMode::kSmallRangeScan:
+    case SmallControlMode::kMachineZero:
       yaw_angle_kp = 15.0f;
       yaw_angle_kd = mode == SmallControlMode::kSmallRangeScan ? 500.0f : 240.0f;
       yaw_speed_kp = 150.0f;

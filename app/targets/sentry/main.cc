@@ -213,19 +213,32 @@ void GlobalWarehouse::UpdateModeFromRemote() {
 
 void GlobalWarehouse::SendVisionFrames() {
   if ((tick & 1U) == 0U) {
-    if (navigate_communicator->aimbot_mode() == 1U) {
-      aim_mode = 2;
-    } else if (navigate_communicator->outpost_mode() == 1U) {
-      aim_mode = 4;
+    if (wfly_et16s->SwitchIsUp(rc_ch::SE)) {
+      if (navigate_communicator->aimbot_mode() == 1U) {
+        aim_mode = referee_data->data().game_status.stage_remain_time >= 240U ? 2U : 3U;
+      } else if (navigate_communicator->outpost_mode() == 1U) {
+        aim_mode = 4U;
+      } else {
+        aim_mode = 1U;
+      }
     } else {
-      aim_mode = 1;
+      const auto ld = wfly_et16s->remote_data().knob[rc_ch::LD - rc_ch::LS];
+      if (ld <= 150) {
+        aim_mode = 2U;
+      } else if (ld <= 700) {
+        aim_mode = 3U;
+      } else if (ld <= 1200) {
+        aim_mode = 1U;
+      } else {
+        aim_mode = 4U;
+      }
     }
     aimbot_communicator->UpdateControl(RadToDeg(hipnuc_imu->yaw()), RadToDeg(-hipnuc_imu->pitch()),
                                        RadToDeg(hipnuc_imu->roll()), referee_data->data().robot_status.robot_id,
                                        aim_mode);
   } else {
     navigate_communicator->UpdateControl(small_gimbal->YawForNavigateDegree(), small_gimbal->PitchForNavigateDegree(),
-                                         aimbot_communicator->distance());
+                                         aimbot_communicator->distance(), big_gimbal->YawForNavigateDegree());
   }
 }
 
