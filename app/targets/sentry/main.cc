@@ -21,18 +21,43 @@ using namespace rm;
 GlobalWarehouse *globals{nullptr};
 __attribute__((section(".sram4"), aligned(32))) GlobalsNoDtcm globals_no_dtcm;
 
+// FreeMASTER variables. Keep C linkage and external storage so they can be
+// resolved directly from the ELF symbol table.
+extern "C" {
+__attribute__((used)) volatile uint8_t fm_big_gimbal_force_mode;
+__attribute__((used)) volatile uint8_t fm_big_gimbal_control_mode;
+__attribute__((used)) volatile uint8_t fm_big_gimbal_rc_mode;
+__attribute__((used)) volatile uint8_t fm_big_gimbal_chassis_mode;
+
+__attribute__((used)) volatile float fm_big_yaw_angle_kp;
+__attribute__((used)) volatile float fm_big_yaw_angle_ki;
+__attribute__((used)) volatile float fm_big_yaw_angle_kd;
+__attribute__((used)) volatile float fm_big_yaw_speed_kp;
+__attribute__((used)) volatile float fm_big_yaw_speed_ki;
+__attribute__((used)) volatile float fm_big_yaw_speed_kd;
+
+__attribute__((used)) volatile float fm_big_yaw_target_deg;
+__attribute__((used)) volatile float fm_big_yaw_current_deg;
+__attribute__((used)) volatile float fm_big_yaw_error_deg;
+__attribute__((used)) volatile float fm_big_yaw_rate_target_dps;
+__attribute__((used)) volatile float fm_big_yaw_rate_current_dps;
+__attribute__((used)) volatile float fm_big_yaw_rate_error_dps;
+
+__attribute__((used)) volatile float fm_big_yaw_angle_p_out;
+__attribute__((used)) volatile float fm_big_yaw_angle_i_out;
+__attribute__((used)) volatile float fm_big_yaw_angle_d_out;
+__attribute__((used)) volatile float fm_big_yaw_speed_p_out;
+__attribute__((used)) volatile float fm_big_yaw_speed_i_out;
+__attribute__((used)) volatile float fm_big_yaw_speed_d_out;
+__attribute__((used)) volatile float fm_big_yaw_speed_output;
+__attribute__((used)) volatile float fm_big_yaw_torque_nm;
+
+__attribute__((used)) volatile float fm_big_yaw_motor_deg;
+__attribute__((used)) volatile float fm_big_yaw_motor_rate_dps;
+__attribute__((used)) volatile float fm_big_rc_yaw_input;
+}
+
 namespace {
-
-constexpr uint32_t kBigGimbalTelemetryPeriodTicks = 20;
-
-struct BigGimbalTelemetryFrame {
-  float channels[25]{};
-  uint8_t tail[4]{0x00, 0x00, 0x80, 0x7f};
-};
-
-static_assert(sizeof(BigGimbalTelemetryFrame) == 104);
-
-__attribute__((section(".sram4"), aligned(32))) BigGimbalTelemetryFrame big_gimbal_telemetry_frame;
 
 template <typename T, typename... Args>
 T *ConstructInDma(DmaObjectStorage<T> &storage, Args &&...args) {
@@ -68,46 +93,39 @@ void SentryLoop1kHz() {
 
 float RadToDeg(float value) { return value * 180.0f / static_cast<float>(M_PI); }
 
-void SendBigGimbalTelemetry() {
-  if (huart7.gState != HAL_UART_STATE_READY) {
-    return;
-  }
+void UpdateFreeMasterBigGimbal() {
+  const auto data = big_gimbal->DebugSnapshot();
+  fm_big_gimbal_force_mode = data.force_mode;
+  fm_big_gimbal_control_mode = data.control_mode;
+  fm_big_gimbal_rc_mode = data.rc_mode;
+  fm_big_gimbal_chassis_mode = data.chassis_mode;
 
-  const auto data = big_gimbal->TelemetrySnapshot();
-  auto &channel = big_gimbal_telemetry_frame.channels;
-  channel[0] = data.control_mode;
-  channel[1] = data.rc_mode;
-  channel[2] = data.angle_kp;
-  channel[3] = data.angle_ki;
-  channel[4] = data.angle_kd;
-  channel[5] = data.speed_kp;
-  channel[6] = data.speed_ki;
-  channel[7] = data.speed_kd;
-  channel[8] = data.target_yaw_degree;
-  channel[9] = data.current_yaw_degree;
-  channel[10] = data.angle_error_degree;
-  channel[11] = data.target_yaw_speed_dps;
-  channel[12] = data.current_yaw_speed_dps;
-  channel[13] = data.speed_error_dps;
-  channel[14] = data.angle_p_out;
-  channel[15] = data.angle_i_out;
-  channel[16] = data.angle_d_out;
-  channel[17] = data.speed_p_out;
-  channel[18] = data.speed_i_out;
-  channel[19] = data.speed_d_out;
-  channel[20] = data.yaw_output_raw;
-  channel[21] = data.torque_command_nm;
-  channel[22] = data.motor_yaw_degree;
-  channel[23] = data.motor_yaw_speed_dps;
-  channel[24] = data.rc_yaw_input;
+  fm_big_yaw_angle_kp = data.angle_kp;
+  fm_big_yaw_angle_ki = data.angle_ki;
+  fm_big_yaw_angle_kd = data.angle_kd;
+  fm_big_yaw_speed_kp = data.speed_kp;
+  fm_big_yaw_speed_ki = data.speed_ki;
+  fm_big_yaw_speed_kd = data.speed_kd;
 
-  // .sram4 是 NOLOAD 段，每次发送前显式恢复 JustFloat 帧尾。
-  big_gimbal_telemetry_frame.tail[0] = 0x00;
-  big_gimbal_telemetry_frame.tail[1] = 0x00;
-  big_gimbal_telemetry_frame.tail[2] = 0x80;
-  big_gimbal_telemetry_frame.tail[3] = 0x7f;
-  HAL_UART_Transmit_DMA(&huart7, reinterpret_cast<const uint8_t *>(&big_gimbal_telemetry_frame),
-                        sizeof(big_gimbal_telemetry_frame));
+  fm_big_yaw_target_deg = data.target_yaw_degree;
+  fm_big_yaw_current_deg = data.current_yaw_degree;
+  fm_big_yaw_error_deg = data.angle_error_degree;
+  fm_big_yaw_rate_target_dps = data.target_yaw_speed_dps;
+  fm_big_yaw_rate_current_dps = data.current_yaw_speed_dps;
+  fm_big_yaw_rate_error_dps = data.speed_error_dps;
+
+  fm_big_yaw_angle_p_out = data.angle_p_out;
+  fm_big_yaw_angle_i_out = data.angle_i_out;
+  fm_big_yaw_angle_d_out = data.angle_d_out;
+  fm_big_yaw_speed_p_out = data.speed_p_out;
+  fm_big_yaw_speed_i_out = data.speed_i_out;
+  fm_big_yaw_speed_d_out = data.speed_d_out;
+  fm_big_yaw_speed_output = data.yaw_output_raw;
+  fm_big_yaw_torque_nm = data.torque_command_nm;
+
+  fm_big_yaw_motor_deg = data.motor_yaw_degree;
+  fm_big_yaw_motor_rate_dps = data.motor_yaw_speed_dps;
+  fm_big_rc_yaw_input = data.rc_yaw_input;
 }
 
 }  // namespace
@@ -216,9 +234,7 @@ void GlobalWarehouse::Loop1kHz() {
   small_gimbal->Task1kHz();
 
   SendVisionFrames();
-  if ((tick % kBigGimbalTelemetryPeriodTicks) == 0U) {
-    SendBigGimbalTelemetry();
-  }
+  UpdateFreeMasterBigGimbal();
 
   if ((tick & 1U) == 0U) {
     rm::device::DjiMotorBase::SendCommand(*can1);

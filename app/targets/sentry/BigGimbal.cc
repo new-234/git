@@ -59,10 +59,12 @@ void BigGimbal::Task1kHz() {
 
 float BigGimbal::YawForNavigateDegree() const { return imu_.yaw_angle; }
 
-BigGimbalTelemetry BigGimbal::TelemetrySnapshot() const {
-  BigGimbalTelemetry data{};
+BigGimbalDebugSnapshot BigGimbal::DebugSnapshot() const {
+  BigGimbalDebugSnapshot data{};
+  data.force_mode = static_cast<uint8_t>(force_mode_);
   data.control_mode = static_cast<uint8_t>(control_mode_);
   data.rc_mode = static_cast<uint8_t>(rc_mode_);
+  data.chassis_mode = static_cast<uint8_t>(chassis_mode_);
 
   data.angle_kp = pid_.yaw_angle.kp();
   data.angle_ki = pid_.yaw_angle.ki();
