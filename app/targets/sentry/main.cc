@@ -101,14 +101,14 @@ void GlobalWarehouse::Init() {
 
   down_yaw_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can1,
-      {0x07, 0x06, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},
+      {0x07, 0x06, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f},},
   };
-  wheel_lf = new rm::device::M3508{*can1, 1};
-  wheel_rf = new rm::device::M3508{*can1, 2};
-  wheel_lb = new rm::device::M3508{*can1, 3};
-  wheel_rb = new rm::device::M3508{*can1, 4};
+  wheel_lf = new rm::device::M3508{*can1, 1, true};
+  wheel_rf = new rm::device::M3508{*can1, 4};
+  wheel_lb = new rm::device::M3508{*can1, 2, true};
+  wheel_rb = new rm::device::M3508{*can1, 3};
 
-  up_yaw_motor = new rm::device::GM6020{*can2, 5};
+  up_yaw_motor = new rm::device::GM6020{*can2, 1};
   pitch_motor = new rm::device::DmMotor<rm::device::DmMotorControlMode::kMit>{
       *can2,
       {0x03, 0x02, 3.14159f, 30.0f, 10.0f, {0.0f, 500.0f}, {0.0f, 5.0f}},

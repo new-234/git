@@ -71,9 +71,9 @@ class WflyET16s : public rm::device::Sbus {
   [[nodiscard]] wfly::RemoteData remote_data() const {
     wfly::RemoteData data{};
     data.ch[0] = static_cast<int16_t>(channel(rc_ch::RIGHT_X)) - wfly::kChannelOffset;
-    data.ch[1] = -(static_cast<int16_t>(channel(rc_ch::RIGHT_Y)) - wfly::kChannelOffset);
+    data.ch[1] = static_cast<int16_t>(channel(rc_ch::RIGHT_Y)) - wfly::kChannelOffset;
     data.ch[2] = -(static_cast<int16_t>(channel(rc_ch::LEFT_Y)) - wfly::kChannelOffset);
-    data.ch[3] = -(static_cast<int16_t>(channel(rc_ch::LEFT_X)) - wfly::kChannelOffset) - 3;
+    data.ch[3] = static_cast<int16_t>(channel(rc_ch::LEFT_X)) - wfly::kChannelOffset;
 
     for (int i = 0; i < 8; ++i) {
       data.s[i] = SwitchValue(rc_ch::SA + i);

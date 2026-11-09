@@ -53,7 +53,7 @@ void BigGimbal::Task1kHz() {
   ControlPidUpdate();
   CommandUpdate();
   ChassisSourceUpdate();
-  ChassisPowerControl();
+  //ChassisPowerControl();
   SendMotorOutput();
 }
 
@@ -216,7 +216,7 @@ void BigGimbal::CommandUpdate() {
 
     case BigGimbalControlMode::kRcControl:
       if (rc_mode_ == BigGimbalRcMode::kYes) {
-        command_.yaw += globals->wfly_et16s->RemoteChannalLeftX() * 0.25f;
+        command_.yaw -= globals->wfly_et16s->RemoteChannalLeftX() * 0.25f;
       }
       command_.yaw = ConstrainAround(command_.yaw, imu_.yaw_angle);
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
@@ -317,18 +317,18 @@ void BigGimbal::ChassisSourceUpdate() {
 
   special_.delta_bias = 0.06f * motor_measure_.yaw_speed;
   const float angle = special_.differ_angle + special_.delta_bias;
-  set_.vx = source_.vx * std::cos(angle) + source_.vy * std::sin(angle);
-  set_.vy = -source_.vx * std::sin(angle) + source_.vy * std::cos(angle);
+  set_.vx = -source_.vx * std::cos(angle) + source_.vy * std::sin(angle);
+  set_.vy = -source_.vx * std::sin(angle) -  source_.vy * std::cos(angle);
 
   if (chassis_mode_ == BigChassisControlMode::kNoForce || chassis_mode_ == BigChassisControlMode::kInit) {
     output_.wheel_motor = {};
     return;
   }
 
-  command_.wheel_motor[0] = (set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
-  command_.wheel_motor[1] = (set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
-  command_.wheel_motor[2] = (-set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
-  command_.wheel_motor[3] = (-set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[0] = (set_.vx + set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[1] = (set_.vx - set_.vy - set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[2] = (set_.vx - set_.vy + set_.wz * kRotateRate) * kWheelRpmRate;
+  command_.wheel_motor[3] = (set_.vx + set_.vy - set_.wz * kRotateRate) * kWheelRpmRate;
 
   for (size_t i = 0; i < output_.wheel_motor.size(); ++i) {
     pid_.wheel_speed[i].Update(command_.wheel_motor[i], motor_measure_.wheel_speed[i], 0.001f);
@@ -432,19 +432,19 @@ void BigGimbal::ConfigureGimbalPidFor(BigGimbalControlMode mode) {
   switch (mode) {
     case BigGimbalControlMode::kInit:
       yaw_angle_kp = 20.0f;
-      yaw_angle_kd = 40.0f;
+      yaw_angle_kd = 0.0f;
       yaw_speed_kp = 150.0f;
-      yaw_speed_kd = 10.0f;
+      yaw_speed_kd = 0.0f;
       break;
     case BigGimbalControlMode::kRcControl:
     case BigGimbalControlMode::kKeep:
       yaw_angle_kp = 16.0f;
-      yaw_angle_kd = 1000.0f;
+      yaw_angle_kd = 0.0f;
       yaw_speed_kp = 520.0f;
       break;
     case BigGimbalControlMode::kNavi:
       yaw_angle_kp = 22.0f;
-      yaw_angle_kd = 1000.0f;
+      yaw_angle_kd = 0.0f;
       yaw_speed_kp = 530.0f;
       break;
     case BigGimbalControlMode::kNoForce:
@@ -463,7 +463,7 @@ void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
   for (auto &wheel_pid : pid_.wheel_speed) {
     wheel_pid.SetKp(enable ? 5.0f : 0.0f)
         .SetKi(0.0f)
-        .SetKd(enable ? 0.3f : 0.0f)
+        .SetKd(enable ? 0.0f : 0.0f)
         .SetMaxOut(16384.0f)
         .SetMaxIout(6000.0f)
         .SetDiffLpfAlpha(1.0f);

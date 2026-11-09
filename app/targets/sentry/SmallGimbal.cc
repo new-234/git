@@ -11,10 +11,10 @@ constexpr float kDegToRad = static_cast<float>(M_PI) / 180.0f;
 constexpr float kRadToDeg = 180.0f / static_cast<float>(M_PI);
 constexpr float kRpmToRadPerSec = static_cast<float>(M_PI) * 2.0f / 60.0f;
 
-constexpr float kPitchUpAngle = 33.0f;
+constexpr float kPitchUpAngle = 30.0f;
 constexpr float kPitchDownAngle = -30.0f;
-constexpr float kYawMachineLeft = -60.0f;
-constexpr float kYawMachineRight = 170.0f;
+constexpr float kYawMachineLeft = 140.0f;
+constexpr float kYawMachineRight = -20.0f;
 constexpr float kSmallRangeLeftAngle = 15.0f;
 constexpr float kSmallRangeRightAngle = 15.0f;
 constexpr float kPitchScanUpAngle = 15.0f;
@@ -337,8 +337,8 @@ void SmallGimbal::ResetFlag() {
 }
 
 void SmallGimbal::LimitUpdate() {
-  if ((motor_measure_.yaw_angle >= -180.0f && motor_measure_.yaw_angle <= kYawMachineLeft + 5.0f) ||
-      (motor_measure_.yaw_angle <= 180.0f && motor_measure_.yaw_angle >= kYawMachineRight - 5.0f)) {
+  if ((motor_measure_.yaw_angle >= -180.0f && motor_measure_.yaw_angle <= kYawMachineLeft) ||
+      (motor_measure_.yaw_angle <= 180.0f && motor_measure_.yaw_angle >= kYawMachineRight)) {
     limit_.left_delta = kYawMachineLeft - motor_measure_.yaw_angle;
     limit_.right_delta = motor_measure_.yaw_angle - kYawMachineRight;
   }
@@ -362,16 +362,16 @@ void SmallGimbal::CommandUpdate() {
 
     case SmallControlMode::kRcControl:
       if (rc_mode_ == SmallRcMode::kYes) {
-        command_.yaw += globals->wfly_et16s->RemoteChannalLeftX() * 0.25f / 3.0f;
+        command_.yaw -= globals->wfly_et16s->RemoteChannalLeftX() * 0.25f / 3.0f;
         command_.pitch += globals->wfly_et16s->RemoteChannalLeftY() * 0.25f / 3.0f;
       }
       CommandLimit();
       pid_.yaw_angle.Update(command_.yaw, imu_.yaw_angle, 0.001f);
       pid_.yaw_speed.Update(pid_.yaw_angle.out(), -imu_.yaw_speed, 0.001f);
       pid_.pitch_angle.Update(command_.pitch, imu_.pitch_angle, 0.001f);
-      pid_.pitch_speed.Update(pid_.pitch_angle.out(), imu_.pitch_speed, 0.001f);
+      pid_.pitch_speed.Update(pid_.pitch_angle.out(), -imu_.pitch_speed, 0.001f);
       output_.yaw = ClampCurrent(pid_.yaw_speed.out(), 25000.0f);
-      output_.pitch = pid_.pitch_speed.out() + 16200.0f * std::cos(motor_measure_.pitch_angle * kDegToRad);
+      output_.pitch = pid_.pitch_speed.out() - 16200.0f * std::cos(motor_measure_.pitch_angle * kDegToRad);
       break;
 
     case SmallControlMode::kAutoAmmo:
@@ -602,12 +602,12 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
 
   switch (mode) {
     case SmallControlMode::kRcControl:
-      yaw_angle_kp = 11.5f;
-      yaw_angle_kd = 700.0f;
-      yaw_speed_kp = 170.0f;
-      pitch_angle_kp = 17.0f;
-      pitch_angle_kd = 1230.0f;
-      pitch_speed_kp = 135.0f;
+      yaw_angle_kp = 20.0f;
+      yaw_angle_kd = 0.0f;
+      yaw_speed_kp = 100.0f;
+      pitch_angle_kp = 25.0f;
+      pitch_angle_kd = 0.0f;
+      pitch_speed_kp = 75.0f;
       break;
     case SmallControlMode::kAutoAmmo:
       yaw_angle_kp = 11.5f;
@@ -658,12 +658,12 @@ void SmallGimbal::ConfigureAmmoPidFor(SmallAmmoMode mode) {
   const bool enable = mode == SmallAmmoMode::kNormalSpeed;
   pid_.left_speed.SetKp(enable ? 12.0f : 0.0f)
       .SetKi(0.0f)
-      .SetKd(enable ? 8.0f : 0.0f)
+      .SetKd(enable ? 8.0f : 0.0f) //8
       .SetMaxOut(16384.0f)
       .SetMaxIout(6000.0f);
   pid_.right_speed.SetKp(enable ? 12.0f : 0.0f)
       .SetKi(0.0f)
-      .SetKd(enable ? 8.0f : 0.0f)
+      .SetKd(enable ? 8.0f : 0.0f) //8
       .SetMaxOut(16384.0f)
       .SetMaxIout(6000.0f);
 }
