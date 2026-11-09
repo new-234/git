@@ -59,42 +59,6 @@ void BigGimbal::Task1kHz() {
 
 float BigGimbal::YawForNavigateDegree() const { return imu_.yaw_angle; }
 
-BigGimbalDebugSnapshot BigGimbal::DebugSnapshot() const {
-  BigGimbalDebugSnapshot data{};
-  data.force_mode = static_cast<uint8_t>(force_mode_);
-  data.control_mode = static_cast<uint8_t>(control_mode_);
-  data.rc_mode = static_cast<uint8_t>(rc_mode_);
-  data.chassis_mode = static_cast<uint8_t>(chassis_mode_);
-
-  data.angle_kp = pid_.yaw_angle.kp();
-  data.angle_ki = pid_.yaw_angle.ki();
-  data.angle_kd = pid_.yaw_angle.kd();
-  data.speed_kp = pid_.yaw_speed.kp();
-  data.speed_ki = pid_.yaw_speed.ki();
-  data.speed_kd = pid_.yaw_speed.kd();
-
-  data.target_yaw_degree = command_.yaw;
-  data.current_yaw_degree = imu_.yaw_angle;
-  data.angle_error_degree = pid_.yaw_angle.error()[0];
-  data.target_yaw_speed_dps = pid_.yaw_speed.set();
-  data.current_yaw_speed_dps = imu_.yaw_speed;
-  data.speed_error_dps = pid_.yaw_speed.error()[0];
-
-  data.angle_p_out = pid_.yaw_angle.p_out();
-  data.angle_i_out = pid_.yaw_angle.i_out();
-  data.angle_d_out = pid_.yaw_angle.d_out()[0];
-  data.speed_p_out = pid_.yaw_speed.p_out();
-  data.speed_i_out = pid_.yaw_speed.i_out();
-  data.speed_d_out = pid_.yaw_speed.d_out()[0];
-  data.yaw_output_raw = output_.yaw;
-  data.torque_command_nm = rm::modules::Clamp(-output_.yaw / 10000.0f, -10.0f, 10.0f);
-
-  data.motor_yaw_degree = motor_measure_.yaw_angle;
-  data.motor_yaw_speed_dps = motor_measure_.yaw_speed;
-  data.rc_yaw_input = globals->wfly_et16s->RemoteChannalLeftX();
-  return data;
-}
-
 void BigGimbal::UpdateSensorData() {
   motor_measure_.yaw_angle = WrapDegree(globals->down_yaw_motor->pos() * kRadToDeg);
   motor_measure_.yaw_speed = globals->down_yaw_motor->vel() * kRadToDeg;
@@ -474,9 +438,9 @@ void BigGimbal::ConfigureGimbalPidFor(BigGimbalControlMode mode) {
       break;
     case BigGimbalControlMode::kRcControl:
     case BigGimbalControlMode::kKeep:
-      yaw_angle_kp = 16.0f;
-      yaw_angle_kd = 0.0f;
-      yaw_speed_kp = 520.0f;
+      yaw_angle_kp = 25.0f;
+      yaw_angle_kd = 0.5f;
+      yaw_speed_kp = 500.0f;
       break;
     case BigGimbalControlMode::kNavi:
       yaw_angle_kp = 22.0f;
@@ -499,7 +463,7 @@ void BigGimbal::ConfigureChassisPidFor(BigChassisControlMode mode) {
   for (auto &wheel_pid : pid_.wheel_speed) {
     wheel_pid.SetKp(enable ? 5.0f : 0.0f)
         .SetKi(0.0f)
-        .SetKd(enable ? 0.0f : 0.0f)
+        .SetKd(0.0f)
         .SetMaxOut(16384.0f)
         .SetMaxIout(6000.0f)
         .SetDiffLpfAlpha(1.0f);

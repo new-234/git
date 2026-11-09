@@ -88,6 +88,68 @@ struct SmallGimbalOutput {
   int16_t rotor{};
 };
 
+struct SmallGimbalDebugSnapshot {
+  uint8_t force_mode{};
+  uint8_t basic_mode{};
+  uint8_t control_mode{};
+  uint8_t rc_mode{};
+  uint8_t ammo_mode{};
+  uint8_t rotor_mode{};
+
+  float yaw_angle_kp{};
+  float yaw_angle_ki{};
+  float yaw_angle_kd{};
+  float yaw_speed_kp{};
+  float yaw_speed_ki{};
+  float yaw_speed_kd{};
+  float yaw_target_degree{};
+  float yaw_current_degree{};
+  float yaw_angle_feedback_degree{};
+  float yaw_motor_degree{};
+  float yaw_angle_error_degree{};
+  float yaw_rate_target_dps{};
+  float yaw_rate_current_dps{};
+  float yaw_rate_feedback_dps{};
+  float yaw_rate_error_dps{};
+  float yaw_angle_p_out{};
+  float yaw_angle_i_out{};
+  float yaw_angle_d_out{};
+  float yaw_speed_p_out{};
+  float yaw_speed_i_out{};
+  float yaw_speed_d_out{};
+  float yaw_speed_output{};
+  float yaw_motor_output{};
+  float yaw_motor_rate_dps{};
+
+  float pitch_angle_kp{};
+  float pitch_angle_ki{};
+  float pitch_angle_kd{};
+  float pitch_speed_kp{};
+  float pitch_speed_ki{};
+  float pitch_speed_kd{};
+  float pitch_target_degree{};
+  float pitch_current_degree{};
+  float pitch_angle_feedback_degree{};
+  float pitch_motor_degree{};
+  float pitch_angle_error_degree{};
+  float pitch_rate_target_dps{};
+  float pitch_rate_current_dps{};
+  float pitch_rate_feedback_dps{};
+  float pitch_rate_error_dps{};
+  float pitch_angle_p_out{};
+  float pitch_angle_i_out{};
+  float pitch_angle_d_out{};
+  float pitch_speed_p_out{};
+  float pitch_speed_i_out{};
+  float pitch_speed_d_out{};
+  float pitch_speed_output{};
+  float pitch_motor_output{};
+  float pitch_motor_rate_dps{};
+
+  float rc_left_x{};
+  float rc_left_y{};
+};
+
 struct SmallGimbalScan {
   float yaw_left{};
   float yaw_right{};
@@ -142,6 +204,7 @@ class SmallGimbal {
 
   [[nodiscard]] float YawForNavigateDegree() const;
   [[nodiscard]] float PitchForNavigateDegree() const;
+  [[nodiscard]] SmallGimbalDebugSnapshot DebugSnapshot() const;
 
  private:
   void UpdateSensorData();
