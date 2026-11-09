@@ -65,6 +65,34 @@ struct BigGimbalOutput {
   std::array<int16_t, 4> wheel_motor{};
 };
 
+struct BigGimbalTelemetry {
+  uint8_t control_mode{};
+  uint8_t rc_mode{};
+  float angle_kp{};
+  float angle_ki{};
+  float angle_kd{};
+  float speed_kp{};
+  float speed_ki{};
+  float speed_kd{};
+  float target_yaw_degree{};
+  float current_yaw_degree{};
+  float angle_error_degree{};
+  float target_yaw_speed_dps{};
+  float current_yaw_speed_dps{};
+  float speed_error_dps{};
+  float angle_p_out{};
+  float angle_i_out{};
+  float angle_d_out{};
+  float speed_p_out{};
+  float speed_i_out{};
+  float speed_d_out{};
+  float yaw_output_raw{};
+  float torque_command_nm{};
+  float motor_yaw_degree{};
+  float motor_yaw_speed_dps{};
+  float rc_yaw_input{};
+};
+
 struct BigChassisVector {
   float vx{};
   float vy{};
@@ -97,6 +125,7 @@ class BigGimbal {
   void Init();
   void Task1kHz();
   [[nodiscard]] float YawForNavigateDegree() const;
+  [[nodiscard]] BigGimbalTelemetry TelemetrySnapshot() const;
 
  private:
   void UpdateSensorData();
