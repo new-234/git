@@ -85,70 +85,6 @@ float SmallGimbal::YawForNavigateDegree() const { return WrapDegree(motor_measur
 
 float SmallGimbal::PitchForNavigateDegree() const { return imu_.pitch_angle; }
 
-SmallGimbalDebugSnapshot SmallGimbal::DebugSnapshot() const {
-  SmallGimbalDebugSnapshot data{};
-  data.force_mode = static_cast<uint8_t>(force_mode_);
-  data.basic_mode = static_cast<uint8_t>(basic_mode_);
-  data.control_mode = static_cast<uint8_t>(control_mode_);
-  data.rc_mode = static_cast<uint8_t>(rc_mode_);
-  data.ammo_mode = static_cast<uint8_t>(ammo_mode_);
-  data.rotor_mode = static_cast<uint8_t>(rotor_mode_);
-
-  data.yaw_angle_kp = pid_.yaw_angle.kp();
-  data.yaw_angle_ki = pid_.yaw_angle.ki();
-  data.yaw_angle_kd = pid_.yaw_angle.kd();
-  data.yaw_speed_kp = pid_.yaw_speed.kp();
-  data.yaw_speed_ki = pid_.yaw_speed.ki();
-  data.yaw_speed_kd = pid_.yaw_speed.kd();
-  data.yaw_target_degree = command_.yaw;
-  data.yaw_current_degree = imu_.yaw_angle;
-  data.yaw_angle_feedback_degree = pid_.yaw_angle.ref()[0];
-  data.yaw_motor_degree = motor_measure_.yaw_angle;
-  data.yaw_angle_error_degree = pid_.yaw_angle.error()[0];
-  data.yaw_rate_target_dps = pid_.yaw_speed.set();
-  data.yaw_rate_current_dps = imu_.yaw_speed;
-  data.yaw_rate_feedback_dps = pid_.yaw_speed.ref()[0];
-  data.yaw_rate_error_dps = pid_.yaw_speed.error()[0];
-  data.yaw_angle_p_out = pid_.yaw_angle.p_out();
-  data.yaw_angle_i_out = pid_.yaw_angle.i_out();
-  data.yaw_angle_d_out = pid_.yaw_angle.d_out()[0];
-  data.yaw_speed_p_out = pid_.yaw_speed.p_out();
-  data.yaw_speed_i_out = pid_.yaw_speed.i_out();
-  data.yaw_speed_d_out = pid_.yaw_speed.d_out()[0];
-  data.yaw_speed_output = pid_.yaw_speed.out();
-  data.yaw_motor_output = static_cast<float>(output_.yaw);
-  data.yaw_motor_rate_dps = motor_measure_.yaw_speed;
-
-  data.pitch_angle_kp = pid_.pitch_angle.kp();
-  data.pitch_angle_ki = pid_.pitch_angle.ki();
-  data.pitch_angle_kd = pid_.pitch_angle.kd();
-  data.pitch_speed_kp = pid_.pitch_speed.kp();
-  data.pitch_speed_ki = pid_.pitch_speed.ki();
-  data.pitch_speed_kd = pid_.pitch_speed.kd();
-  data.pitch_target_degree = command_.pitch;
-  data.pitch_current_degree = imu_.pitch_angle;
-  data.pitch_angle_feedback_degree = pid_.pitch_angle.ref()[0];
-  data.pitch_motor_degree = motor_measure_.pitch_angle;
-  data.pitch_angle_error_degree = pid_.pitch_angle.error()[0];
-  data.pitch_rate_target_dps = pid_.pitch_speed.set();
-  data.pitch_rate_current_dps = imu_.pitch_speed;
-  data.pitch_rate_feedback_dps = pid_.pitch_speed.ref()[0];
-  data.pitch_rate_error_dps = pid_.pitch_speed.error()[0];
-  data.pitch_angle_p_out = pid_.pitch_angle.p_out();
-  data.pitch_angle_i_out = pid_.pitch_angle.i_out();
-  data.pitch_angle_d_out = pid_.pitch_angle.d_out()[0];
-  data.pitch_speed_p_out = pid_.pitch_speed.p_out();
-  data.pitch_speed_i_out = pid_.pitch_speed.i_out();
-  data.pitch_speed_d_out = pid_.pitch_speed.d_out()[0];
-  data.pitch_speed_output = pid_.pitch_speed.out();
-  data.pitch_motor_output = output_.pitch;
-  data.pitch_motor_rate_dps = motor_measure_.pitch_speed;
-
-  data.rc_left_x = globals->wfly_et16s->RemoteChannalLeftX();
-  data.rc_left_y = globals->wfly_et16s->RemoteChannalLeftY();
-  return data;
-}
-
 void SmallGimbal::UpdateSensorData() {
   motor_measure_.yaw_angle = WrapDegree(globals->up_yaw_motor->pos_degree());
   motor_measure_.yaw_speed = static_cast<float>(globals->up_yaw_motor->rpm()) * 6.0f;
@@ -666,36 +602,36 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
 
   switch (mode) {
     case SmallControlMode::kRcControl:
-      yaw_angle_kp = 20.0f;
+      yaw_angle_kp = 17.5f;
       yaw_angle_kd = 0.0f;
       yaw_speed_kp = 100.0f;
-      pitch_angle_kp = 25.0f;
-      pitch_angle_kd = 0.0f;
-      pitch_speed_kp = 75.0f;
+      pitch_angle_kp = 20.0f;
+      pitch_angle_kd = 0.2f;
+      pitch_speed_kp = 115.0f;
       break;
     case SmallControlMode::kAutoAmmo:
-      yaw_angle_kp = 11.5f;
-      yaw_angle_kd = 700.0f;
-      yaw_speed_kp = 130.0f;
-      pitch_angle_kp = 17.0f;
-      pitch_angle_kd = 1250.0f;
-      pitch_speed_kp = 145.0f;
+      yaw_angle_kp = 17.5f;
+      yaw_angle_kd = 0.0f;
+      yaw_speed_kp = 100.0f;
+      pitch_angle_kp = 20.0f;
+      pitch_angle_kd = 0.0f;
+      pitch_speed_kp = 115.0f;
       if (globals != nullptr && (globals->aim_mode == 2U || globals->aim_mode == 3U)) {
-        yaw_speed_kp = 150.0f;
-        pitch_angle_kp = 11.5f;
-        pitch_angle_kd = 1150.0f;
-        pitch_speed_kp = 100.0f;
+        yaw_speed_kp = 80.0f;
+        pitch_angle_kp = 15.0f;
+        pitch_angle_kd = 0.0f;
+        pitch_speed_kp = 75.0f;
       }
       break;
     case SmallControlMode::kScan:
     case SmallControlMode::kSmallRangeScan:
     case SmallControlMode::kMachineZero:
       yaw_angle_kp = 15.0f;
-      yaw_angle_kd = mode == SmallControlMode::kSmallRangeScan ? 500.0f : 240.0f;
-      yaw_speed_kp = 150.0f;
+      yaw_angle_kd = 0.0f;    //mode == SmallControlMode::kSmallRangeScan ? 500.0f : 240.0f;
+      yaw_speed_kp = 100.0f;
       pitch_angle_kp = 15.0f;
-      pitch_angle_kd = 1000.0f;
-      pitch_speed_kp = 120.0f;
+      pitch_angle_kd = 0.0f;    //1000
+      pitch_speed_kp = 115.0f;
       break;
     case SmallControlMode::kInit:
       yaw_angle_kp = 20.0f;
@@ -712,7 +648,7 @@ void SmallGimbal::ConfigureGimbalPidFor(SmallControlMode mode) {
   pid_.yaw_speed.SetKp(yaw_speed_kp).SetKi(0.0f).SetKd(0.0f).SetMaxOut(25000.0f).SetMaxIout(10000.0f);
   pid_.pitch_angle.SetKp(pitch_angle_kp).SetKi(0.0f).SetKd(pitch_angle_kd).SetMaxOut(600.0f).SetMaxIout(30.0f);
   pid_.pitch_speed.SetKp(pitch_speed_kp).SetKi(0.0f).SetKd(0.0f).SetMaxOut(50000.0f).SetMaxIout(10000.0f);
-  pid_.yaw_angle.SetDiffLpfAlpha(mode == SmallControlMode::kNoForce ? 1.0f : 0.1f);
+  pid_.yaw_angle.SetDiffLpfAlpha(mode == SmallControlMode::kNoForce ? 1.0f : 0.2f);
   pid_.yaw_speed.SetDiffLpfAlpha(1.0f);
   pid_.pitch_angle.SetDiffLpfAlpha(mode == SmallControlMode::kNoForce ? 1.0f : 0.1f);
   pid_.pitch_speed.SetDiffLpfAlpha(1.0f);
@@ -722,12 +658,12 @@ void SmallGimbal::ConfigureAmmoPidFor(SmallAmmoMode mode) {
   const bool enable = mode == SmallAmmoMode::kNormalSpeed;
   pid_.left_speed.SetKp(enable ? 12.0f : 0.0f)
       .SetKi(0.0f)
-      .SetKd(enable ? 8.0f : 0.0f) //8
+      .SetKd(enable ? 0.0f : 0.0f) //8
       .SetMaxOut(16384.0f)
       .SetMaxIout(6000.0f);
   pid_.right_speed.SetKp(enable ? 12.0f : 0.0f)
       .SetKi(0.0f)
-      .SetKd(enable ? 8.0f : 0.0f) //8
+      .SetKd(enable ? 0.0f : 0.0f) //8
       .SetMaxOut(16384.0f)
       .SetMaxIout(6000.0f);
 }

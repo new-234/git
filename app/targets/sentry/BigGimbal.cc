@@ -17,6 +17,8 @@ constexpr float kWheelRpmRate = 3000.0f;
 constexpr uint8_t kAimbotTargetInside = 1U << 0U;
 constexpr float kYawMachineLeft = -60.0f;
 constexpr float kYawMachineRight = 170.0f;
+constexpr float kBenchChassisPowerLimitW = 100.0f;
+constexpr float kMinChassisPowerScale = 0.05f;
 
 float WrapDegree(float value) { return rm::modules::Wrap(value, -180.0f, 180.0f); }
 
@@ -53,7 +55,7 @@ void BigGimbal::Task1kHz() {
   ControlPidUpdate();
   CommandUpdate();
   ChassisSourceUpdate();
-  //ChassisPowerControl();
+  ChassisPowerControl();
   SendMotorOutput();
 }
 
@@ -224,6 +226,7 @@ void BigGimbal::CommandUpdate() {
       output_.yaw = pid_.yaw_speed.out();
       source_.vx = globals->wfly_et16s->RemoteChannalRightX();
       source_.vy = -globals->wfly_et16s->RemoteChannalRightY();
+      //source_.wz = globals->wfly_et16s->RemoteChannalLeftY();
       break;
 
     case BigGimbalControlMode::kNavi:
@@ -315,6 +318,10 @@ void BigGimbal::ChassisSourceUpdate() {
       break;
   }
 
+  /*if (control_mode_ == BigGimbalControlMode::kRcControl) {
+    set_.wz = source_.wz;
+  }*/
+
   special_.delta_bias = 0.06f * motor_measure_.yaw_speed;
   const float angle = special_.differ_angle + special_.delta_bias;
   set_.vx = -source_.vx * std::cos(angle) + source_.vy * std::sin(angle);
@@ -337,20 +344,22 @@ void BigGimbal::ChassisSourceUpdate() {
 }
 
 void BigGimbal::ChassisPowerControl() {
-  float power_limit = static_cast<float>(globals->referee_data->data().robot_status.chassis_power_limit);
-  if (power_limit <= 0.0f) {
-    power_limit = 100.0f;
-  }
+  const auto &referee_data = globals->referee_data->data();
+  const bool referee_online =
+      globals->referee_data->online_status() == rm::device::Device::kOk;
+  const float reported_power_limit = static_cast<float>(referee_data.robot_status.chassis_power_limit);
+  const bool referee_power_valid = referee_online && reported_power_limit > 0.0f;
 
-  float buffer_energy = globals->referee_data->data().power_heat_data.buffer_energy;
-  if (globals->robot_mode == RobotMode::kTest && buffer_energy <= 0.0f) {
-    buffer_energy = 60.0f;
-  }
+  special_.real_power_limit =
+      referee_power_valid ? reported_power_limit : kBenchChassisPowerLimitW;
 
-  if (buffer_energy < special_.real_buffer_limit) {
-    special_.real_power_limit = buffer_energy;
-  } else {
-    special_.real_power_limit = power_limit;
+  if (referee_power_valid) {
+    const float buffer_energy = static_cast<float>(referee_data.power_heat_data.buffer_energy);
+    if (buffer_energy > 0.0f && buffer_energy < special_.real_buffer_limit) {
+      const float min_power_limit = special_.real_power_limit * kMinChassisPowerScale;
+      special_.real_power_limit =
+          rm::modules::Clamp(buffer_energy, min_power_limit, special_.real_power_limit);
+    }
   }
 
   special_.total_power = 0.0f;
@@ -364,24 +373,9 @@ void BigGimbal::ChassisPowerControl() {
     return;
   }
 
-  special_.sup_kp = special_.real_power_limit / special_.total_power;
-  if (chassis_mode_ == BigChassisControlMode::kFollow || chassis_mode_ == BigChassisControlMode::kKeep) {
-    if (power_limit < 90.0f && power_limit > 58.0f) {
-      special_.sup_kp *= 1.2f;
-    } else if (power_limit > 90.0f) {
-      special_.sup_kp *= 1.5f;
-    }
-  } else if (chassis_mode_ == BigChassisControlMode::kQuickRoting ||
-             chassis_mode_ == BigChassisControlMode::kRandomRoting ||
-             chassis_mode_ == BigChassisControlMode::kSlowRoting) {
-    if (power_limit < 90.0f && power_limit > 58.0f) {
-      special_.sup_kp *= 1.3f;
-    } else if (power_limit > 90.0f) {
-      special_.sup_kp *= 1.7f;
-    }
-  }
-
-  special_.sup_kp = rm::modules::Clamp(special_.sup_kp, 0.0f, 1.0f);
+  special_.sup_kp = rm::modules::Clamp(
+      special_.real_power_limit / special_.total_power,
+      kMinChassisPowerScale, 1.0f);
   for (auto &wheel_output : output_.wheel_motor) {
     wheel_output = ClampCurrent(static_cast<float>(wheel_output) * special_.sup_kp, 16384.0f);
   }
@@ -443,9 +437,9 @@ void BigGimbal::ConfigureGimbalPidFor(BigGimbalControlMode mode) {
       yaw_speed_kp = 500.0f;
       break;
     case BigGimbalControlMode::kNavi:
-      yaw_angle_kp = 22.0f;
+      yaw_angle_kp = 25.0f;
       yaw_angle_kd = 0.0f;
-      yaw_speed_kp = 530.0f;
+      yaw_speed_kp = 500.0f;
       break;
     case BigGimbalControlMode::kNoForce:
     default:
